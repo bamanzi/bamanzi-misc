@@ -1,0 +1,228 @@
+object frmMain: TfrmMain
+  Left = 240
+  Top = 88
+  BorderIcons = [biSystemMenu]
+  BorderStyle = bsSingle
+  Caption = 'frmMain'
+  ClientHeight = 426
+  ClientWidth = 392
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  Font.Style = []
+  OldCreateOrder = False
+  Position = poScreenCenter
+  OnCreate = FormCreate
+  OnPaint = FormPaint
+  PixelsPerInch = 96
+  TextHeight = 13
+  object lblTCPath: TLabel
+    Left = 8
+    Top = 5
+    Width = 122
+    Height = 13
+    Caption = 'Путь к Total Commander:'
+    FocusControl = edTCPath
+  end
+  object Panel2: TPanel
+    Left = 0
+    Top = 392
+    Width = 392
+    Height = 34
+    Align = alBottom
+    BevelOuter = bvNone
+    Ctl3D = True
+    ParentCtl3D = False
+    TabOrder = 0
+    object lblMail: TLabel
+      Left = 32
+      Top = 11
+      Width = 96
+      Height = 13
+      Cursor = crHandPoint
+      Hint = 'Написать письмо'
+      Caption = 'ProgMan13@mail.ru'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlue
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsUnderline]
+      ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
+      OnClick = lblMailClick
+      OnMouseDown = lblMailMouseDown
+      OnMouseUp = lblMailMouseUp
+      OnMouseEnter = lblMailMouseEnter
+      OnMouseLeave = lblMailMouseLeave
+    end
+    object btOK: TButton
+      Left = 215
+      Top = 5
+      Width = 75
+      Height = 25
+      Caption = 'OK'
+      Default = True
+      ModalResult = 1
+      TabOrder = 0
+      OnClick = btOKClick
+    end
+    object btCancel: TButton
+      Left = 303
+      Top = 5
+      Width = 75
+      Height = 25
+      Cancel = True
+      Caption = 'Отмена'
+      ModalResult = 2
+      TabOrder = 1
+      OnClick = btCancelClick
+    end
+  end
+  object cbOverrideMenuCap: TCheckBox
+    Left = 8
+    Top = 140
+    Width = 129
+    Height = 16
+    Caption = 'Название меню'
+    TabOrder = 5
+    OnClick = cbOverrideMenuCapClick
+  end
+  object edMenuCaption: TEdit
+    Left = 160
+    Top = 137
+    Width = 225
+    Height = 21
+    Enabled = False
+    TabOrder = 6
+  end
+  object cbTCShellDrive: TCheckBox
+    Left = 8
+    Top = 72
+    Width = 377
+    Height = 17
+    Caption = 'Добавить "Open in Total Commander" в контекстное меню Дисков'
+    State = cbGrayed
+    TabOrder = 3
+    OnClick = cbTCShellDirClick
+  end
+  object cbTCShellDir: TCheckBox
+    Left = 8
+    Top = 50
+    Width = 377
+    Height = 17
+    Caption = 'Добавить "Open in Total Commander" в контекстное меню Каталогов'
+    State = cbGrayed
+    TabOrder = 2
+    OnClick = cbTCShellDirClick
+  end
+  object edTCPath: TEdit
+    Left = 8
+    Top = 24
+    Width = 377
+    Height = 21
+    TabStop = False
+    Color = clBtnFace
+    ReadOnly = True
+    TabOrder = 8
+  end
+  object btSelectTCPath: TButton
+    Left = 310
+    Top = 1
+    Width = 75
+    Height = 21
+    Caption = 'Обзор...'
+    TabOrder = 1
+    OnClick = btSelectTCPathClick
+  end
+  object cbProcessShellLink: TCheckBox
+    Left = 8
+    Top = 94
+    Width = 377
+    Height = 17
+    Hint = 
+      'Обработка путей ярлыка осуществляется только при наличии этой пр' +
+      'ограммы!'
+    Caption = 'Добавить "Open in Total Commander" в контекстное меню Ярлыков'
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 4
+    OnClick = cbTCShellDirClick
+  end
+  object cbTCAnyFile: TCheckBox
+    Left = 8
+    Top = 116
+    Width = 385
+    Height = 17
+    Caption = 
+      'Добавить "Open in Total Commander" в контекстное меню всех файло' +
+      'в!'
+    TabOrder = 9
+    OnClick = cbTCShellDirClick
+  end
+  object Panel3: TGroupBox
+    Left = 8
+    Top = 184
+    Width = 377
+    Height = 209
+    TabOrder = 7
+    object rgTCInstance: TRadioGroup
+      Left = 8
+      Top = 8
+      Width = 361
+      Height = 57
+      Caption = ' Как TC должен открывать новые Каталоги\Диски из меню '
+      ItemIndex = 1
+      Items.Strings = (
+        'Всегда открывать новое окно TC'
+        'Всегда загружать в существующее окно TC')
+      TabOrder = 0
+    end
+    object rgTCPanel: TRadioGroup
+      Left = 8
+      Top = 72
+      Width = 361
+      Height = 65
+      Caption = ' В какой файловой панели TC открывать Каталоги\Диски из меню '
+      ItemIndex = 2
+      Items.Strings = (
+        'Открывать в Левой панели'
+        'Открывать в Правой панели'
+        'Открывать в панели по умолчанию')
+      TabOrder = 1
+    end
+    object rgTCTab: TRadioGroup
+      Left = 8
+      Top = 144
+      Width = 361
+      Height = 57
+      Caption = ' На какой вкладке открывать (TC 6.50 или новее) '
+      ItemIndex = 1
+      Items.Strings = (
+        'Всегда открывать на новой вкладке'
+        'Открывать на вкладке по умолчанию')
+      TabOrder = 2
+    end
+  end
+  object cbSentToLink: TCheckBox
+    Left = 8
+    Top = 163
+    Width = 377
+    Height = 17
+    Caption = 'Ярлык "Open in Total Commander" в меню "Отправить"'
+    TabOrder = 10
+    OnClick = cbTCShellDirClick
+  end
+  object OpenDlg: TOpenDialog
+    Filter = 'totalcmd.exe|totalcmd.exe'
+    Options = [ofReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing, ofDontAddToRecent, ofForceShowHidden]
+    Left = 232
+    Top = 8
+  end
+  object XPManifest1: TXPManifest
+    Left = 200
+    Top = 8
+  end
+end
