@@ -81,6 +81,17 @@ hook.addToHook('Unload', function () {
         return true;
     });
 });
+hook.addToHook('Unload', function () {
+    util.getBrowserWindows().some(function (win) {
+        if (win === window) {
+            return false;
+        }
+        const ks = win.KeySnail;
+        share.pluginUpdater = ks.getPluginUpdater(share.pluginUpdater.pluginsWithUpdate);
+        ks.setUpPluginUpdaterDelegator();
+        return true;
+    });
+});
 
 // ============================= Key bindings ============================== //
 
@@ -317,6 +328,10 @@ key.setViewKey(['C-c', ':'], function (ev, arg) {
     shell.input(null, arg);
 }, 'List and execute commands', true);
 
+key.setViewKey(['C-c', 'd'], function (ev) {
+    BrowserCloseTabOrWindow();
+}, 'Close tab / window');
+
 key.setViewKey('C-f', function (ev) {
     key.generateKey(ev.originalTarget, KeyEvent.DOM_VK_RIGHT, true);
 }, 'Scroll right');
@@ -502,11 +517,19 @@ key.setCaretKey([['C-c', 'i'], ['ESC']], function (ev, arg) {
     util.setBoolPref("accessibility.browsewithcaret", false);
 }, 'Exit caret mode');
 
+key.setCaretKey(['C-c', ';'], function (ev) {
+    ext.exec("hok-start-extended-mode", ev);
+}, 'Start Hit a Hint extended mode');
+
 key.setCaretKey([['C-a'], ['^']], function (ev) {
     ev.target.ksMarked ? goDoCommand("cmd_selectBeginLine") : goDoCommand("cmd_beginLine");
 }, 'Move caret to the beginning of the line');
 
-key.setCaretKey([['C-e'], ['$'], ['M->'], ['G']], function (ev) {
+key.setCaretKey('C-e', function (ev) {
+    ext.exec("hok-start-continuous-mode", ev);
+}, 'Start Hit a Hint continuous mode');
+
+key.setCaretKey([['$'], ['M->'], ['G']], function (ev) {
     ev.target.ksMarked ? goDoCommand("cmd_selectEndLine") : goDoCommand("cmd_endLine");
 }, 'Move caret to the end of the line');
 
@@ -585,16 +608,16 @@ key.setCaretKey('B', function (ev) {
 }, 'Back');
 
 key.setCaretKey('F', function (ev) {
-    BrowserForward();
-}, 'Forward');
+    ext.exec("hok-start-background-mode", ev);
+}, 'Start Hit a Hint background mode');
 
 key.setCaretKey(['C-x', 'h'], function (ev) {
     goDoCommand("cmd_selectAll");
 }, 'Select all', true);
 
 key.setCaretKey('f', function (ev) {
-    command.focusElement(command.elementsRetrieverTextarea, 0);
-}, 'Focus to the first textarea', true);
+    ext.exec("hok-start-foreground-mode", ev);
+}, 'Start Hit a Hint foreground mode');
 
 key.setCaretKey('M-p', function (ev) {
     command.walkInputElement(command.elementsRetrieverButton, true, true);
@@ -603,25 +626,27 @@ key.setCaretKey('M-p', function (ev) {
 key.setCaretKey('M-n', function (ev) {
     command.walkInputElement(command.elementsRetrieverButton, false, true);
 }, 'Focus to the previous button');
-    
-key.setCaretKey(['f'], function (ev) {
-    ext.exec("hok-start-foreground-mode", ev);
-}, 'Start Hit a Hint foreground mode');
 
-key.setCaretKey(['F'], function (ev) {
-    ext.exec("hok-start-background-mode", ev);
-}, 'Start Hit a Hint background mode');
+key.setGlobalKey(['C-c', 'g', 'u'], function (ev) {
+    var uri = getBrowser().currentURI;
+    if (uri.path == "/") {
+        return;
+    }
+    var pathList = uri.path.split("/");
+    if (!pathList.pop()) {
+        pathList.pop();
+    }
+    loadURI(uri.prePath + pathList.join("/") + ("/"));
+}, 'Go upper directory');
 
-key.setCaretKey(['C-c', ';'], function (ev) {
-    ext.exec("hok-start-extended-mode", ev);
-}, 'Start Hit a Hint extended mode');
-
-key.setCaretKey(['C-e'], function (ev) {
-    ext.exec("hok-start-continuous-mode", ev);
-}, 'Start Hit a Hint continuous mode');
-
-
-key.setViewKey(['C-c', 'd'], function (ev) {
-    BrowserCloseTabOrWindow();
-}, 'Close tab / window');
+key.setGlobalKey(['C-c', 'g', 'U'], function (ev) {
+    var uri = window._content.location.href;
+    if (uri == null) {
+        return;
+    }
+    var root = uri.match(/^[a-z]+:\/\/[^/]+\//);
+    if (root) {
+        loadURI(root, null, null);
+    }
+}, 'Go to the root directory', true);
 
