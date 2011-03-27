@@ -75,3 +75,230 @@ http://blog.pluskid.org/?p=206
 
 **** pkg-ver.tar 
   + pkg-ver.tar文件名里面必须有版本号，且版本号必须为数字，不能包含字母 + ...
+
+
+* Hyper/Super key modifiers
+
+*** key-translation-map
+ * 将<menu>变成'hyper 
+#+begin_src emacs-lisp
+(define-key key-translation-map [menu] 'event-apply-hyper-modifier) 
+#+end_src
+
+ * Linux console等环境下实在得到super/hyper键时，可用如下方法来调用原来绑定到super/hyper的功能
+#+begin_src emacs-lisp
+(define-key key-translation-map (kbd "C-c h") 'event-apply-hyper-modifier) 
+(define-key key-translation-map (kbd "C-c s") 'event-apply-super-modifier) 
+(define-key key-translation-map (kbd "C-c a") 'event-apply-alt-modifier) 
+#+end_src
+
+*** s-up/down/left/right move current window up/down/left/right
+(built in)
+
+#+begin_src emacs-lisp
+(windmove-default-keybindings 'super) 
+#+end_src
+
+
+* Keyword Help
+
+** WinHelp (.hlp)
+http://www.emacswiki.org/emacs/AccessingWindowsHelpFiles
+
+#+begin_src emacs-lisp
+(require 'etags)
+ (defun tcl-help ()
+   (interactive )
+   (shell-command 
+    (concat "c:/winnt/winhlp32 -k " 
+	    (find-tag-default)  
+	    " D:/Program Files/Tcl/doc/tcl83.hlp &")))
+#+end_src
+
+** Compiled HtmlHelp (.chm)
+
+http://www.emacswiki.org/emacs/MsdnHelp
+
+Here’s a little something that I whipped up that will allow newer Htmlhelp-based versions of the
+msdn work from within emacs. You will need to download and install the free Htmlhelp helper program
+Keyhh.exe from http://www.keyworks.net, since the default Microsoft HH.exe will not allow you to
+search for keywords from the command-line, but instead forces you to use the Htmlhelp API. (Note:
+this is my first attempt at lisp, so YMMV)
+
+#+begin_src emacs-lisp
+  
+  (defun show-vc-topic ()
+     "Open a window showing the Visual C++ documentation for the word under the point"
+     (interactive)
+     (cond
+      ((string= "w32" window-system)
+       (start-process "vc++ msdn lookup" nil "C:/WINNT/keyhh.exe" "-#klink" (format "'%s'" (thing-at-point 'symbol)) "E:/MSDN98/98VS/1033/VCCORE.CHM" ))))
+  
+  (defun show-glibc-topic ()
+    "Open a window showing the glibc documentation for the word under the point"
+    (interactive)
+    (cond
+     ((string= "w32" window-system)
+      (start-process "glibc lookup" nil "C:/WINNT/keyhh.exe" "-#klink" (format "'%s'" (thing-at-point 'symbol)) "E:/documents/glibc-2.2.3.chm" ))))
+#+end_src
+
+** HtmlHelp 2.0 (msdn)
+
+ http://emacswiki.org/emacs/MsdnHelp
+
+The new format is “Microsoft Help 2” and is viewed with “Microsoft Document Explorer”. Just as
+(as is noted below) Microsoft’s HH.exe does not allow command-line keyword searches, Document
+Explorer (dexplore.exe) does not allow it. H2Viewer is free software that provides this
+functionality. The following command will open the MSDN Platform SDK documentation for the
+“CreateWindowEx?” function (1033 indicates English language):
+
+  h2viewer /helpcol MS.PSDK.1033 /keyword K$CreateWindowEx
+
+#+begin_src emacs-lisp
+(defun show-msdn-topic ()
+  "Open a window showing the MSDN documentation for the word under the point"
+  (interactive)
+  (if (string= "w32" window-system)
+      (start-process "MSDN lookup" nil 
+		     "D:/H2Viewer132/h2viewer.exe"
+		     "/appID" "MSDN-Viewer"
+		     "/helpcol" "MS.VSCC.2003"
+;; 		     "/filtername" "Visual C++"
+		     "/Index" (current-word))))
+#+end_src
+
+** Info
+2011-03-22: 发现emacs自带一个info-lookup-symbol (C-h S)可用来查函数的帮助，测试了一下elisp，好使。但配置比较复杂，没搞懂，至少awk用缺省配置查不到。
+
+Refer `info-lookup-symbol' (built-in).
+Default key binding: C-h S.
+
+A little complicate to config.
+
+** DevHelp
+
+Refer /etc/emacs/site-lisp.d/50devhelp.el
+
+devhelp -k  (keyword lookup)
+devhelp -a  (assistant mode)
+
+** Qt Assistant
+
+......
+
+** Web lookup
+
+Emacs : Perl PHP Dictionary Wikipedia Google … Reference lookup
+http://xahlee.org/emacs/emacs_lookup_ref.html
+
+| Source         | URL Format                                      |
+|----------------+-------------------------------------------------|
+| Perl           | http://perldoc.perl.org/search.html?q=XYZ       |
+| PHP            | http://us.php.net/XYZ                           |
+| LSL            | http://wiki.secondlife.com/wiki/XYZ             |
+| AutoHotkey     | http://www.autohotkey.com/docs/commands/XYZ.htm |
+| Wikipedia      | http://en.wikipedia.org/wiki/XYZ                |
+| Google         | http://www.google.com/search?q=XYZ              |
+| bing           | http://www.bing.com/search?q=XYZ                |
+| Wolfram/ Alpha | http://www.wolframalpha.com/input/?i=XYZ        |
+
+#+begin_src emacs-lisp
+(defun lookup-wikipedia ()
+  "Look up the word under cursor in Wikipedia.
+If there is a text selection (a phrase), use that
+
+This command switches you to your browser."
+ (interactive)
+ (let (myword myurl)
+   (setq myword
+         (if (and transient-mark-mode mark-active)
+             (buffer-substring-no-properties (region-beginning) (region-end))
+           (thing-at-point 'symbol)))
+
+  (setq myword (replace-regexp-in-string " " "_" myword))
+  (setq myurl (concat "http://en.wikipedia.org/wiki/" myword))
+  (browse-url myurl)
+   ))
+
+(defun lookup-word-definition ()
+  "Look up the current word's definition in a browser.
+If a region is active (a phrase), lookup that phrase."
+ (interactive)
+ (let (myword myurl)
+   (setq myword
+         (if (and transient-mark-mode mark-active)
+             (buffer-substring-no-properties (region-beginning) (region-end))
+           (thing-at-point 'symbol)))
+
+  (setq myword (replace-regexp-in-string " " "%20" myword))
+  (setq myurl (concat "http://www.answers.com/main/ntquery?s=" myword))
+
+  (browse-url myurl)
+  ;; (w3m-browse-url myurl) ;; if you want to browse using w3m
+   ))
+
+(global-set-key (kbd "<f6>") 'lookup-word-definition)
+
+#+end_src
+
+
+
+* Misc
+
+** zap-up-to-char
+
+http://www.emacswiki.org/emacs/ZapUpToChar
+
+#+begin_src emacs-lisp
+(defadvice zap-to-char (after my-zap-to-char-advice (arg char) activate)
+    "Kill up to the ARG'th occurence of CHAR, and leave CHAR.
+  The CHAR is replaced and the point is put before CHAR."
+    (insert char)
+    (forward-char -1))
+#+end_src
+
+** anything-font-families
+
+http://d.hatena.ne.jp/mooz/
+
+#+begin_src emacs-lisp
+(require 'cl)  ; loop, delete-duplicates
+
+(defun anything-font-families ()
+  "Preconfigured `anything' for font family."
+  (interactive)
+  (flet ((anything-mp-highlight-match () nil))
+    (anything-other-buffer
+     '(anything-c-source-font-families)
+     "*anything font families*")))
+
+(defun anything-font-families-create-buffer ()
+  (with-current-buffer
+      (get-buffer-create "*Fonts*")
+    (loop for family in (sort (delete-duplicates (font-family-list)) 'string<)
+          do (insert
+              (propertize (concat family "\n")
+                          'font-lock-face
+                          (list :family family :height 2.0 :weight 'bold))))
+    (font-lock-mode 1)))
+
+(defvar anything-c-source-font-families
+      '((name . "Fonts")
+        (init lambda ()
+              (unless (anything-candidate-buffer)
+                (save-window-excursion
+                  (anything-font-families-create-buffer))
+                (anything-candidate-buffer
+                 (get-buffer "*Fonts*"))))
+        (candidates-in-buffer)
+        (get-line . buffer-substring)
+        (action
+         ("Copy Name" lambda
+          (candidate)
+          (kill-new candidate))
+         ("Insert Name" lambda
+          (candidate)
+          (with-current-buffer anything-current-buffer
+            (insert candidate))))))
+#+end_src
+
