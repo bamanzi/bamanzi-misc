@@ -1,0 +1,77 @@
+* Emacs包管理工具ELPA
+** ELPA简介
+XEmacs的一大特色是有包管理，所以包的安装、升级比较省心，但GNU Emacs一直没有这个东西。ELPA就
+是解决这个问题，它似乎是XEmacs包管理器的仿制品。ELPA由客户端package.el 和网上的包仓库
+(http://tromey.com/elpa/ )组成，目前有100多个包。
+
+而package.el 已经合入了GNU Emacs 24（尚在开发），不过Emacs 24开发团队另外提供了一个”官方”仓
+库 http://elpa.gnu.org/ ，但目前上面没有几个包。
+
+所以还是用旧的仓库，而且可以用在emacs-22/23上。
+
+** 如何使用
+  简单地说，从 http://tromey.com/elpa/ 下载package.el 并load之后
+    M-x package-list-packages
+  它会列出网上仓库有哪些包，以及本地安装了哪些包，然后就可以直接选定后安装（安装
+  到~/.emacs.d/elpa)
+  
+  在不能访问网络的时候，也可以
+
+详情请看:
+http://blog.pluskid.org/?p=206
+
+** 不在网上仓库里面的包，也可以用elpa来管理
+*** 好处有两个: 
+ 1. 不用多个el文件堆在一个目录，要删除要禁用要升级替换都比较容易： 
+ 2. elpa可以利用autoload自己搞定包加载，不用每次手工load-library或者维护require（还得考虑怎
+ 么不影响启动时间）
+
+*** 安装方法
+   * M-x package-install-file &lt;file&gt;
+   * M-x package-install-from-buffer
+
+&lt;/file&gt;
+
+*** 对包的要求
+**** 单文件 foo-pkg.el
+  要有标准的Header，参见[[http://www.gnu.org/software/emacs/elisp-manual/html_node/Library-Headers.html#Library-Headers][Emacs Library Header Conventions]] 
+#+BEGIN_SRC emacs-lisp
+;;; lua-mode.el --- a major-mode for editing Lua scripts
+ 
+;; Copyright (C) 1997, 2001, 2004, 2006, 2007, 2010 Free Software Foundation, Inc. 
+
+;; Author: ....... 
+;;   Aaron Smith <aaron-lua>. 
+;; URL:	 http://lua-mode.luaforge.net/ 
+;; Version:	20100617
+ 
+;; This file is NOT part of Emacs. 
+
+...... 
+
+;;; Commentary: ...... 
+
+;;; Code: ...... 
+
+;;;; lua-mode.el ends here 
+#+END_SRC 
+  + Header部分里面的"Version: xxxx"是必须有的(包括冒号)，后面是版本号。 
+
+  这部分是用emacs自带的lm-header函数来提取的, 所以可以通过下面的方法看elpa是否可以识别其版本号 
+  在Emacs中打开该el文件，对下面表示式求值
+   (M-x eval-express) (lm-header "version") 
+
+  版本号也可以是RCS版本格式(似乎不支持CVS/SVN里面的版本标记方式)，比如 
+
+  ;; Version: Revision 1.6 2009-09-04 01:44:56 psg 
+  
+  此时elpa会再调用一个函数来提取实际的版本号 (
+   package-strip-rcs-id (lm-header "version")) 
+
+  另外elpa似乎有个bug, package-install-file常常报告找不到Version标识，但用 package-install-from-buffer就没有问题 
+  
+  + 第一行必须匹配"^;;; \\([^ ]*\\)\\.el --- \\(.*\\)$" 
+  + 后面必须有";;;; file-name.el ends here"这样一行 (但可以不是最后一行。请注意前面是4个分号) 
+
+**** pkg-ver.tar 
+  + pkg-ver.tar文件名里面必须有版本号，且版本号必须为数字，不能包含字母 + ...
