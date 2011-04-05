@@ -1,0 +1,125 @@
+
+
+ * [[http://www.gnu.org/software/emacs/windows/faq.html][GNU Emacs FAQ For MS Windows]]
+ * [[http://xahlee.org/emacs/emacs_mswin.html][Emacs and Microsoft Windows Tips]]
+ * [[http://gregorygrubbs.com/emacs/10-tips-emacs-windows/][10 Tips for Powerful Emacs on Windows]]
+ * [[http://www.arunrocks.com/blog/archives/2008/02/20/5-indespensible-tips-for-emacs-on-windows/][5 Indispensable Tips for Emacs on Windows | Arunrocks]]
+
+
+
+* Install/Launch
+** 版本: vanilla/ergoemacs/emacsw32/ntemacs/emacs-for-windows
+** 图像显示
+  gnuwin32
+    * jpeg62.dll
+    * libXpm.dll
+    * libjpeg-62.dll
+    * libpng-bcc.lib
+    * libpng.dll.a
+    * libpng.la
+    * libpng.lib
+    * libpng12-0.dll
+    * libpng12.def
+    * libpng12.dll
+    * libpng12.dll.a
+    * libpng12.la
+    * libtiff3.dll
+    * zlib1.dll (for compression, not images)
+  (ergoemacs 自带)
+  
+** client/server
+** HOME (env/reg)
+* Keyboard
+** hyper/super/alt/capslock/scrolllock
+** key mapping
+  xkeymacs,keymapper,
+* Fonts
+  ...
+* unxutils/gow/gnuwin32/msys/cygwin
+** cygwin
+  * bash
+  * w3m
+  * man
+  * sdcv
+  * ispell
+  * dict?
+  * fortune/cowsay...
+
+* Shell
+  cmd-shell
+  msys-shell
+  cygwin-shell
+
+* Keyword Help
+** WinHelp (.hlp)
+http://www.emacswiki.org/emacs/AccessingWindowsHelpFiles
+
+#+begin_src emacs-lisp
+(require 'etags)
+ (defun tcl-help ()
+   (interactive )
+   (shell-command 
+    (concat "c:/winnt/winhlp32 -k " 
+	    (find-tag-default)  
+	    " D:/Program Files/Tcl/doc/tcl83.hlp &")))
+#+end_src
+
+** Compiled HtmlHelp (.chm)
+
+http://www.emacswiki.org/emacs/MsdnHelp
+
+Here’s a little something that I whipped up that will allow newer Htmlhelp-based versions of the
+msdn work from within emacs. You will need to download and install the free Htmlhelp helper program
+Keyhh.exe from http://www.keyworks.net, since the default Microsoft HH.exe will not allow you to
+search for keywords from the command-line, but instead forces you to use the Htmlhelp API. (Note:
+this is my first attempt at lisp, so YMMV)
+
+#+begin_src emacs-lisp
+  
+  (defun show-vc-topic ()
+     "Open a window showing the Visual C++ documentation for the word under the point"
+     (interactive)
+     (cond
+      ((string= "w32" window-system)
+       (start-process "vc++ msdn lookup" nil "C:/WINNT/keyhh.exe" "-#klink" (format "'%s'" (thing-at-point 'symbol)) "E:/MSDN98/98VS/1033/VCCORE.CHM" ))))
+  
+  (defun show-glibc-topic ()
+    "Open a window showing the glibc documentation for the word under the point"
+    (interactive)
+    (cond
+     ((string= "w32" window-system)
+      (start-process "glibc lookup" nil "C:/WINNT/keyhh.exe" "-#klink" (format "'%s'" (thing-at-point 'symbol)) "E:/documents/glibc-2.2.3.chm" ))))
+#+end_src
+
+** HtmlHelp 2.0 (msdn)
+
+ http://emacswiki.org/emacs/MsdnHelp
+
+The new format is “Microsoft Help 2” and is viewed with “Microsoft Document Explorer”. Just as
+(as is noted below) Microsoft’s HH.exe does not allow command-line keyword searches, Document
+Explorer (dexplore.exe) does not allow it. H2Viewer is free software that provides this
+functionality. The following command will open the MSDN Platform SDK documentation for the
+“CreateWindowEx?” function (1033 indicates English language):
+
+  h2viewer /helpcol MS.PSDK.1033 /keyword K$CreateWindowEx
+
+#+begin_src emacs-lisp
+(defun show-msdn-topic ()
+  "Open a window showing the MSDN documentation for the word under the point"
+  (interactive)
+  (if (string= "w32" window-system)
+      (start-process "MSDN lookup" nil 
+		     "D:/H2Viewer132/h2viewer.exe"
+		     "/appID" "MSDN-Viewer"
+		     "/helpcol" "MS.VSCC.2003"
+;; 		     "/filtername" "Visual C++"
+		     "/Index" (current-word))))
+#+end_src
+
+* Emacs everywhere
+** xkeymacs
+
+* Misc
+** tramp
+*** Cygwin openssh http://gregorygrubbs.com/emacs/10-tips-emacs-windows/
+*** plink 
