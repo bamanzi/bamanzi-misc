@@ -1,23 +1,17 @@
-// original author myuhe
-// modified by mooz
-
 var PLUGIN_INFO =
 <KeySnailPlugin>
     <name>Tanything</name>
     <name lang="ja">Tanything</name>
     <description>Tanything</description>
     <description lang="ja">KeySnailからタブを操作</description>
-    <version>0.1.3</version>
+    <version>0.1.4</version>
     <iconURL>http://github.com/myuhe/KeySnail_Plugin/raw/master/Tanything.png</iconURL>
     <updateURL>http://github.com/myuhe/KeySnail_Plugin/raw/master/Tanything.ks.js</updateURL>
     <author mail="yuhei.maeda_at_gmail.com" homepage="http://sheephead.homelinux.org/">myuhe</author>
     <license>The MIT License</license>
     <license lang="ja">MIT ライセンス</license>
-    <minVersion>1.2.7</minVersion>
+    <minVersion>1.8.5</minVersion>
     <include>main</include>
-    <provides>
-        <ext>tanything</ext>
-    </provides>
     <detail><![CDATA[
 ==== What's this ====
 
@@ -101,7 +95,8 @@ plugins.options["tanything_opt.keymap"] = {
     "d"     : "localDomainclose",
     "c"     : "localClipUT",
     "C"     : "localClipU",
-    "e"     : "localMovetoend"
+    "e"     : "localMovetoend",
+    "p"     : "localTogglePin"
 };
 ||<
 
@@ -111,17 +106,16 @@ plugins.options["tanything_opt.keymap"] = {
 
 // ================ Key Bindings ====================== //
 
-var optionsDefaultValue = {
-    "keymap" : {}
-};
-
-function getOption(aName) {
-    var fullName = "tanything_opt." + aName;
-    if (typeof plugins.options[fullName] !== "undefined")
-        return plugins.options[fullName];
-    else
-        return aName in optionsDefaultValue ? optionsDefaultValue[aName] : undefined;
-}
+let pOptions = plugins.setupOptions("tanything_opt", {
+    keymap : {
+        preset: {}
+    },
+    pinned_tab_style : {
+        preset: "font-weight : bold;",
+        description: M({ja: "ピン留めされたタブのスタイル",
+                        en: "Style of the pinned tab"})
+    }
+}, PLUGIN_INFO);
 
 var tanything =
     (function () {
@@ -160,39 +154,63 @@ var tanything =
               }, M({ja: "タブを先頭に移動する : ", en: ""}) + "move to start", "localMovetostart,c"],
              [function (aIndex) {
                   if (aIndex >= 0) addToBookmarks(aIndex);
-              }, M({ja: "タブをブックマークに追加 : ", en: ""}) + "add selected tab to bookmarks", "localAddBokmark,c"]
+              }, M({ja: "タブをブックマークに追加 : ", en: ""}) + "add selected tab to bookmarks", "localAddBokmark,c"],
+             [function (aIndex) {
+                  if (aIndex >= 0) togglePin(aIndex);
+              }, M({ja: "タブをピン留め / ピン留めを外す : ", en: ""}) + "toggle pin", "localTogglePin,c"]
          ];
 
-         function getTabs() Array.slice(getBrowser().mTabContainer.childNodes);
+         function getTabs() Array.slice(gBrowser.mTabContainer.childNodes);
 
          function callSelector() {
-             // const defaultIcon = "chrome://keysnail/skin/icon16.png";
+             function getIconFor(tab) {
+                 return (tab.linkedBrowser.__SS_data) ?
+                     tab.linkedBrowser.__SS_data.attributes.image :
+                     util.getFaviconPath(tab.linkedBrowser.contentDocument.URL);
+             }
 
-             currentCollection = [[util.getFaviconPath(tab.linkedBrowser.contentDocument.URL /*, defaultIcon */),
-                                   tab.label,
-                                   tab.linkedBrowser.contentDocument.URL]
-                                  for each (tab in getTabs())];
+             function getInfoForTab(tab) {
+                 let browser = tab.linkedBrowser;
+                 let win     = browser.contentWindow;
+
+                 let title = tab.label;
+                 let url   = win.location.href;
+
+                 return [util.getFaviconPath(url), title, url, tab];
+             }
+
+             currentCollection = [getInfoForTab(tab) for each (tab in getTabs())];
 
              prompt.selector({
-                                 message             : "select tab: ",
-                                 initialIndex        : getBrowser().mTabContainer.selectedIndex,
-                                 flags               : [ICON | IGNORE, 0, 0],
-                                 collection          : currentCollection,
-                                 header              : ["title", "url"],
-                                 keymap              : getOption("keymap"),
-                                 actions             : tanythingAction,
-                                 supressRecoverFocus : true,
-                                 onFinish            : focusContent
-                             });
+                 message             : "select tab: ",
+                 initialIndex        : gBrowser.mTabContainer.selectedIndex,
+                 flags               : [ICON | IGNORE, 0, 0, IGNORE | HIDDEN],
+                 collection          : currentCollection,
+                 header              : ["title", "url"],
+                 keymap              : pOptions.keymap,
+                 actions             : tanythingAction,
+                 supressRecoverFocus : true,
+                 onFinish            : focusContent,
+                 stylist             : function (args, n, current) {
+                     if (current !== currentCollection)
+                         return null;
+
+                     let tab = args[3];
+                     if (tab.pinned)
+                         return pOptions.pinned_tab_style;
+                     else
+                         return null;
+                 }
+             });
          }
 
          function focusContent() {
-             getBrowser().focus();
+             gBrowser.focus();
              _content.focus();
          }
 
          function open(aIndex) {
-             getBrowser().mTabContainer.selectedIndex = aIndex;
+             gBrowser.mTabContainer.selectedIndex = aIndex;
          }
 
          function close(aIndex) {
@@ -202,7 +220,7 @@ var tanything =
                  return;
              }
 
-             getBrowser().removeTab(getTabs()[aIndex]);
+             gBrowser.removeTab(getTabs()[aIndex]);
              currentCollection.splice(aIndex, 1);
              prompt.refresh();
          }
@@ -211,7 +229,7 @@ var tanything =
              let tabs = getTabs();
 
              for (let i = 0; i < aIndex; ++i)
-                 getBrowser().removeTab(tabs[i]);
+                 gBrowser.removeTab(tabs[i]);
 
              currentCollection.splice(0, aIndex);
              prompt.refresh(0);
@@ -221,7 +239,7 @@ var tanything =
              let tabs = getTabs();
 
              for (let i = aIndex + 1; i < tabs.length; ++i)
-                 getBrowser().removeTab(tabs[i]);
+                 gBrowser.removeTab(tabs[i]);
 
              currentCollection.splice(aIndex + 1, tabs.length - (aIndex + 1));
              prompt.refresh(aIndex);
@@ -233,7 +251,7 @@ var tanything =
              for (let i = 0; i < tabs.length; ++i)
              {
                  if (i !== aIndex)
-                     getBrowser().removeTab(tabs[i]);
+                     gBrowser.removeTab(tabs[i]);
              }
 
              currentCollection = [currentCollection[aIndex]];
@@ -261,7 +279,7 @@ var tanything =
                  {
                      if (host === getHost(getURIFromTab(tabs[i])))
                      {
-                         getBrowser().removeTab(tabs[i]);
+                         gBrowser.removeTab(tabs[i]);
                          currentCollection.splice(i, 1);
                      }
                  }
@@ -289,7 +307,7 @@ var tanything =
          }
 
          function movetoend(aIndex) {
-             let browser = getBrowser();
+             let browser = gBrowser;
              let tabs    = getTabs();
 
              browser.moveTabTo(tabs[aIndex], tabs.length - 1);
@@ -302,7 +320,7 @@ var tanything =
          }
 
          function movetostart(aIndex) {
-             let browser = getBrowser();
+             let browser = gBrowser;
              let tabs    = getTabs();
 
              browser.moveTabTo(tabs[aIndex], 0);
@@ -317,8 +335,28 @@ var tanything =
          function addToBookmarks(aIndex) {
              let tab = getTabs()[aIndex];
 
-             [title, uri] = [tab.linkedBrowser.contentDocument.title, getURIFromTab(tab)];
+             let [title, uri] = [tab.linkedBrowser.contentDocument.title, getURIFromTab(tab)];
              PlacesUIUtils.showAddBookmarkUI(uri, title);
+         }
+
+         function togglePin(aIndex) {
+             if (!("pinTab" in gBrowser))
+                 return;
+
+             let tab = getTabs()[aIndex];
+
+             if (tab.pinned)
+                 gBrowser.unpinTab(tab);
+             else
+                 gBrowser.pinTab(tab);
+
+             let tabs = getTabs();
+
+             // move pinned tab
+             let newIdx = tabs.indexOf(tab);
+             currentCollection.splice(newIdx, 0, currentCollection.splice(aIndex, 1)[0]);
+
+             prompt.refresh(aIndex);
          }
 
          var self = {
@@ -330,6 +368,9 @@ var tanything =
          return self;
      })();
 
-ext.add("tanything", tanything.showAlltab,
-        M({ja: "タブを一覧表示",
-           en: "view all tabs "}));
+plugins.withProvides(function (provide) {
+    provide("tanything", tanything.showAlltab, M({
+        ja: "タブを一覧表示",
+        en: "view all tabs "
+    }));
+}, PLUGIN_INFO);
