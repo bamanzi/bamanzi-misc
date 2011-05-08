@@ -123,10 +123,7 @@ class CygAptSetup:
         self.cache = last_cache
 
         cygwin_version = os.uname()[2][:3]
-        if cygwin_version == "1.7":
-            self.setup_ini = self.config + "/setup-2.ini"
-        else:
-            self.setup_ini = self.config + "/setup.ini"
+        self.setup_ini = self.config + "/setup.ini"
         self.cygwin_version = float(cygwin_version)
         distname = "curr"
         h = open(self.cyg_apt_rc, "w")
@@ -180,7 +177,7 @@ class CygAptSetup:
     ''')        
 
 
-    def update(self, cyg_apt_rc, verify, main_mirror=None):
+    def update(self, cyg_apt_rc, verify=False, main_mirror=None):
         '''fetch current package database from mirror'''
         rc = {}
         sig_name = None
@@ -255,10 +252,8 @@ class CygAptSetup:
             if self.cygwin_p:
                 gpg_path = "gpg "
             else:
-                if self.cygwin_version < 1.7:
-                    gpg_path = "/usr/bin/gpg "
-                else:
-                    gpg_path = "/usr/local/bin/gpg "
+                gpg_path = "/usr/bin/gpg "
+
             cmd = gpg_path + "--verify --no-secmem-warning "
             cmd += self.tmpdir + "/" + sig_name + " "
             cmd += self.tmpdir + "/" + setup_ini_name
@@ -623,7 +618,7 @@ class CygApt:
                 except:
                     print lines[j]
                     raise
-                if value[0] == '"' and value.find('"', 1) == -1:
+                if key=="message" or value[0] == '"' and value.find('"', 1) == -1:
                     while 1:
                         j = j + 1
                         value += '\n' + lines[j]
@@ -1457,7 +1452,7 @@ def main():
     main_cyg_apt_rc = None
     main_scriptname = None
     home_cyg_apt_rc = None
-    main_verify = True
+    main_verify = False
     main_noupdate = False
     
     main_cygwin_p = (sys.platform == "cygwin")
