@@ -1,5 +1,23 @@
-* Emacs°ü¹ÜÀí¹¤¾ßELPA
-** ELPA¼ò½é
+* Emacs°²×°ÓëÆô¶¯
+
+** Emacs vs XEmacs
+** Windows°æ±¾µÄÑ¡Ôñ
+...
+** emacsclient
+...
+** daemon
+...
+** server-dump
+...
+
+* µÚÈı·½°ü
+** load-path
+subdir.el
+
+** autoload
+
+** Emacs°ü¹ÜÀí¹¤¾ßELPA
+*** ELPA¼ò½é
 XEmacsµÄÒ»´óÌØÉ«ÊÇÓĞ°ü¹ÜÀí£¬ËùÒÔ°üµÄ°²×°¡¢Éı¼¶±È½ÏÊ¡ĞÄ£¬µ«GNU EmacsÒ»Ö±Ã»ÓĞÕâ¸ö¶«Î÷¡£ELPA¾Í
 ÊÇ½â¾öÕâ¸öÎÊÌâ£¬ËüËÆºõÊÇXEmacs°ü¹ÜÀíÆ÷µÄ·ÂÖÆÆ·¡£ELPAÓÉ¿Í»§¶Ëpackage.el ºÍÍøÉÏµÄ°ü²Ö¿â
 (http://tromey.com/elpa/ )×é³É£¬Ä¿Ç°ÓĞ100¶à¸ö°ü¡£
@@ -9,7 +27,7 @@ XEmacsµÄÒ»´óÌØÉ«ÊÇÓĞ°ü¹ÜÀí£¬ËùÒÔ°üµÄ°²×°¡¢Éı¼¶±È½ÏÊ¡ĞÄ£¬µ«GNU EmacsÒ»Ö±Ã»ÓĞÕâ¸ö¶
 
 ËùÒÔ»¹ÊÇÓÃ¾ÉµÄ²Ö¿â£¬¶øÇÒ¿ÉÒÔÓÃÔÚemacs-22/23ÉÏ¡£
 
-** ÈçºÎÊ¹ÓÃ
+*** ÈçºÎÊ¹ÓÃ
   ¼òµ¥µØËµ£¬´Ó http://tromey.com/elpa/ ÏÂÔØpackage.el ²¢loadÖ®ºó
     M-x package-list-packages
   Ëü»áÁĞ³öÍøÉÏ²Ö¿âÓĞÄÄĞ©°ü£¬ÒÔ¼°±¾µØ°²×°ÁËÄÄĞ©°ü£¬È»ºó¾Í¿ÉÒÔÖ±½ÓÑ¡¶¨ºó°²×°£¨°²×°
@@ -20,20 +38,20 @@ XEmacsµÄÒ»´óÌØÉ«ÊÇÓĞ°ü¹ÜÀí£¬ËùÒÔ°üµÄ°²×°¡¢Éı¼¶±È½ÏÊ¡ĞÄ£¬µ«GNU EmacsÒ»Ö±Ã»ÓĞÕâ¸ö¶
 ÏêÇéÇë¿´:
 http://blog.pluskid.org/?p=206
 
-** ²»ÔÚÍøÉÏ²Ö¿âÀïÃæµÄ°ü£¬Ò²¿ÉÒÔÓÃelpaÀ´¹ÜÀí
-*** ºÃ´¦ÓĞÁ½¸ö: 
- 1. ²»ÓÃ¶à¸öelÎÄ¼ş¶ÑÔÚÒ»¸öÄ¿Â¼£¬ÒªÉ¾³ıÒª½ûÓÃÒªÉı¼¶Ìæ»»¶¼±È½ÏÈİÒ×£º 
- 2. elpa¿ÉÒÔÀûÓÃautoload×Ô¼º¸ã¶¨°ü¼ÓÔØ£¬²»ÓÃÃ¿´ÎÊÖ¹¤load-library»òÕßÎ¬»¤require£¨»¹µÃ¿¼ÂÇÔõ
- Ã´²»Ó°ÏìÆô¶¯Ê±¼ä£©
+*** ²»ÔÚÍøÉÏ²Ö¿âÀïÃæµÄ°ü£¬Ò²¿ÉÒÔÓÃelpaÀ´¹ÜÀí
+**** ºÃ´¦ÓĞÁ½¸ö: 
+  1. ²»ÓÃ¶à¸öelÎÄ¼ş¶ÑÔÚÒ»¸öÄ¿Â¼£¬ÒªÉ¾³ıÒª½ûÓÃÒªÉı¼¶Ìæ»»¶¼±È½ÏÈİÒ×£º 
+  2. elpa¿ÉÒÔÀûÓÃautoload×Ô¼º¸ã¶¨°ü¼ÓÔØ£¬²»ÓÃÃ¿´ÎÊÖ¹¤load-library»òÕßÎ¬»¤require£¨»¹µÃ¿¼ÂÇÔõ
+  Ã´²»Ó°ÏìÆô¶¯Ê±¼ä£©
 
-*** °²×°·½·¨
+**** °²×°·½·¨
    * M-x package-install-file &lt;file&gt;
    * M-x package-install-from-buffer
 
 &lt;/file&gt;
 
-*** ¶Ô°üµÄÒªÇó
-**** µ¥ÎÄ¼ş foo-pkg.el
+**** ¶Ô°üµÄÒªÇó
+***** µ¥ÎÄ¼ş foo-pkg.el
   ÒªÓĞ±ê×¼µÄHeader£¬²Î¼û[[http://www.gnu.org/software/emacs/elisp-manual/html_node/Library-Headers.html#Library-Headers][Emacs Library Header Conventions]] 
 #+BEGIN_SRC emacs-lisp
 ;;; lua-mode.el --- a major-mode for editing Lua scripts
@@ -73,15 +91,46 @@ http://blog.pluskid.org/?p=206
   + µÚÒ»ĞĞ±ØĞëÆ¥Åä"^;;; \\([^ ]*\\)\\.el --- \\(.*\\)$" 
   + ºóÃæ±ØĞëÓĞ";;;; file-name.el ends here"ÕâÑùÒ»ĞĞ (µ«¿ÉÒÔ²»ÊÇ×îºóÒ»ĞĞ¡£Çë×¢ÒâÇ°ÃæÊÇ4¸ö·ÖºÅ) 
 
-**** pkg-ver.tar 
-  + pkg-ver.tarÎÄ¼şÃûÀïÃæ±ØĞëÓĞ°æ±¾ºÅ£¬ÇÒ°æ±¾ºÅ±ØĞëÎªÊı×Ö£¬²»ÄÜ°üº¬×ÖÄ¸ + ...
+***** pkg-ver.tar 
+   + pkg-ver.tarÎÄ¼şÃûÀïÃæ±ØĞëÓĞ°æ±¾ºÅ£¬ÇÒ°æ±¾ºÅ±ØĞëÎªÊı×Ö£¬²»ÄÜ°üº¬×ÖÄ¸ + ...
 
 
-* Hyper/Super key modifiers
+** el-get
+...
 
-*** key-translation-map
- * ½«<menu>±ä³É'hyper 
+* ¼üÅÌÉè¶¨
+
+** Hyper/Super/Alt key modifiers
+*** WindowsÏÂµÄ×óÓÒwindow¼ü¡¢Menu
+
+·Ö±ğÓ³ÉäÎªsuper/hyper/alt
 #+begin_src emacs-lisp
+  (setq w32-lwindow-modifier 'super)
+  (setq w32-rwindow-modifier 'hyper)
+  (setq w32-apps-modifier 'alt)
+#+end_src
+
+
+Èç¹ûÄã²»ÆÚÍûµ¥»÷Windows¼üÊ±¾Íµ¯³ö¿ªÊ¼²Ëµ¥£¬ÏÂÃæµÄÅäÖÃ½«µ¥¶À°´×óWindow¼ü±äÎªÒ»¸öÂëÎª32µÄ°´¼ü¡£
+²»¹ı¶ÔÓÚwin+r ÕâÑùµÄÏµÍ³ÈÈ¼ü²¢Ã»ÓĞÊ²Ã´×÷ÓÃ¡£
+#+begin_src emacs-lisp
+  ;; if you don't want a single press on <lwindow> to cause the Start Menu
+  (setq w32-pass-lwindow-to-system nil)
+  (setq w32-phantom-key-code 32)
+#+end_src
+*** TODO X11
+
+FIXME: this won't work
+  (define-key key-translation-map (kbd "<super>") (kbd "<f11>"))
+
+*** Linux console
+...
+
+
+** key-translation-map
+ * »ù±¾ÓÃ·¨
+#+begin_src emacs-lisp
+(define-key key-translation-map (kbd "<lwindow>") (kbd "<f11>"))
 (define-key key-translation-map [menu] 'event-apply-hyper-modifier) 
 #+end_src
 
@@ -91,8 +140,115 @@ http://blog.pluskid.org/?p=206
 (define-key key-translation-map (kbd "C-c s") 'event-apply-super-modifier) 
 (define-key key-translation-map (kbd "C-c a") 'event-apply-alt-modifier) 
 #+end_src
+ 
+ * Èç¹ûÄã²»ÏëC-i/C-m/C-[µÈ¼ü±»Õ¼ÓÃ(·Ö±ğÓëTAB¡¢Enter¡¢ESC¹¦ÄÜÏàÍ¬)
+http://www.nujk.com/how-do-i-bind-a-command-to-c-i-without-changing-tab
+http://stackoverflow.com/questions/1792326/how-do-i-bind-a-command-to-c-i-without-changing-tab
+#+begin_src emacs-lisp
+  (setq local-function-key-map (delq '(kp-tab . [9]) local-function-key-map))
+  (global-set-key (kbd "C-i") 'forward-word)
+  
+  ;; or
+  (keyboard-translate ?\C-i ?\H-i)
+  (keyboard-translate ?\C-m ?\H-m)
+  ;; rebind then accordantly:
+  (global-set-key [?\H-m] 'delete-backward-char)
+  (global-set-key [?\H-i] 'iswitchb-buffer)
+  
+#+end_src
 
-*** s-up/down/left/right move current window up/down/left/right
+* ´ò¿ªÎÄ¼ş
+** emacsclient
+** pipe to emacsclient
+http://mark.aufflick.com/blog/2011/03/03/piping-to-an-emacs-buffer-with-emacsclient
+https://gist.github.com/857999
+
+GNU Emacs buffs will know all about emacsclient - it's a commandline program that allows
+you to open files in a new buffer in an already running emacs instance. It's very
+handy. What you may not know is you can also evaluate arbitrary Emacs lisp using
+emacsclient. Using this fact and based on an existing example from EmacsWiki I have
+written a perl script that you can pipe to, and the piped data will appear in a buffer via
+emacsclient.
+
+My ultimate aim is for a PAGER script to use instead of less in my emacs shell. While this
+isn't quite perfect for that use, it's still pretty useful.
+
+#+begin_src perl
+  #!/usr/bin/perl
+  use strict;
+  use warnings;
+  
+  use IO::Select;
+  
+  my $emacsclient = "/usr/local/bin/emacsclient";
+  
+  # This script uses emacsclient, be sure to have a running server session.
+  # A server-session can be started by "M-x server-start".
+  
+  exit 1
+      if 0 != system("$emacsclient -n --eval '(progn (pop-to-buffer (get-buffer-create \"*piped*\")))'");
+  
+  my $s = IO::Select->new;
+  $s->add(\*STDIN);
+  
+  while (1)
+  {
+      # block until data available
+      my $data = <STDIN>;
+  
+      # exit if STDIN closed
+      exit(0)
+          if ! $data;
+  
+      # keep reading while data is available, or we have a bunch of lines
+      my $lines = 0;
+      $data .= <STDIN>
+          while $lines++ < 100 && $s->can_read(.5);
+  
+      # need to escape backslashes first, otherwise we end up escaping the backslashes
+      # we're using to escape the quotes...
+      $data =~ s/\\/\\\\/g;
+      $data =~ s/"/\\"/g;
+      $data =~ s/'/'\\''/g;
+      system(qq{$emacsclient -n --eval '(with-current-buffer "*piped*" (goto-char (point-max)) (insert "} . $data . qq{"))'});
+  }
+  
+#+end_src
+
+** hex-find-file
+** tramp
+[[http://blog.donews.com/pluskid/archive/2006/05/06/858306.aspx][Emacs Tramp Ïê½â - pluskid]]
+inline methods: rsh, ssh, telnet, su, sudo, sshx, krlogin, plink
+external methods: rcp, scp, sftp, rsync, psftp, fcp, ftp, smb
+*** ssh
+WindowsÉÏÓĞÁ½ÖÖ·½·¨:
+ * plink from putty
+ * ssh from Cygwin's openssh
+*** sudo
+...   
+
+*** smb
+
+* ±à¼­
+** zap-up-to-char
+
+http://www.emacswiki.org/emacs/ZapUpToChar
+
+#+begin_src emacs-lisp
+(defadvice zap-to-char (after my-zap-to-char-advice (arg char) activate)
+    "Kill up to the ARG'th occurence of CHAR, and leave CHAR.
+  The CHAR is replaced and the point is put before CHAR."
+    (insert char)
+    (forward-char -1))
+#+end_src
+
+** Ìæ»»
+ * °´Ä³¸ö±êµãÎª·Ö¸ô·û·Ö²ğÎª¶àĞĞ: M-% Ê±ÔÚÄ¿±ê×Ö·û´®ÖĞÈçºÎ±íÊ¾»»ĞĞ£ºC-q C-j
+** ¶à¸öÎÄ¼şµÄ²éÕÒºÍÌæ»»
+
+
+* ´°¿Ú²Ù×÷
+** s-up/down/left/right move current window up/down/left/right
 (built in)
 
 #+begin_src emacs-lisp
@@ -100,6 +256,18 @@ http://blog.pluskid.org/?p=206
 #+end_src
 
 
+* ±à³ÌÏà¹Ø
+** Python
+[[http://in.pycon.org/2011/talks/7-emacs-as-a-python-ide][Emacs as a Python IDE - PyCon India 2011]]
+[[http://pedrokroger.net/2010/07/configuring-emacs-as-a-python-ide-2/][Configuring Emacs as a Python IDE | Pedro Kroger]]
+[[http://coder.cl/2010/09/emacs-as-python-ide/][emacs as python ide ¡ª coder . cl]]
+
+** ²¹È«
+ 
+** shell ff
+
+** ipython
+ 
 * Keyword Help
 
 ** WinHelp (.hlp)
@@ -244,18 +412,6 @@ If a region is active (a phrase), lookup that phrase."
 
 
 * Misc
-
-** zap-up-to-char
-
-http://www.emacswiki.org/emacs/ZapUpToChar
-
-#+begin_src emacs-lisp
-(defadvice zap-to-char (after my-zap-to-char-advice (arg char) activate)
-    "Kill up to the ARG'th occurence of CHAR, and leave CHAR.
-  The CHAR is replaced and the point is put before CHAR."
-    (insert char)
-    (forward-char -1))
-#+end_src
 
 ** anything-font-families
 
