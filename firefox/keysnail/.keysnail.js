@@ -68,7 +68,8 @@ ext.add("split-window-vertically" , function() {
 ext.add("split-window-horizontally", function() {
     SplitBrowser.addSubBrowser(window.content.location.href, SplitBrowser.activeSubBrowser, SplitBrowser.POSITION_RIGHT);
 }, 'split-window-horizontally (Fox Splitter addon)');
-
+    
+    
 
 
 //Yet Another Twitter Client KeySnail 
@@ -104,7 +105,7 @@ ext.add("previous-page", function () {
     var document = window._content.document;
     var links = document.links;
     for(i = 0; i < links.length; i++) {
-        if (   (links[i].text == '��һҳ')   || (links[i].text == '<��һҳ') 
+        if (   (links[i].text == '��һҳ')   || (links[i].text == '<��һҳ') 
             || (links[i].text == 'Previous') || (links[i].text == 'Prev') 
             || (links[i].text == '<')        || (links[i].text == '<<')) 
         document.location = links[i].href;
@@ -115,7 +116,7 @@ ext.add("next-page", function () {
     var document = window._content.document;
     var links = document.links;
     for(i = 0; i < links.length; i++) {
-    if (   (links[i].text == '��һҳ')  || (links[i].text == '��һҳ>') 
+    if (   (links[i].text == '��һҳ')  || (links[i].text == '��һҳ>') 
         || (links[i].text == 'Next')    || (links[i].text == 'next') 
         || (links[i].text == '>')       || (links[i].text == '>>')) 
         document.location = links[i].href;
@@ -170,6 +171,16 @@ key.suspendKey           = "<f2>";
 
 // ================================= Hooks ================================= //
 
+hook.setHook('KeySnailInitialized', function () {
+    hook.removeHook("KeySnailInitialized", arguments.callee);
+    var displayHelpKey = [];
+    for (let[k, act] in Iterator(actionKeys.selector)) {
+        if (act === "prompt-display-keymap-help") {
+            displayHelpKey.push(k);
+        }
+    }
+    $("keysnail-prompt-selector-help-title").setAttribute("value", util.getLocaleString("promptSelectorKeymapHelpTitle", [displayHelpKey.join(", ")]));
+});
 
 hook.setHook('KeyBoardQuit', function (aEvent) {
     if (key.currentKeySequence.length) {
@@ -239,6 +250,7 @@ hook.addToHook('Unload', function () {
         return true;
     });
 });
+
 
 // ============================= Key bindings ============================== //
 
@@ -362,6 +374,61 @@ key.setGlobalKey([['C-c', 'e'], ['C-c', 'C-i']], function (ev, arg) {
     ext.exec("edit_text", arg, ev);
 }, 'edit by external editor', true);
 
+key.setGlobalKey(['C-c', 'f'], function (ev, arg) {
+    ext.exec("hok-start-foreground-mode", arg, ev);
+}, 'Start Hit a Hint foreground mode', true);
+
+key.setGlobalKey(['C-c', 'F'], function (ev, arg) {
+    ext.exec("hok-start-background-mode", arg, ev);
+}, 'Start Hit a Hint background mode', true);
+
+key.setGlobalKey(['C-c', ';'], function (ev, arg) {
+    ext.exec("hok-start-extended-mode", arg, ev);
+}, 'Start Hit a Hint extended mode', true);
+
+key.setGlobalKey(['C-c', 'C-e'], function (ev, arg) {
+    ext.exec("hok-start-continuous-mode", arg, ev);
+}, 'Start Hit a Hint continuous mode', true);
+
+key.setGlobalKey(['C-c', 'g', 'u'], function (ev) {
+    var uri = getBrowser().currentURI;
+    if (uri.path == "/") {
+        return;
+    }
+    var pathList = uri.path.split("/");
+    if (!pathList.pop()) {
+        pathList.pop();
+    }
+    loadURI(uri.prePath + pathList.join("/") + "/");
+}, 'Go upper directory');
+
+key.setGlobalKey(['C-c', 'g', 'U'], function (ev) {
+    var uri = window._content.location.href;
+    if (uri == null) {
+        return;
+    }
+    var root = uri.match(/^[a-z]+:\/\/[^/]+\//);
+    if (root) {
+        loadURI(root, null, null);
+    }
+}, 'Go to the root directory', true);
+
+key.setGlobalKey(['C-c', 't', 't'], function (ev, arg) {
+    ext.exec("twitter-client-tweet", arg);
+}, 'Tweet', true);
+
+key.setGlobalKey(['C-c', 't', 'T'], function (ev, arg) {
+    ext.exec("twitter-client-tweet-this-page", arg);
+}, 'Tweet with the title and URL of this page', true);
+
+key.setGlobalKey(['C-c', 't', 'r'], function (ev, arg) {
+    ext.exec("twitter-client-display-timeline", arg);
+}, 'Display your timeline', true);
+
+key.setGlobalKey(['C-c', 'p'], function (ev, arg) {
+    ext.exec("paste-to-tab-and-go", arg, ev);
+}, 'Paste to new tab and Go');
+
 key.setGlobalKey('C-M-l', function (ev) {
     getBrowser().mTabContainer.advanceSelectedTab(1, true);
 }, 'Select next tab');
@@ -369,6 +436,26 @@ key.setGlobalKey('C-M-l', function (ev) {
 key.setGlobalKey('C-M-h', function (ev) {
     getBrowser().mTabContainer.advanceSelectedTab(-1, true);
 }, 'Select previous tab');
+
+key.setGlobalKey(['C-o', 'o'], function (ev, arg) {
+    shell.input("Open ", arg);
+}, 'Open an URL', true);
+
+key.setGlobalKey(['C-o', 't'], function (ev, arg) {
+    shell.input("tabopen ", arg);
+}, 'Open an URL in new tab', true);
+
+key.setGlobalKey(['C-o', 'f'], function (ev, arg) {
+    BrowserOpenFileWindow();
+}, 'Open an existing file', true);
+
+key.setGlobalKey(['C-o', 'b'], function (ev, arg) {
+    ext.exec("bmany-list-all-bookmarks", arg, ev);
+}, 'bmany - List all bookmarks', true);
+
+key.setGlobalKey(['C-o', 'k'], function (ev, arg) {
+    ext.exec("bmany-list-all-bookmarks-with-keyword", arg, ev);
+}, 'bmany - List bookmarks with keyword', true);
 
 key.setViewKey([['C-n'], ['C-c', 'j']], function (ev) {
     key.generateKey(ev.originalTarget, KeyEvent.DOM_VK_DOWN, true);
@@ -410,22 +497,6 @@ key.setViewKey(['C-c', 'l'], function (ev) {
     BrowserForward();
 }, 'Forward');
 
-key.setGlobalKey(['C-c', 'f'], function (ev, arg) {
-    ext.exec("hok-start-foreground-mode", arg, ev);
-}, 'Start Hit a Hint foreground mode', true);
-
-key.setGlobalKey(['C-c', 'F'], function (ev, arg) {
-    ext.exec("hok-start-background-mode", arg, ev);
-}, 'Start Hit a Hint background mode', true);
-
-key.setGlobalKey(['C-c', ';'], function (ev, arg) {
-    ext.exec("hok-start-extended-mode", arg, ev);
-}, 'Start Hit a Hint extended mode', true);
-
-key.setGlobalKey(['C-c', 'C-e'], function (ev, arg) {
-    ext.exec("hok-start-continuous-mode", arg, ev);
-}, 'Start Hit a Hint continuous mode', true);
-
 key.setViewKey(['C-c', 'i'], function (ev, arg) {
     children = document.getElementById("nav-bar").children;
     for (i = 0; i < children.length; i++) {
@@ -437,43 +508,22 @@ key.setViewKey(['C-c', 'i'], function (ev, arg) {
 key.setViewKey(['C-c', ':'], function (ev, arg) {
     shell.input(null, arg);
 }, 'List and execute commands', true);
-    
-key.setGlobalKey(['C-o', 'o'], function (ev, arg) {
-    shell.input("Open ", arg);
-}, 'Open an URL', true);
-    
-key.setGlobalKey(['C-o', 't'], function (ev, arg) {
-    shell.input("tabopen ", arg);
-}, 'Open an URL in new tab', true);
-    
-key.setGlobalKey(['C-o', 'f'], function (ev, arg) {
-		     BrowserOpenFileWindow();
-}, 'Open an existing file', true);
-    
-key.setGlobalKey(['C-o', 'b'], function (ev, arg) {
-		 ext.exec("bmany-list-all-bookmarks", arg, ev);
-}, 'bmany - List all bookmarks', true);
-    
-    key.setViewKey(['C-o', 'B'], function (ev, arg) {
-    ext.exec("bmany-list-bookmarklets", arg, ev);
-}, "bmany - List all bookmarklets");
-	
-    key.setGlobalKey(['C-o', 'k'], function (ev, arg) {
-		 ext.exec("bmany-list-all-bookmarks-with-keyword", arg, ev);
-}, 'bmany - List bookmarks with keyword', true);
 
-    
 key.setViewKey(['C-c', 'd'], function (ev) {
     BrowserCloseTabOrWindow();
 }, 'Close tab / window');
 
+key.setViewKey(['C-c', 'q'], function (ev, arg) {
+    ext.exec("search-selection", arg, ev);
+}, 'Search the selection with current default engine');
+
+key.setViewKey(['C-o', 'B'], function (ev, arg) {
+    ext.exec("bmany-list-bookmarklets", arg, ev);
+}, 'bmany - List all bookmarklets');
+
 key.setViewKey('C-f', function (ev) {
     key.generateKey(ev.originalTarget, KeyEvent.DOM_VK_RIGHT, true);
 }, 'Scroll right');
-
-key.setViewKey('C-b', function (ev) {
-    key.generateKey(ev.originalTarget, KeyEvent.DOM_VK_LEFT, true);
-}, 'Scroll left');
 
 key.setViewKey('M-v', function (ev) {
     goDoCommand("cmd_scrollPageUp");
@@ -494,6 +544,19 @@ key.setViewKey('M-p', function (ev) {
 key.setViewKey('M-n', function (ev) {
     command.walkInputElement(command.elementsRetrieverButton, false, true);
 }, 'Focus to the previous button');
+
+key.setViewKey(['[', '['], function (ev, arg) {
+    ext.exec("previous-page", arg, ev);
+}, 'Previous page');
+
+key.setViewKey([']', ']'], function (ev, arg) {
+    ext.exec("next-page", arg, ev);
+}, 'Next page');
+
+key.setViewKey('M-<down>', function (ev, arg) {
+    var backForwardMenu = document.getElementById("backForwardMenu");
+    backForwardMenu.openPopupAtScreen(document.width / 2, document.height / 2, true);
+}, 'Show page history menu');
 
 key.setEditKey(['C-x', 'h'], function (ev) {
     command.selectAll(ev);
@@ -761,73 +824,27 @@ key.setCaretKey('M-p', function (ev) {
 key.setCaretKey('M-n', function (ev) {
     command.walkInputElement(command.elementsRetrieverButton, false, true);
 }, 'Focus to the previous button');
-
-key.setGlobalKey(['C-c', 'g', 'u'], function (ev) {
-    var uri = getBrowser().currentURI;
-    if (uri.path == "/") {
-        return;
-    }
-    var pathList = uri.path.split("/");
-    if (!pathList.pop()) {
-        pathList.pop();
-    }
-    loadURI(uri.prePath + pathList.join("/") + ("/"));
-}, 'Go upper directory');
-
-key.setGlobalKey(['C-c', 'g', 'U'], function (ev) {
-    var uri = window._content.location.href;
-    if (uri == null) {
-        return;
-    }
-    var root = uri.match(/^[a-z]+:\/\/[^/]+\//);
-    if (root) {
-        loadURI(root, null, null);
-    }
-}, 'Go to the root directory', true);
     
     
-key.setGlobalKey(["C-c", "t", "t"],
-    function (ev, arg) {
-        ext.exec("twitter-client-tweet", arg);
-    }, "Tweet", true);
+key.setViewKey(['C-c', '*'], function (ev, arg) {
+    var word = getBrowserSelection();
+    if (word) {
+        gFindBar._findField.value = word;
+        gFindBar._highlightDoc(true, word);
+    }
+    gFindBar.onFindAgainCommand(false);
+}, 'highlight next occurence of current selected word');
 
-key.setGlobalKey(["C-c", "t", "T"],
-    function (ev, arg) {
-        ext.exec("twitter-client-tweet-this-page", arg);
-    }, "Tweet with the title and URL of this page", true);
-
-key.setGlobalKey(["C-c", "t", "r"],
-    function (ev, arg) {
-        ext.exec("twitter-client-display-timeline", arg);
-    }, "Display your timeline", true);
-
-
-key.setViewKey(['[', '['], function(ev, arg) {
-    ext.exec("previous-page", arg, ev);
-}, "Previous page");
-
-key.setViewKey([']', ']'], function(ev, arg) {
-    ext.exec("next-page", arg, ev);
-}, "Next page");
-
-key.setViewKey('M-<down>', function(ev, arg) {
-    var backForwardMenu = document.getElementById("backForwardMenu");
-    backForwardMenu.openPopupAtScreen(document.width / 2, document.height / 2, true);
-}, 'Show page history menu');
-
-//paste and go
-key.setGlobalKey(["C-c", "p"], function(ev, arg) {
-    ext.exec("paste-and-go", arg, ev);
-}, "Paste and Go");
-
-//paste to tab and go
-key.setGlobalKey(["C-c", "p"], function(ev, arg) {
-    ext.exec("paste-to-tab-and-go", arg, ev);
-}, "Paste to new tab and Go");
-
-key.setViewKey(['C-c', 'q'], function(ev, arg) {
-    ext.exec("search-selection", arg, ev);
-}, "Search the selection with current default engine");
-
-
-
+key.setViewKey(['C-c', '#'], function (ev, arg) {
+    var word = getBrowserSelection();
+    if (word) {
+        gFindBar._findField.value = word;
+        gFindBar._highlightDoc(true, word);
+    }
+    gFindBar.onFindAgainCommand(true);
+}, 'highlight previous occurence of current selected word');
+    
+    
+key.setViewKey(["C-x", 'b'], function (ev, arg) {
+                   ext.exec("tanything", arg);
+               }, "view all tabs", true);
