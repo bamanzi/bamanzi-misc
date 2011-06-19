@@ -68,8 +68,33 @@ ext.add("split-window-vertically" , function() {
 ext.add("split-window-horizontally", function() {
     SplitBrowser.addSubBrowser(window.content.location.href, SplitBrowser.activeSubBrowser, SplitBrowser.POSITION_RIGHT);
 }, 'split-window-horizontally (Fox Splitter addon)');
-    
-    
+
+//make some ScrapBook (Plus)'s command could be manipulated with keyboard     
+ext.add("scrapbook-highlight", function(ev, arg) {
+    //if ARG given, switch to correspding highligher and use it
+    sbPageEditor.highlight(arg);
+}, "Highlight selection with scrapbook's highlighter");
+
+ext.add("scrapbook-undo", function() {
+    sbPageEditor.undo();
+}, "Scrapbook Editor's undo.");
+
+ext.add("scrapbook-save", function() {
+    sbPageEditor.saveOrCapture();
+}, "Capture current page to Scrapbook, or save modification.");
+
+
+//is.gd service
+ext.add("is.gd", function () {
+    let endpoint = "http://is.gd/api.php?longurl=" + encodeURIComponent(window._content.document.location);
+    let result = util.httpGet(endpoint, true);
+    if (result.responseText) {
+        command.setClipboardText(result.responseText);
+        display.echoStatusBar("Short URL copied into clipboard: " + result.responseText, 3000);
+    }
+    else
+        display.echoStatusBar("is.gd service failed: " + result.statusText, 3000);
+}, "Shorten current page's URL with http://is.gd service");
 
 
 //Yet Another Twitter Client KeySnail 
@@ -100,15 +125,16 @@ plugins.options["twitter_client.keymap"] = {
 plugins.options["twitter_client.update_interval"] = 10000;
 
 
-//misc stuff
+//jump to previous page or next page
 ext.add("previous-page", function () {
     var document = window._content.document;
     var links = document.links;
     for(i = 0; i < links.length; i++) {
-        if (   (links[i].text == '锟斤拷一页')   || (links[i].text == '<锟斤拷一页') 
-            || (links[i].text == 'Previous') || (links[i].text == 'Prev') 
-            || (links[i].text == '<')        || (links[i].text == '<<')) 
-        document.location = links[i].href;
+        if (   (links[i].text == '上一页')   || (links[i].text == '<上一页')
+               || (links[i].text = '< 前一页')
+               || (links[i].text == 'Previous') || (links[i].text == 'Prev') 
+               || (links[i].text == '<')        || (links[i].text == '<<')) 
+            document.location = links[i].href;
     }
 }, "Previous page");
 
@@ -116,42 +142,63 @@ ext.add("next-page", function () {
     var document = window._content.document;
     var links = document.links;
     for(i = 0; i < links.length; i++) {
-    if (   (links[i].text == '锟斤拷一页')  || (links[i].text == '锟斤拷一页>') 
-        || (links[i].text == 'Next')    || (links[i].text == 'next') 
-        || (links[i].text == '>')       || (links[i].text == '>>')) 
-        document.location = links[i].href;
+        if (   (links[i].text == '下一页')  || (links[i].text == '下一页>')
+               || (links[i].text == '后一页 >')
+               || (links[i].text == 'Next')    || (links[i].text == 'next') 
+               || (links[i].text == '>')       || (links[i].text == '>>')) 
+            document.location = links[i].href;
     }
 }, "Next page");
 
 
-ext.add("search-selection", function() {
-    if(!getBrowserSelection()) return;
-    BrowserSearch.loadSearch(getBrowserSelection(), true);
-}, "Use the default search engine to search the phrase currently selected");
-
+// paste and go
 ext.add("paste-and-go", function() {
     var url = command.getClipboardText();
     if (url.indexOf("://") != -1)
     {
-	window._content.location = url;
+	    window._content.location = url;
     }
     else
     {
-	//url = util.format("http://www.google.com/search?q=%s&ie=utf-8&oe=utf-8", encodeURIComponent(url));
-	BrowserSearch.loadSearch(url, false);
+	    //url = util.format("http://www.google.com/search?q=%s&ie=utf-8&oe=utf-8", encodeURIComponent(url));
+	    BrowserSearch.loadSearch(url, false);
     }
 }, "Paste the URL or keyword from clipboard and Go");
 
 ext.add("paste-to-tab-and-go", function() {
     var url = command.getClipboardText();
     if (url.indexOf("://") != -1)
-	gBrowser.loadOneTab(url, null, null, null, false);
+	    gBrowser.loadOneTab(url, null, null, null, false);
     else
     {
-	//url = util.format("http://www.google.com/search?q=%s&ie=utf-8&oe=utf-8", encodeURIComponent(url));
-	BrowserSearch.loadSearch(url, true);
+	    //url = util.format("http://www.google.com/search?q=%s&ie=utf-8&oe=utf-8", encodeURIComponent(url));
+	    BrowserSearch.loadSearch(url, true);
     }
 }, "Paste the URL or keyword from clipboard to a new tab and Go");
+
+// selection
+ext.add("search-selection", function() {
+    if(!getBrowserSelection()) return;
+    BrowserSearch.loadSearch(getBrowserSelection(), true);
+}, "Use the default search engine to search the phrase currently selected");
+
+ext.add("next-occur", function() {
+    var word = getBrowserSelection();
+    if (word) {
+        gFindBar._findField.value = word;
+        gFindBar._highlightDoc(true, word);
+    }
+    gFindBar.onFindAgainCommand(false);
+}, 'highlight next occurence of current selected word');
+
+ext.add("previous-occur", function() {
+    var word = getBrowserSelection();
+    if (word) {
+        gFindBar._findField.value = word;
+        gFindBar._highlightDoc(true, word);
+    }
+    gFindBar.onFindAgainCommand(true);
+}, 'highlight previous occurence of current selected word');
 
 //}}%PRESERVE%
 // ========================================================================= //
@@ -498,6 +545,7 @@ key.setViewKey(['C-c', 'l'], function (ev) {
 }, 'Forward');
 
 key.setViewKey(['C-c', 'i'], function (ev, arg) {
+    //stolen from keysnail's vi-style configuration
     children = document.getElementById("nav-bar").children;
     for (i = 0; i < children.length; i++) {
         children[i].style.backgroundColor = "pink";
@@ -824,27 +872,28 @@ key.setCaretKey('M-p', function (ev) {
 key.setCaretKey('M-n', function (ev) {
     command.walkInputElement(command.elementsRetrieverButton, false, true);
 }, 'Focus to the previous button');
-    
-    
+
+
 key.setViewKey(['C-c', '*'], function (ev, arg) {
-    var word = getBrowserSelection();
-    if (word) {
-        gFindBar._findField.value = word;
-        gFindBar._highlightDoc(true, word);
-    }
-    gFindBar.onFindAgainCommand(false);
+    ext.exec("next-occur", ev);
 }, 'highlight next occurence of current selected word');
 
 key.setViewKey(['C-c', '#'], function (ev, arg) {
-    var word = getBrowserSelection();
-    if (word) {
-        gFindBar._findField.value = word;
-        gFindBar._highlightDoc(true, word);
-    }
-    gFindBar.onFindAgainCommand(true);
+    ext.exec("previous-page", ev);
 }, 'highlight previous occurence of current selected word');
-    
-    
+
 key.setViewKey(["C-x", 'b'], function (ev, arg) {
-                   ext.exec("tanything", arg);
-               }, "view all tabs", true);
+    ext.exec("tanything", arg);
+}, "view all tabs", true);
+
+key.setGlobalKey(['C-x', 'p'], function (ev, arg) {
+    splitpannel.toggle(window._content.document.location, true, 'right');
+}, 'Open Split Panel and load current URL in it .');
+
+key.setGlobalKey(['C-x', 'i'], function (ev, arg) {
+    splitpannel.toggle('http://space.cnblogs.com/mi/', true, 'right');
+}, 'Open Split Panel and load http://space.cnblogs.com/mi/ in it .');
+
+key.setGlobalKey(['C-x', 't'], function (ev, arg) {
+    splitpannel.toggle("http://translate.google.com/", true, 'right');
+}, 'Open Split Panel and load http://translate.google.com/ in it .');
