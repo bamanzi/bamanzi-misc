@@ -130,8 +130,8 @@ ext.add("previous-page", function () {
     var document = window._content.document;
     var links = document.links;
     for(i = 0; i < links.length; i++) {
-        if (   (links[i].text == '��һҳ')   || (links[i].text == '<��һҳ')
-               || (links[i].text = '< ǰһҳ')
+        if (   (links[i].text == '上一页')   || (links[i].text == '<上一页')
+               || (links[i].text == '上一篇') || (links[i].text == '< 前一页')
                || (links[i].text == 'Previous') || (links[i].text == 'Prev') 
                || (links[i].text == '<')        || (links[i].text == '<<')) 
             document.location = links[i].href;
@@ -142,8 +142,8 @@ ext.add("next-page", function () {
     var document = window._content.document;
     var links = document.links;
     for(i = 0; i < links.length; i++) {
-        if (   (links[i].text == '��һҳ')  || (links[i].text == '��һҳ>')
-               || (links[i].text == '��һҳ >')
+        if (   (links[i].text == '下一页')  || (links[i].text == '下一页>')
+               || (links[i].text == '下一篇') || (links[i].text == '后一页 >')
                || (links[i].text == 'Next')    || (links[i].text == 'next') 
                || (links[i].text == '>')       || (links[i].text == '>>')) 
             document.location = links[i].href;
@@ -176,6 +176,17 @@ ext.add("paste-to-tab-and-go", function() {
     }
 }, "Paste the URL or keyword from clipboard to a new tab and Go");
 
+ext.add("is.gd", function () {
+    let endpoint = "http://is.gd/api.php?longurl=" + encodeURIComponent(window._content.document.location);
+    let result = util.httpGet(endpoint, true);
+    if (result.responseText) {
+        command.setClipboardText(result.responseText);
+        display.echoStatusBar("Short URL copied into clipboard: " + result.responseText, 3000);
+    }
+    else
+        display.echoStatusBar("is.gd service failed: " + result.statusText, 3000);
+}, "Shorten current page's URL with http://is.gd service");
+
 // selection
 ext.add("search-selection", function() {
     if(!getBrowserSelection()) return;
@@ -189,7 +200,7 @@ ext.add("next-occur", function() {
         gFindBar._highlightDoc(true, word);
     }
     gFindBar.onFindAgainCommand(false);
-}, 'highlight next occurence of current selected word');
+}, "highlight next occurrence of current selected word");
 
 ext.add("previous-occur", function() {
     var word = getBrowserSelection();
@@ -198,7 +209,18 @@ ext.add("previous-occur", function() {
         gFindBar._highlightDoc(true, word);
     }
     gFindBar.onFindAgainCommand(true);
-}, 'highlight previous occurence of current selected word');
+}, "highlight previouse occurence of current selected word");
+
+function inputChars(ev, chars) {
+    var aInput = ev.originalTarget;
+    var value = aInput.value;
+    var originalSelStart = aInput.selectionStart;
+    
+    aInput.value = value.slice(0, aInput.selectionStart) + chars + value.slice(aInput.selectionEnd, value.length)
+    
+    aInput.selectionStart = originalSelStart + 1;
+    aInput.selectionEnd = aInput.selectionStart;
+}
 
 //}}%PRESERVE%
 // ========================================================================= //
@@ -471,8 +493,13 @@ key.setGlobalKey(['C-c', 't', 'T'], function (ev, arg) {
 key.setGlobalKey(['C-c', 't', 'r'], function (ev, arg) {
     ext.exec("twitter-client-display-timeline", arg);
 }, 'Display your timeline', true);
-
+    
 key.setGlobalKey(['C-c', 'p'], function (ev, arg) {
+    ext.exec("paste--and-go", arg, ev);
+}, 'Paste an URL or a search term and Go');
+    
+    
+key.setGlobalKey(['C-c', 'P'], function (ev, arg) {
     ext.exec("paste-to-tab-and-go", arg, ev);
 }, 'Paste to new tab and Go');
 
@@ -572,6 +599,14 @@ key.setViewKey(['C-o', 'B'], function (ev, arg) {
 key.setViewKey('C-f', function (ev) {
     key.generateKey(ev.originalTarget, KeyEvent.DOM_VK_RIGHT, true);
 }, 'Scroll right');
+
+key.setViewKey(['C-c', 'z', 'i'], function (ev) {
+    FullZoom.enlarge();
+}, 'Enlarge text size');
+
+key.setViewKey(['C-c', 'z', 'o'], function (ev) {
+    FullZoom.reduce();
+}, 'Reduce text size');
 
 key.setViewKey('M-v', function (ev) {
     goDoCommand("cmd_scrollPageUp");
@@ -875,11 +910,11 @@ key.setCaretKey('M-n', function (ev) {
 
 
 key.setViewKey(['C-c', '*'], function (ev, arg) {
-    ext.exec("next-occur", ev);
+    ext.exec("next-occur", arg, ev);
 }, 'highlight next occurence of current selected word');
 
 key.setViewKey(['C-c', '#'], function (ev, arg) {
-    ext.exec("previous-page", ev);
+    ext.exec("previous-occur", arg, ev);
 }, 'highlight previous occurence of current selected word');
 
 key.setViewKey(["C-x", 'b'], function (ev, arg) {
@@ -897,3 +932,50 @@ key.setGlobalKey(['C-x', 'i'], function (ev, arg) {
 key.setGlobalKey(['C-x', 't'], function (ev, arg) {
     splitpannel.toggle("http://translate.google.com/", true, 'right');
 }, 'Open Split Panel and load http://translate.google.com/ in it .');
+
+key.setViewKey(['C-c', 'C-a'], function (ev, arg) {
+    var pattern = /(.*?)([0]*)([0-9]+)([^0-9]*)$/;
+    var url = content.location.href;
+    var digit = url.match(pattern);
+    if (digit[1] && digit[3]) {
+        let len = digit[3].length;
+        let next = +digit[3] + (arg ? arg : 1);
+        content.location.href = digit[1] + (digit[2] || "").slice(next.toString().length - len) + next + (digit[4] || "");
+    }
+}, 'Increment last digit in the URL');
+key.setViewKey(['C-c', 'C-d'], function (ev, arg) {
+    var pattern = /(.*?)([0]*)([0-9]+)([^0-9]*)$/;
+    var url = content.location.href;
+    var digit = url.match(pattern);
+    if (digit[1] && digit[3]) {
+        let len = digit[3].length;
+        let next = +digit[3] - (arg ? arg : 1);
+        content.location.href = digit[1] + (digit[2] || "").slice(next.toString().length - len) + next + (digit[4] || "");
+    }
+}, 'Decrement last digit in the URL');
+
+key.setEditKey(["C-x", '8', "'"], function(ev, arg) {
+    inputChars(ev, "「");
+}, "Input 「");
+
+key.setEditKey(["C-x", '9', "'"], function(ev, arg) {
+    inputChars(ev, "」");
+}, "Input  」 ");
+
+key.setEditKey(["C-x", '8', '"'], function(ev, arg) {
+    inputChars(ev, "『");
+}, "Input 『");
+
+key.setEditKey(["C-x", '9', '"'], function(ev, arg) {
+    inputChars(ev, "』");
+}, "Input 』");
+
+key.setEditKey(["C-x", '8', '.'], function(ev, arg) {
+    inputChars(ev, "·");
+}, "Input ·");
+
+key.setEditKey(["C-x", '8', '-'], function(ev, arg) {
+    inputChars(ev, "…");
+}, "Input …");
+
+
