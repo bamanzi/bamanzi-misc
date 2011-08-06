@@ -30,7 +30,6 @@
 
 
 
-(load "~/.emacs.d/conf/my-init.el")
 
 
 ;;{{{ generate autoload and load them
@@ -51,25 +50,35 @@
   ;; fail-safe for `idle-quire'
   (defun idle-require (feature &optional file noerror)
     (require feature)))
-
 ;; (setq idle-require-symbols '(cedet nxml-mode)) ;; <- Specify packages here.
 ;;(idle-require 'foobar)
 
-(
+(mapc  '(lambda (file)
+	  (ignore-errors
+	    (load file)))
+       (directory-files "~/.emacs.d/load.d/" t "\.el$"))
 
-;; other configurations
+;; (load "~/.emacs.d/load.d/10-init.el")
 
-(load "~/.emacs.d/conf/my-word-ops" t)
-(load "~/.emacs.d/conf/my-cua-keys" t)
-(load "~/.emacs.d/conf/my-vi-keys" t)
-(load "~/.emacs.d/conf/my-win-fns" t)
-;;(load "my-options-cmds" t) ;;TODO
-(load "~/.emacs.d/conf/my-misc" t)
-(load "~/.emacs.d/conf/my-one-key" t)
+;; (load "~/.emacs.d/load.d/20-symbol-fns" t)
+;; (load "~/.emacs.d/load.d/20-win-fns" t)
 
-(load "~/.emacs.d/conf/my-mouse" t)
+;; (load "~/.emacs.d/load.d/50-misc" t)
+
+;; (load "~/.emacs.d/load.d/60-cua-keys" t)
+;; (load "~/.emacs.d/load.d/60-vi-keys" t)
+
+
+;; (load "~/.emacs.d/load.d/80-mouse" t)
+
+;; (load "~/.emacs.d/load.d/95-one-key" t)
+
 
 
 (if (fboundp 'idle-require-mode)
   (idle-require-mode t))
+
+;;restore stub
+(defun idle-require (feature)
+  (require feature nil t))
 
