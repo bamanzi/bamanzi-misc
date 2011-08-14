@@ -1,0 +1,14 @@
+<SearchPlugin xmlns="http://www.mozilla.org/2006/browser/search/" xmlns:os="http://a9.com/-/spec/opensearch/1.1/">
+<os:ShortName>Debian -- 软件包(stable, by file)</os:ShortName>
+<os:Description>Debian -- 软件包(stable, by file)</os:Description>
+<os:InputEncoding>UTF-8</os:InputEncoding>
+<os:Image width="16" height="16">data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAArUlEQVQ4jcWTwRHFIAhELcVSKMVSthRLoZTthBzE/41i4i3O5CLwgHWT0nRY1QiYipgm/0SMgLGqzflLseahSGAUh/n9FjIWE1iSWLXBdhAKTPNDh94ktcniQLkHWNoK433YiGijzcXhFAjWYGnUW5JMQNel566AFAP6s44rrBpEKwiW19AssdA/EYcA4R7If0NRHszUnReJdu7CjYmOT6jwN5ADW79D/Od6E/ACv9IJS+7RT+YAAAAASUVORK5CYII=</os:Image>
+<SearchForm>http://www.debian.org/distrib/packages</SearchForm>
+<os:Url type="text/html" method="GET" template="http://packages.debian.org/search">
+  <os:Param name="searchon" value="contents"/>
+  <os:Param name="keywords" value="{searchTerms}"/>
+  <os:Param name="mode" value="path"/>
+  <os:Param name="suite" value="stable"/>
+  <os:Param name="arch" value="any"/>
+</os:Url>
+</SearchPlugin>

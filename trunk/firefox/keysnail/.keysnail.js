@@ -930,8 +930,12 @@ key.setGlobalKey(['C-x', 'i'], function (ev, arg) {
 }, 'Open Split Panel and load http://space.cnblogs.com/mi/ in it .');
 
 key.setGlobalKey(['C-x', 't'], function (ev, arg) {
-    splitpannel.toggle("http://translate.google.com/", true, 'right');
-}, 'Open Split Panel and load http://translate.google.com/ in it .');
+    splitpannel.toggle("http://translate.google.com/m?hl=zh-CN&sl=auto&tl=en&ie=UTF-8", true, 'right');
+}, 'Open Split Panel and load Google Translate (any->en) in it .');
+
+key.setGlobalKey(['C-x', 'T'], function (ev, arg) {
+    splitpannel.toggle("http://translate.google.com/m?hl=zh-CN&sl=auto&tl=zh-CN&ie=UTF-8", true, 'right');
+}, 'Open Split Panel and load Google Translate (any->zh-CN) in it .');
 
 key.setViewKey(['C-c', 'C-a'], function (ev, arg) {
     var pattern = /(.*?)([0]*)([0-9]+)([^0-9]*)$/;
@@ -977,5 +981,6 @@ key.setEditKey(["C-x", '8', '.'], function(ev, arg) {
 key.setEditKey(["C-x", '8', '-'], function(ev, arg) {
     inputChars(ev, "…");
 }, "Input …");
+
 
 
