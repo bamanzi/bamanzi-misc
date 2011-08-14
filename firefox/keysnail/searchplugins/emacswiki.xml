@@ -1,0 +1,13 @@
+<SearchPlugin xmlns="http://www.mozilla.org/2006/browser/search/" xmlns:os="http://a9.com/-/spec/opensearch/1.1/">
+<os:ShortName>EmacsWiki: 網站地圖</os:ShortName>
+<os:Description>EmacsWiki: 網站地圖</os:Description>
+<os:InputEncoding>UTF-8</os:InputEncoding>
+<os:Image width="16" height="16">data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABi0lEQVQ4jaWSPUsjURSG/Q1hJQvbqfgPtliwWQRL+222185iNrMWKxYWQgLabbWFxQY8mcQiiWnGJQmYkQQR0whJ/EJYm92BYRImZm4eizEjQUlEXzhwudz7nJdz3gneqInBIZ/P0+12XwdQSiEimKaJUopyuYyI0Gg0Xgao1WqICACGYSAiYRWLxfEAESGXy4VOqtUqtm1jmiYiglJqPMC2bVzXDZ0MVCqVxjvIZDKgv0cll+gkPoMepS8rsDbN3f8b0KN4x3uw8xX0KKrXDd7EPwUAL/0dChugRWB9lsPSAU4hAVqESqWCSi5DRqP/czFoe3kEv77ge+7DGrUInfManetT0CJY+7u0Tg7h2zv4MQV9BRcW3tZCaN3/e0YvPhcAro9yEJtEbc+DHuXqz29834fNjwFg9QM4t6i1GYhNhuU5/x6H2G63Q3oqlQonb1nWy9aYTqfDy8EmWq0WIoLneaMBzWYTEaFerw9lQUQwDGO8g0HX52pUiIYAMBzjbDaL4zgjPz8BvEb3tAycFliD5ccAAAAASUVORK5CYII=</os:Image>
+<SearchForm>http://www.emacswiki.org/</SearchForm>
+<os:Url type="text/html" method="GET" template="http://www.google.com/cse">
+  <os:Param name="cx" value="004774160799092323420%3A6-ff2s0o6yi"/>
+  <os:Param name="q" value="{searchTerms}"/>
+  <os:Param name="sa" value="Search"/>
+  <os:Param name="siteurl" value="www.emacswiki.org%2F"/>
+</os:Url>
+</SearchPlugin>
