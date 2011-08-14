@@ -13,11 +13,11 @@
 ;;; packages in your .emacs.
 (when
     (load
-     (expand-file-name "~/.emacs.d/elpa/package.el"))
+     (expand-file-name "~/.emacs.d/elpa/package.el") t)
   (package-initialize))
 
 (when (file-exists-p "~/.emacs.d/site-lisp/site-start.el")
-  (load "~/.demacs.d/site-lisp/site-start.el"))
+  (load "~/.emacs.d/site-lisp/site-start.el"))
 
 
 ;; leave customization & os/distro/installation-specific settings to another file
@@ -56,22 +56,22 @@
 (mapc  '(lambda (file)
 	  (ignore-errors
 	    (load file)))
-       (directory-files "~/.emacs.d/load.d/" t "\.el$"))
+       (directory-files "~/.emacs.d/init.d/" t "\.el$"))
 
-;; (load "~/.emacs.d/load.d/10-init.el")
+;; (load "~/.emacs.d/init.d/10-init.el")
 
-;; (load "~/.emacs.d/load.d/20-symbol-fns" t)
-;; (load "~/.emacs.d/load.d/20-win-fns" t)
+;; (load "~/.emacs.d/init.d/20-symbol-fns" t)
+;; (load "~/.emacs.d/init.d/20-win-fns" t)
 
-;; (load "~/.emacs.d/load.d/50-misc" t)
+;; (load "~/.emacs.d/init.d/50-misc" t)
 
-;; (load "~/.emacs.d/load.d/60-cua-keys" t)
-;; (load "~/.emacs.d/load.d/60-vi-keys" t)
+;; (load "~/.emacs.d/init.d/60-cua-keys" t)
+;; (load "~/.emacs.d/init.d/60-vi-keys" t)
 
 
-;; (load "~/.emacs.d/load.d/80-mouse" t)
+;; (load "~/.emacs.d/init.d/80-mouse" t)
 
-;; (load "~/.emacs.d/load.d/95-one-key" t)
+;; (load "~/.emacs.d/init.d/95-one-key" t)
 
 
 
@@ -79,6 +79,6 @@
   (idle-require-mode t))
 
 ;;restore stub
-(defun idle-require (feature)
-  (require feature nil t))
+;(defun idle-require (feature)
+;  (require feature nil t))
 
