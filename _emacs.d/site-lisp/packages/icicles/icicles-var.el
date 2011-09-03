@@ -7,9 +7,9 @@
 ;; Copyright (C) 1996-2011, Drew Adams, all rights reserved.
 ;; Created: Mon Feb 27 09:23:26 2006
 ;; Version: 22.0
-;; Last-Updated: Sat Apr  2 17:11:36 2011 (-0700)
+;; Last-Updated: Wed Jul  6 14:41:56 2011 (-0700)
 ;;           By: dradams
-;;     Update #: 1458
+;;     Update #: 1505
 ;; URL: http://www.emacswiki.org/cgi-bin/wiki/icicles-var.el
 ;; Keywords: internal, extensions, help, abbrev, local, minibuffer,
 ;;           keys, apropos, completion, matching, regexp, command
@@ -38,7 +38,8 @@
 ;;    `icicle-all-candidates-list-alt-action-fn',
 ;;    `icicle-apply-nomsg', `icicle-apropos-complete-match-fn',
 ;;    `icicle-bookmark-history', `icicle-bookmark-types',
-;;    `icicle-buffer-config-history', `icicle-bufflist',
+;;    `icicle-buffer-config-history',
+;;    `icicle-buffer-sort-first-time-p', `icicle-bufflist',
 ;;    `icicle-candidate-action-fn', `icicle-candidate-alt-action-fn',
 ;;    `icicle-candidate-entry-fn', `icicle-candidate-help-fn',
 ;;    `icicle-candidate-nb', `icicle-candidate-properties-alist',
@@ -70,6 +71,7 @@
 ;;    `icicle-extra-candidates-dir-insert-p',
 ;;    `icicle-face-name-history', `icicle-fancy-candidates-p',
 ;;    `icicle-fancy-cands-internal-p',
+;;    `icicle-file-sort-first-time-p',
 ;;    `icicle-filtered-default-value', `icicle-font-name-history',
 ;;    `icicle-frame-alist', `icicle-frame-name-history',
 ;;    `icicle-function-name-history',
@@ -99,10 +101,11 @@
 ;;    `icicle-must-pass-after-match-predicate',
 ;;    `icicle-must-pass-predicate',
 ;;    `icicle-nb-candidates-before-truncation',
-;;    `icicle-nb-of-other-cycle-candidates',
+;;    `icicle-nb-of-other-cycle-candidates', `icicle-new-last-cmd',
 ;;    `icicle-next-apropos-complete-cycles-p',
 ;;    `icicle-next-prefix-complete-cycles-p',
 ;;    `icicle-old-read-file-name-fn', `icicle-orig-buff',
+;;    `icicle-orig-must-pass-after-match-pred',
 ;;    `icicle-orig-pt-explore', `icicle-orig-window',
 ;;    `icicle-orig-win-explore', `icicle-other-window',
 ;;    `icicle-plist-last-initial-cand-set',
@@ -250,6 +253,9 @@ are equivalent and stand for the set of all bookmarks (of any type).")
 
 (defvar icicle-buffer-config-history nil "History for buffer configuration names.")
 
+(defvar icicle-buffer-sort-first-time-p t
+  "Non-nil means buffer-name completion has not yet been used.")
+
 (defvar icicle-bufflist nil
   "List of buffers defined by macro `icicle-buffer-bindings'.")
 
@@ -278,8 +284,9 @@ Numbering starts at zero.")
 
 (defvar icicle-candidate-properties-alist nil
   "Alist of multi-completion indexes and associated text properties.
-The text properties apply to candidates in *Completions*.  Each alist
-entry has the form (NTH PROPERTIES) or (NTH PROPERTIES JOIN-TOO).
+The text properties apply to candidates in `*Completions*'.
+Each alist entry has the form (NTH PROPERTIES) or (NTH PROPERTIES
+JOIN-TOO).
 
 NTH is a whole-number index identifying the multi-completion part.
 
@@ -477,6 +484,9 @@ can be costly.")
   "Same as `icicle-fancy-candidates-p', but for internal use only.
 Do not set or bind this.  This is bound only by `completing-read'.")
 
+(defvar icicle-file-sort-first-time-p t
+  "Non-nil means file-name completion has not yet been used.")
+
 (defvar icicle-filtered-default-value nil
   "Minibuffer default value, after filtering with `icicle-filter-wo-input'.")
 
@@ -526,12 +536,12 @@ noted in parentheses.
 * `icicle-complete-keys-self-insert-flag'- `S-TAB' for self-insert?
 * `icicle-completing-read+insert-keys'   - Keys for complete-on-demand
 * `icicle-completion-history-max-length' - Completion history length
-* `icicle-Completions-display-min-input-chars' - Remove *Completions*
+* `icicle-Completions-display-min-input-chars'- Remove `*Completions*'
                                            if fewer chars input
-* `icicle-completions-format'            - *Completions* layout format
-* `icicle-Completions-frame-at-right-flag'- *Completions* at right?
-* `icicle-Completions-text-scale-decrease'- *Completions* text shrink
-* `icicle-Completions-window-max-height' - Max lines in *Completions*
+* `icicle-completions-format'            - `*Completions*' layout
+* `icicle-move-Completions-frame'        - `*Completions*' at edge?
+* `icicle-Completions-text-scale-decrease'- `*Completions*' shrink
+* `icicle-Completions-window-max-height' - Max lines, `*Completions*'
 * `icicle-customize-save-flag'           - Save some options on quit?
 * `icicle-cycle-into-subdirs-flag'       - Explore subdirectories?
 * `icicle-default-cycling-mode'          - Default completion mode for
@@ -547,7 +557,7 @@ noted in parentheses.
 * `icicle-file-*'                        - `icicle-file' options
 * `icicle-filesets-as-saved-completion-sets-flag'- Use filesets?
 * `icicle-guess-commands-in-path'        - Shell commands to complete
-* `icicle-help-in-mode-line-flag'        - Candidate mode-line help?
+* `icicle-help-in-mode-line-delay'       - Secs to show candidate help
 * `icicle-hide-common-match-in-Completions-flag'- Show common match?
 * `icicle-highlight-historical-candidates-flag'
                                          - Highlight past input?
@@ -556,7 +566,7 @@ noted in parentheses.
                                          - Highlight input whitespace?
 * `icicle-highlight-lighter-flag'        - Highlight mode-line `Icy'
 * `icicle-ignore-space-prefix-flag'      - See initial space? (`M-_')
-* `icicle-incremental-completion-delay'  - Before update *Completions*
+* `icicle-incremental-completion-delay'  - Delay before update cands
 * `icicle-incremental-completion-flag'   - Icompletion? (`C-#')
 * `icicle-incremental-completion-threshold'- # of candidates for delay
 * `icicle-inhibit-advice-functions'      - Advice-inhibited functions
@@ -582,7 +592,7 @@ noted in parentheses.
 * `icicle-pp-eval-expression-print-*'    - Print control for `pp-*'
 * `icicle-prefix-complete-keys*'         - Keys to prefix-complete
 * `icicle-prefix-cycle-*-keys'           - Keys to prefix-cycle
-* `icicle-previous-candidate-keys'       - Back keys for *Completions*
+* `icicle-previous-candidate-keys'       - Back keys, `*Completions*'
 * `icicle-quote-shell-file-name-flag'    - Quote file name in shell?
 * `icicle-read+insert-file-name-keys'    - Keys for on-demand file
 * `icicle-regexp-quote-flag'             - Escape chars? (`C-`')
@@ -605,8 +615,8 @@ noted in parentheses.
                                            or whole search hit?(`M-_')
 * `icicle-search-ring-max'               - Icicles `search-ring-max'
 * `icicle-search-whole-word-flag'        - Find whole words? (`M-q')
-* `icicle-show-Completions-help-flag'    - Show *Completions* help?
-* `icicle-show-Completions-initially-flag'- Show *Completions* first?
+* `icicle-show-Completions-help-flag'    - Show `*Completions*' help?
+* `icicle-show-Completions-initially-flag'- Show `*Completions*' 1st?
 * `icicle-show-multi-completion-flag'    - Show extra candidate info?
 * `icicle-sort-comparer'                 - Sort candidates (`C-,')
 * `icicle-sort-orders-alist'             - Predicates for sorting
@@ -628,7 +638,7 @@ noted in parentheses.
 * `icicle-use-C-for-actions-flag'        - `C-' for actions? (`M-g')
 * `icicle-use-candidates-only-once-flag' - Remove used candidate?
 * `icicle-word-completion-keys'          - Keys for word completion
-* `icicle-WYSIWYG-Completions-flag'      - WYSIWYG for *Completions*?
+* `icicle-WYSIWYG-Completions-flag'      - WYSIWYG `*Completions*'?
 * `icicle-yank-function'                 - Yank function to use
 
 Faces that highlight input in minibuffer.
@@ -641,7 +651,7 @@ Faces that highlight input in minibuffer.
 * `icicle-mustmatch-completion'         - Strict completion?
 * `icicle-whitespace-highlight'         - Initial whitespace in input
 
-Faces that highlight candidates in buffer *Completions*.
+Faces that highlight candidates in buffer `*Completions*'.
 
 * `icicle-candidate-part'               - Part of candidate
 * `icicle-common-match-highlight-Completions' - Max common substring
@@ -733,7 +743,7 @@ input prompt is prefixed by `+'.
   `icicle-doremi-increment-swank-timeout+' - +/- swank match timeout
   `icicle-doremi-increment-variable+'  - Increment var using Do Re Mi
   `icicle-doremi-inter-candidates-min-spaces+' - +/- candidate spacing
-  `icicle-doremi-zoom-Completions+'    - +/- *Completions* text size
+  `icicle-doremi-zoom-Completions+'    - +/- `*Completions*' text size
 + `icicle-execute-extended-command'    - Multi-command `M-x'
 + `icicle-execute-named-keyboard-macro' - Execute named keyboard macro
   `icicle-face-list'                   - Choose a list of face names
@@ -813,10 +823,12 @@ input prompt is prefixed by `+'.
   `icicle-toggle-case-sensitivity'     - Toggle case sensitivity
   `icicle-toggle-dot'                  - Toggle `.' matching newlines
   `icicle-toggle-expand-to-common-match' - Toggle input ECM expansion
-  `icicle-toggle-hiding-common-match'  - Toggle match in *Completions*
+  `icicle-toggle-hiding-common-match'  - Toggle match, `*Completions*'
   `icicle-toggle-highlight-all-current' - Toggle max search highlight
   `icicle-toggle-highlight-historical-candidates'
                                        - Toggle past-input highlight
+  `icicle-toggle-highlight-saved-candidates'
+                                       - Toggle highlighting saved
   `icicle-toggle-ignored-extensions'   - Toggle ignored files
   `icicle-toggle-ignored-space-prefix' - Toggle ignoring space prefix
   `icicle-toggle-incremental-completion' - Toggle apropos icompletion
@@ -829,7 +841,7 @@ input prompt is prefixed by `+'.
   `icicle-toggle-show-multi-completion' - Toggle multi-completions
   `icicle-toggle-sorting'              - Toggle sorting of completions
   `icicle-toggle-transforming'         - Toggle duplicate removal
-  `icicle-toggle-WYSIWYG-Completions'  - Toggle WYSIWYG *Completions*
+  `icicle-toggle-WYSIWYG-Completions' - Toggle WYSIWYG `*Completions*'
 + `icicle-vardoc'                      - Show variable description
 + `icicle-where-is'                    - `where-is' multi-command
   `icicle-yank-maybe-completing'       - `yank' + completion (`C-y')
@@ -865,7 +877,7 @@ The ignored file extensions come from `completion-ignored-extensions'.")
 
 (defvar icicle-incremental-completion-p nil
   "Takes the place of `icicle-incremental-completion-flag' during input.
-The program updates this to `always' from `t' after *Completions* has
+The program updates this to `always' from `t' after `*Completions*' has
 been displayed.")
 
 (defvar icicle-Info-only-rest-of-book-p nil
@@ -1026,6 +1038,10 @@ See also `icicle-must-pass-after-match-predicate'.")
   "Number of other candidates available for cycling.
 This is for use by other libraries, in particular, `icomplete+.el'.")
 
+(defvar icicle-new-last-cmd nil
+  "Copy of current command being executed.
+Used by, e.g., `icicle-execute-extended-command'.")
+
 (defvar icicle-next-apropos-complete-cycles-p nil
   "Whether the next apropos-completion command should cycle.")
 
@@ -1035,10 +1051,13 @@ This is for use by other libraries, in particular, `icomplete+.el'.")
 (defvar icicle-old-read-file-name-fn (and (not (boundp 'read-file-name-function)) ; Em 22+
                                           'orig-read-file-name) ; Emacs 20, 21
   "Value of `read-file-name-function' outside of Icicle mode.
-For versions of Emacs before 22, this is `read-file-name'.")
+For versions of Emacs < 22, this is the original `read-file-name'.")
 
 (defvar icicle-orig-buff nil
   "Current buffer when you invoked an Icicles multi-command.")
+
+(defvar icicle-orig-must-pass-after-match-pred nil
+  "Saved value of `icicle-must-pass-after-match-predicate'.")
 
 (defvar icicle-orig-pt-explore nil
   "Point when you invoked `icicle-explore'.")
@@ -1115,7 +1134,7 @@ These are inputs typed but not necessarily entered with `RET'.")
 
 (defvar icicle-proxy-candidate-regexp nil
   "Regexp to match proxy candidates, or nil to do nothing.
-The candidates are highlighted in buffer *Completions* using face
+The candidates are highlighted in buffer `*Completions*' using face
 `icicle-proxy-candidate'.")
 
 (defvar icicle-proxy-candidates nil "List of proxy completion candidates (strings).")
