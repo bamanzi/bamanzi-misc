@@ -7,9 +7,9 @@
 ;; Copyright (C) 1996-2011, Drew Adams, all rights reserved.
 ;; Created: Tue Feb 13 16:47:45 1996
 ;; Version: 21.0
-;; Last-Updated: Thu Feb 24 16:01:47 2011 (-0800)
+;; Last-Updated: Tue May 24 14:56:38 2011 (-0700)
 ;;           By: dradams
-;;     Update #: 1013
+;;     Update #: 1252
 ;; URL: http://www.emacswiki.org/cgi-bin/wiki/thingatpt+.el
 ;; Keywords: extensions, matching, mouse
 ;; Compatibility: GNU Emacs: 20.x, 21.x, 22.x, 23.x
@@ -24,6 +24,7 @@
 ;;
 ;;    Extensions to `thingatpt.el'.
 ;;
+;;
 ;;  Commands defined here:
 ;;
 ;;    `find-fn-or-var-nearest-point', `forward-char-same-line'.
@@ -35,16 +36,19 @@
 ;;  Non-interactive functions defined here:
 ;;
 ;;    `bounds-of-form-at-point', `bounds-of-form-nearest-point',
-;;    `bounds-of-symbol-at-point', `bounds-of-symbol-nearest-point',
+;;    `bounds-of-string-at-point', `bounds-of-symbol-at-point',
+;;    `bounds-of-symbol-nearest-point',
 ;;    `bounds-of-thing-nearest-point', `form-at-point-with-bounds',
 ;;    `form-nearest-point', `form-nearest-point-with-bounds',
-;;    `forward-char-same-line', `list-at/nearest-point',
-;;    `list-nearest-point', `list-nearest-point-as-string',
-;;    `non-nil-symbol-name-at-point',
+;;    `forward-char-same-line', `forward-whitespace-&-newlines',
+;;    `list-at/nearest-point', `list-nearest-point',
+;;    `list-nearest-point-as-string', `non-nil-symbol-name-at-point',
 ;;    `non-nil-symbol-name-nearest-point',
-;;    `non-nil-symbol-nearest-point', `number-nearest-point',
+;;    `non-nil-symbol-nearest-point', `number-at-point-decimal',
+;;    `number-at-point-hex', `number-nearest-point',
 ;;    `region-or-word-at-point', `region-or-word-nearest-point',
 ;;    `sentence-nearest-point', `sexp-nearest-point',
+;;    `string-at-point', `string-nearest-point',
 ;;    `symbol-at-point-with-bounds', `symbol-name-nearest-point',
 ;;    `symbol-nearest-point', `symbol-nearest-point-with-bounds',
 ;;    `thing-at-point-with-bounds',
@@ -52,6 +56,7 @@
 ;;    `thing-nearest-point-with-bounds', `unquoted-list-at-point',
 ;;    `unquoted-list-nearest-point',
 ;;    `unquoted-list-nearest-point-as-string', `word-nearest-point'.
+;;
 ;;
 ;;
 ;;  ***** NOTE: The following functions defined in `thingatpt.el'
@@ -69,7 +74,7 @@
 ;;
 ;;    These functions, defined in `thingatpt.el', all move point:
 ;;      `beginning-of-thing', `end-of-sexp', `end-of-thing',
-;;      `forward-symbol', `forward-thing', `forward-whitespace'
+;;      `forward-symbol', `forward-thing'.
 ;;
 ;;
 ;;  This file should be loaded after loading the standard GNU file
@@ -81,6 +86,23 @@
 ;;
 ;;; Change Log:
 ;;
+;; 2011/05/24 dadams
+;;     Added: (bounds-of-)string-at-point, string-nearest-point.
+;; 2011/05/21 dadams
+;;     bounds-of-thing-at-point-1: Synchronized with vanilla Emacs fix for bug #8667.
+;; 2011/05/13 dadams
+;;     Added redefinition of bounds-of-thing-at-point - fixed bug #8667.
+;;       Removed old-bounds-of-thing-at-point.  Added: bounds-of-thing-at-point-1.
+;;     Added: forward-whitespace-&-newlines.
+;;     Added (put 'thing-at-point *) for unquoted-list, non-nil-symbol-name.
+;;     Removed old eval-when-compile for Emacs before Emacs 20.
+;; 2011/05/07 dadams
+;;     Added: number-at-point-(decimal|hex) and aliases.
+;;     Put (bounds-of-)thing-at-point properties: (hex-|decimal-)number-at-point.
+;; 2011/05/05 dadams
+;;     (put 'list 'bounds-of-thing-at-point nil)  See Emacs bug #8628.
+;;     (put 'list 'thing-at-point 'list-at-point) - not really needed, though.
+;;     bounds-of-thing-at-point: Mention in doc string that pre-Emacs 23 is buggy.
 ;; 2011/01/20 dadams
 ;;     *list-*-point: Improved doc strings.
 ;; 2011/01/04 dadams
@@ -176,7 +198,6 @@
 ;;; Code:
 
 (require 'thingatpt) ;; bounds-of-thing-at-point, form-at-point
-(when (< emacs-major-version 20) (eval-when-compile (require 'cl))) ;; when, unless
 
 ;;;;;;;;;;;;;;;;;;;;;;
 
@@ -197,33 +218,77 @@ Some functions might ignore or override this setting temporarily."
  
 ;;; THINGS -----------------------------------------------------------
 
-(or (fboundp 'old-bounds-of-thing-at-point)
-(fset 'old-bounds-of-thing-at-point (symbol-function
-                                     'bounds-of-thing-at-point)))
 
-;; REPLACES ORIGINAL in `thingatpt.el'.
-;; Added optional argument SYNTAX-TABLE.
+;; REPLACE ORIGINAL in `thingatpt.el'.
 ;;
-;; Note: in Emacs releases prior to Emacs 23 this can give incorrect results.
+;; 1. Fix Emacs bug #8667 (do not return an empty thing).
+;; 2. Add optional argument SYNTAX-TABLE.
 ;;
 ;; NOTE: All of the other functions here are based on this function.
 ;;
 (defun bounds-of-thing-at-point (thing &optional syntax-table)
   "Determine the start and end buffer locations for the THING at point.
-Return a consp `(START . END)' giving the START and END positions.
-Return nil if no such THING is found.
+Return a consp `(START . END)' giving the START and END positions,
+where START /= END.  Return nil if no such THING is found.
 THING is an entity for which there is a either a corresponding
 `forward-'THING operation, or corresponding `beginning-of-'THING and
-`end-of-'THING operations, eg. `word', `sentence', `defun'.
-SYNTAX-TABLE is a syntax table to use."
+`end-of-'THING operations.  THING examples include `word', `sentence',
+`defun'.
+SYNTAX-TABLE is a syntax table to use.
+See the commentary of library `thingatpt.el' for how to define a
+symbol as a valid THING."
   (if syntax-table
-      (let ((buffer-syntax (syntax-table)))
+      (let ((buffer-syntax  (syntax-table)))
         (unwind-protect
-            (progn
-              (set-syntax-table syntax-table)
-              (old-bounds-of-thing-at-point thing))
+             (progn (set-syntax-table syntax-table)
+                    (bounds-of-thing-at-point-1 thing))
           (set-syntax-table buffer-syntax)))
-    (old-bounds-of-thing-at-point thing)))
+    (bounds-of-thing-at-point-1 thing)))
+
+
+;; This is the original `bounds-of-thing-at-point', but with bug # #8667 fixed.
+(defun bounds-of-thing-at-point-1 (thing)
+  "Helper for `bounds-of-thing-at-point'.
+Do all except handle the optional SYNTAX-TABLE arg."
+  (if (get thing 'bounds-of-thing-at-point)
+      (funcall (get thing 'bounds-of-thing-at-point))
+    (let ((orig  (point)))
+      (condition-case nil
+          (save-excursion
+            ;; Try moving forward, then back.
+            (funcall (or (get thing 'end-op) ; Move to end.
+                         (lambda () (forward-thing thing 1))))
+            (funcall (or (get thing 'beginning-op) ; Move to beg.
+                         (lambda () (forward-thing thing -1))))
+            (let ((beg  (point)))
+              (if (<= beg orig)
+                  ;; If that brings us all the way back to ORIG,
+                  ;; it worked.  But END may not be the real end.
+                  ;; So find the real end that corresponds to BEG.
+                  ;; FIXME: in which cases can `real-end' differ from `end'?
+                  (let ((real-end  (progn
+                                     (funcall
+                                      (or (get thing 'end-op)
+                                          (lambda () (forward-thing thing 1))))
+                                     (point))))
+                    (and (<= orig real-end) (< beg real-end)
+                         (cons beg real-end)))
+                (goto-char orig)
+                ;; Try a second time, moving first backward and then forward,
+                ;; so that we can find a thing that ends at ORIG.
+                (funcall (or (get thing 'beginning-op) ; Move to beg.
+                             (lambda () (forward-thing thing -1))))
+                (funcall (or (get thing 'end-op) ; Move to end.
+                             (lambda () (forward-thing thing 1))))
+                (let ((end       (point))
+                      (real-beg  (progn
+                                   (funcall
+                                    (or (get thing 'beginning-op)
+                                        (lambda () (forward-thing thing -1))))
+                                   (point))))
+                  (and (<= real-beg orig) (<= orig end) (< real-beg end)
+                       (cons real-beg end))))))
+        (error nil)))))
 
 (defun thing-at-point-with-bounds (thing &optional syntax-table)
   "Return (THING START . END) with START and END of THING.
@@ -231,19 +296,21 @@ Return nil if no such THING is found.
 THING is the `thing-at-point' (which see).
 START and END are the car and cdr of the `bounds-of-thing-at-point'.
 SYNTAX-TABLE is a syntax table to use."
-  (let ((bounds (bounds-of-thing-at-point thing syntax-table)))
+  (let ((bounds  (bounds-of-thing-at-point thing syntax-table)))
     (and bounds (cons (buffer-substring (car bounds) (cdr bounds)) bounds))))
 
 
-
-;; REPLACES ORIGINAL in `thingatpt.el': Added optional argument SYNTAX-TABLE.
+;; REPLACE ORIGINAL in `thingatpt.el'.
+;;
+;; Add optional argument SYNTAX-TABLE.
+;;
 (defun thing-at-point (thing &optional syntax-table)
   "Return the THING at point (a string)--see `bounds-of-thing-at-point'.
 Return nil if no such THING is found.
 SYNTAX-TABLE is a syntax table to use."
   (if (get thing 'thing-at-point)
       (funcall (get thing 'thing-at-point))
-    (let ((bounds (bounds-of-thing-at-point thing syntax-table)))
+    (let ((bounds  (bounds-of-thing-at-point thing syntax-table)))
       (and bounds (buffer-substring (car bounds) (cdr bounds))))))
 
 (defun thing-nearest-point-with-bounds (thing &optional syntax-table)
@@ -258,28 +325,35 @@ SYNTAX-TABLE is a syntax table to use."
   "Thing or form nearest point, with bounds.
 FN is a function returning a thing or form at point, with bounds.
 Other arguments are as for `thing-nearest-point-with-bounds'."
-  (let ((f-or-t+bds (if pred
-                        (funcall fn thing pred syntax-table)
-                      (funcall fn thing syntax-table)))
-        (ind1 0) (ind2 0) (bobp (bobp)) (updown 1)
-        (eobp (eobp)) (bolp (bolp)) (eolp (eolp))
-        (max-x (abs near-point-x-distance))
-        (max-y (abs near-point-y-distance)))
+  (let ((f-or-t+bds  (if pred
+                         (funcall fn thing pred syntax-table)
+                       (funcall fn thing syntax-table)))
+        (ind1        0)
+        (ind2        0)
+        (bobp        (bobp))
+        (updown      1)
+        (eobp        (eobp))
+        (bolp        (bolp))
+        (eolp        (eolp))
+        (max-x       (abs near-point-x-distance))
+        (max-y       (abs near-point-y-distance)))
     ;; IND2: Loop over lines (alternately up and down).
-    (while (and (<= ind2 max-y) (not f-or-t+bds) (not (and bobp eobp)))
-      (setq updown (- updown))          ; Switch directions up/down (1/-1).
+    (while (and (<= ind2 max-y)  (not f-or-t+bds)  (not (and bobp eobp)))
+      (setq updown  (- updown))         ; Switch directions up/down (1/-1).
       (save-excursion
         (condition-case ()
             (previous-line (* updown ind2)) ; 0, 1, -1, 2, -2, ...
-          (beginning-of-buffer (setq bobp t))
-          (end-of-buffer (setq eobp t))
+          (beginning-of-buffer (setq bobp  t))
+          (end-of-buffer (setq eobp  t))
           (error nil))
         ;; Don't try to go beyond buffer limit.
         (unless (or (and bobp (natnump updown)) (and eobp (< updown 0)))
-          (setq f-or-t+bds (if pred
-                               (funcall fn thing pred syntax-table)
-                             (funcall fn thing syntax-table))
-                bolp (bolp)    eolp (eolp)    ind1 0)
+          (setq f-or-t+bds  (if pred
+                                (funcall fn thing pred syntax-table)
+                              (funcall fn thing syntax-table))
+                bolp        (bolp)
+                eolp        (eolp)
+                ind1        0)
           (save-excursion
             ;; IND1: Loop over chars in same line (alternately left and right),
             ;; until either found thing/form or both line limits reached.
@@ -287,28 +361,28 @@ Other arguments are as for `thing-nearest-point-with-bounds'."
                         (<= ind1 max-x)
                         (not f-or-t+bds))
               (unless bolp (save-excursion ; Left.
-                             (setq bolp  (forward-char-same-line (- ind1))
-                                   f-or-t+bds
-                                   (if pred
-                                       (funcall fn thing pred syntax-table)
-                                     (funcall fn thing syntax-table)))))
+                             (setq bolp        (forward-char-same-line (- ind1))
+                                   f-or-t+bds  (if pred
+                                                   (funcall fn thing pred syntax-table)
+                                                 (funcall fn thing syntax-table)))))
               (unless (or f-or-t+bds eolp) ; Right.
                 (save-excursion
-                  (setq eolp (forward-char-same-line ind1)
-                        f-or-t+bds (if pred
-                                       (funcall fn thing pred syntax-table)
-                                     (funcall fn thing syntax-table)))))
-              (setq ind1 (1+ ind1)))
-            (setq bobp (bobp)     eobp (eobp)))))
+                  (setq eolp        (forward-char-same-line ind1)
+                        f-or-t+bds  (if pred
+                                        (funcall fn thing pred syntax-table)
+                                      (funcall fn thing syntax-table)))))
+              (setq ind1  (1+ ind1)))
+            (setq bobp  (bobp)
+                  eobp  (eobp)))))
       ;; Increase search line distance every second time (once up, once down).
-      (when (or (< updown 0) (zerop ind2)) (setq ind2 (1+ ind2)))) ; 0,1,1,2,2...
+      (when (or (< updown 0) (zerop ind2)) (setq ind2  (1+ ind2)))) ; 0,1,1,2,2...
     f-or-t+bds))
 
 (defun bounds-of-thing-nearest-point (thing &optional syntax-table)
   "Return (START . END) with START and END of  type THING.
 Return nil if no such THING is found.  See `thing-nearest-point'.
 SYNTAX-TABLE is a syntax table to use."
-  (let ((thing+bds (thing-nearest-point-with-bounds thing syntax-table)))
+  (let ((thing+bds  (thing-nearest-point-with-bounds thing syntax-table)))
     (and thing+bds (cdr thing+bds))))
 
 (defun thing-nearest-point (thing &optional syntax-table)
@@ -327,7 +401,7 @@ A related function:
   `thing-at-point' returns the THING under the cursor, or nil if none.
 
 SYNTAX-TABLE is a syntax table to use."
-  (let ((thing+bds (thing-nearest-point-with-bounds thing syntax-table)))
+  (let ((thing+bds  (thing-nearest-point-with-bounds thing syntax-table)))
     (and thing+bds (car thing+bds))))
  
 ;;; FORMS ------------------------------------------------------------
@@ -355,13 +429,14 @@ Optional arguments:
   THING is the kind of form desired (default: `sexp').
   PRED is a predicate that THING must satisfy to qualify.
   SYNTAX-TABLE is a syntax table to use."
-  (let ((form+bds (form-at-point-with-bounds thing pred syntax-table)))
+  (let ((form+bds  (form-at-point-with-bounds thing pred syntax-table)))
     (and form+bds (cdr form+bds))))
 
 
-
-;; REPLACES ORIGINAL in `thingatpt.el':
-;; Added optional argument SYNTAX-TABLE.
+;; REPLACE ORIGINAL in `thingatpt.el'.
+;;
+;; Add optional argument SYNTAX-TABLE.
+;;
 (defun form-at-point (&optional thing pred syntax-table)
   "Return the form nearest to the cursor, if any, else return nil.
 The form is a Lisp entity, not necessarily a string.
@@ -370,11 +445,12 @@ Optional arguments:
   THING is the kind of form desired (default: `sexp').
   PRED is a predicate that THING must satisfy to qualify.
   SYNTAX-TABLE is a syntax table to use."
-  (let ((sexp (condition-case nil
-                  (read-from-whole-string (thing-at-point (or thing 'sexp)
-                                                          syntax-table))
-                (error nil))))
-    (if (or (not pred) (funcall pred sexp)) sexp)))
+  (let ((sexp  (condition-case nil
+                   (read-from-whole-string (thing-at-point (or thing 'sexp)
+                                                           syntax-table))
+                 (error nil))))
+    (and (or (not pred)  (funcall pred sexp))
+         sexp)))
 
 (defun form-nearest-point-with-bounds (&optional thing pred syntax-table)
   "Return (FORM START . END), START and END the char positions of FORM.
@@ -396,7 +472,7 @@ Optional arguments:
   THING is the kind of form desired (default: `sexp').
   PRED is a predicate that THING must satisfy to qualify.
   SYNTAX-TABLE is a syntax table to use."
-  (let ((form+bds (form-nearest-point-with-bounds thing pred syntax-table)))
+  (let ((form+bds  (form-nearest-point-with-bounds thing pred syntax-table)))
     (and form+bds (cdr form+bds))))
 
 (defun form-nearest-point (&optional thing pred syntax-table)
@@ -407,7 +483,7 @@ Optional arguments:
   THING is the kind of form desired (default: `sexp').
   PRED is a predicate that THING must satisfy to qualify.
   SYNTAX-TABLE is a syntax table to use."
-  (let ((form+bds (form-nearest-point-with-bounds thing pred syntax-table)))
+  (let ((form+bds  (form-nearest-point-with-bounds thing pred syntax-table)))
     (and form+bds (car form+bds))))
  
 ;;; SYMBOLS ----------------------------------------------------------
@@ -426,18 +502,20 @@ If optional arg NON-NIL is non-nil, then the nearest symbol other
   "Return (START . END) with START and END of `symbol-at-point'.
 If optional arg NON-NIL is non-nil, then the nearest symbol other
   than `nil' is sought."
-  (let ((symb+bds (symbol-at-point-with-bounds non-nil)))
+  (let ((symb+bds  (symbol-at-point-with-bounds non-nil)))
     (and symb+bds (cdr symb+bds))))
 
 
-;; REPLACES ORIGINAL in `thingatpt.el':
+;; REPLACE ORIGINAL in `thingatpt.el':
+;;
 ;; Original defn: (defun symbol-at-point () (form-at-point 'sexp 'symbolp))
 ;; With point on toto in "`toto'" (in Emacs Lisp mode), that definition
 ;; returned `toto, not toto.  With point on toto in "`toto'," (note comma),
-;; that definition returned nil.  The following definition returns toto
-;; in both of these cases.
+;; that definition returned nil.  The definition here returns toto in both
+;; of these cases.
+;;
 ;; Note also that (form-at-point 'symbol) would not be a satisfactory
-;; definition either, because it doesn't ensure that the symbol syntax
+;; definition either, because it does not ensure that the symbol syntax
 ;; really represents an interned symbol.
 (defun symbol-at-point (&optional non-nil)
   "Return the Emacs Lisp symbol under the cursor, or nil if none.
@@ -471,7 +549,7 @@ Return nil if no such Emacs Lisp symbol is found."
   "Return (START . END) with START and END of `symbol-nearest-point'.
 If optional arg NON-NIL is non-nil, then the nearest symbol other
   than `nil' is sought."
-  (let ((symb+bds (symbol-nearest-point-with-bounds non-nil)))
+  (let ((symb+bds  (symbol-nearest-point-with-bounds non-nil)))
     (and symb+bds (cdr symb+bds))))
 
 (defun symbol-nearest-point (&optional non-nil)
@@ -490,7 +568,7 @@ Some related functions:
   `word-nearest-point' returns the word nearest point, or \"\" if none.
   `word-before-point' returns the word at or before the cursor as a string.
 Note that these last three functions return strings, not symbols."
-  (let ((symb+bds (symbol-nearest-point-with-bounds non-nil)))
+  (let ((symb+bds  (symbol-nearest-point-with-bounds non-nil)))
     (and symb+bds (car symb+bds))))
 
 (defun non-nil-symbol-nearest-point ()
@@ -508,7 +586,7 @@ Some related functions:
   `word-nearest-point' returns the word nearest point, or \"\" if none.
   `word-before-point' returns the word at or before the cursor as a string.
 Note that these last three functions return strings, not symbols."
-  (let ((symb+bds (symbol-nearest-point-with-bounds t)))
+  (let ((symb+bds  (symbol-nearest-point-with-bounds t)))
     (and symb+bds (car symb+bds))))
  
 ;;; LISTS ------------------------------------------------------------
@@ -528,7 +606,10 @@ Note that these last three functions return strings, not symbols."
 ;;
 ;; 1. Added optional arg UP.
 ;; 2. Better, consistent behavior.
+;; 3. Let the regular `bounds-of-thing-at-point' do its job.
 ;;
+(put 'list 'thing-at-point 'list-at-point)
+(put 'list 'bounds-of-thing-at-point nil) ;   See Emacs bug #8628.
 (defun list-at-point (&optional up)
   "Return the non-nil list at point, or nil if none.
 If inside a list, return the enclosing list.
@@ -538,10 +619,11 @@ UP (default: 0) is the number of list levels to go up to start with.
 Note: If point is inside a string that is inside a list:
  This can sometimes return nil.
  This can sometimes return an incorrect list value if the string or
- nearby strings have contain parens.
+ nearby strings contain parens.
  (These are limitations of function `up-list'.)"
   (list-at/nearest-point 'sexp-at-point up))
 
+(put 'unquoted-list 'thing-at-point 'unquoted-list-at-point)
 (defun unquoted-list-at-point (&optional up)
   "Return the non-nil list at point, or nil if none.
 Same as `list-at-point', but removes the car if it is `quote' or
@@ -571,15 +653,14 @@ Non-nil UNQUOTEDP means remove the car if it is `quote' or
   (save-excursion
     (cond ((looking-at "\\s-*\\s(") (skip-syntax-forward "-"))
           ((looking-at "\\s)\\s-*") (skip-syntax-backward "-")))
-    (let ((sexp   (funcall at/near)))
+    (let ((sexp  (funcall at/near)))
       (condition-case nil               ; Handle an `up-list' error.
-          (progn
-            (when up (up-list (- up)) (setq sexp  (sexp-at-point)))
-            (while (not (listp sexp)) (up-list -1) (setq sexp  (sexp-at-point)))
-            (when (and unquotedp (consp sexp)
-                       (memq (car sexp) (list backquote-backquote-symbol 'quote)))
-              (setq sexp  (cadr sexp)))
-            (while (not (listp sexp)) (up-list -1) (setq sexp  (sexp-at-point))))
+          (progn (when up (up-list (- up)) (setq sexp  (sexp-at-point)))
+                 (while (not (listp sexp)) (up-list -1) (setq sexp  (sexp-at-point)))
+                 (when (and unquotedp (consp sexp)
+                            (memq (car sexp) (list backquote-backquote-symbol 'quote)))
+                   (setq sexp  (cadr sexp)))
+                 (while (not (listp sexp)) (up-list -1) (setq sexp  (sexp-at-point))))
         (error (setq sexp  nil)))
       sexp)))
 
@@ -603,23 +684,24 @@ UP (default: 0) is the number of list levels to go up to start with."
  
 ;;; MISC: SYMBOL NAMES, WORDS, SENTENCES, etc. -----------------------
 
+(put 'non-nil-symbol-name 'thing-at-point 'non-nil-symbol-name-at-point)
 (defun non-nil-symbol-name-at-point ()
   "String naming the Emacs Lisp symbol at point, or \"\" if none."
-  (let ((symb+bds (symbol-at-point-with-bounds t)))
+  (let ((symb+bds  (symbol-at-point-with-bounds t)))
     (if symb+bds (symbol-name (car symb+bds)) "")))
 
 (defun symbol-name-nearest-point ()
   "String naming the Emacs Lisp symbol nearest point, or \"\" if none.
 \"Nearest\" to point is determined as for `thing-nearest-point'."
   ;; We do it this way to be able to pick symbol `nil' (name "nil").
-  (let ((symb+bds (symbol-nearest-point-with-bounds)))
+  (let ((symb+bds  (symbol-nearest-point-with-bounds)))
     (if symb+bds (symbol-name (car symb+bds)) "")))
 
 (defun non-nil-symbol-name-nearest-point ()
   "String naming the Emacs Lisp symbol nearest point, or \"\" if none.
 Returns the name of the nearest symbol other than `nil'.
 \"Nearest\" to point is determined as for `thing-nearest-point'."
-  (let ((symb+bds (symbol-nearest-point-with-bounds t)))
+  (let ((symb+bds  (symbol-nearest-point-with-bounds t)))
     (if symb+bds (symbol-name (car symb+bds)) "")))
 
 (defun word-nearest-point (&optional syntax-table)
@@ -635,13 +717,12 @@ See `word-nearest-point'."
       (buffer-substring-no-properties (region-beginning) (region-end))
     (word-nearest-point syntax-table)))
 
+(put 'region-or-word 'thing-at-point 'region-or-word-at-point)
 (defun region-or-word-at-point ()
   "Return the active region or the word at point if the region is not active."
   (if mark-active
       (buffer-substring-no-properties (region-beginning) (region-end))
     (current-word)))
-
-(put 'region-or-word 'thing-at-point 'region-or-word-at-point)
 
 (defun sentence-nearest-point (&optional syntax-table)
   "Return the sentence (a string) nearest to point, if any, else \"\".
@@ -666,21 +747,103 @@ SYNTAX-TABLE is a syntax table to use."
 (put 'defun 'beginning-op 'beginning-of-defun)
 (put 'defun 'end-op 'end-of-defun)
 (put 'defun 'forward-op 'end-of-defun)
+
+;;; `number-at-point' returns the char value when point is on char syntax.
+;;; E.g., when on ?A it returns 65 (not nil); when on ?\A-\^@ it returns 4194304.
+;;; So we add these functions, which do what you would normally expect.
+
+(put 'decimal-number 'thing-at-point 'number-at-point-decimal)
+(put 'decimal-number 'bounds-of-thing-at-point
+     (lambda () (and (number-at-point-decimal) (bounds-of-thing-at-point 'sexp))))
+
+(defalias 'decimal-number-at-point 'number-at-point-decimal)
+(defun number-at-point-decimal ()
+  "Return the number represented by the decimal numeral at point.
+Return nil if none is found."
+  (let ((strg  (thing-at-point 'sexp)))
+    (and (stringp strg)        
+         (if (fboundp 'string-match-p)
+             (string-match-p "\\`[0-9]+\\'" strg)
+           (string-match "\\`[0-9]+\\'" strg))
+         (string-to-number strg))))
+
+
+(put 'hex-number 'thing-at-point 'number-at-point-hex)
+(put 'hex-number 'bounds-of-thing-at-point
+     (lambda () (and (number-at-point-hex) (bounds-of-thing-at-point 'sexp))))
+
+(defalias 'hex-number-at-point 'number-at-point-hex)
+(defun number-at-point-hex ()
+  "Return the number represented by the hex numeral at point.
+Return nil if none is found."
+  (let ((strg  (thing-at-point 'sexp)))
+    (and (stringp strg)
+         (if (fboundp 'string-match-p)
+             (string-match-p "\\`[0-9a-fA-F]+\\'" strg)
+           (string-match "\\`[0-9a-fA-F]+\\'" strg))
+         (string-to-number strg 16))))
+
+
+;; Make these work for vanilla `number' too.
+(put 'number 'thing-at-point 'number-at-point)
+(put 'number 'bounds-of-thing-at-point
+     (lambda () (and (number-at-point) (bounds-of-thing-at-point 'sexp))))
+
+
+(when (fboundp 'syntax-ppss)            ; Based on `comint-extract-string'.
+  (put 'string 'bounds-of-thing-at-point 'bounds-of-string-at-point)
+  (defun bounds-of-string-at-point ()
+    "Determine the start and end buffer locations for the string at point.
+Return a consp `(START . END)' giving the START and END positions.
+Return nil if no such string is found."
+    (save-excursion
+      (let ((syntax  (syntax-ppss))
+            beg end)
+        (and (nth 3 syntax)
+             (condition-case ()
+                 (setq beg  (1+ (nth 8 syntax))
+                       end  (progn (goto-char (nth 8 syntax)) (forward-sexp) (1- (point))))
+               (error nil))
+             (cons beg end)))))
+
+  (put 'string 'thing-at-point 'string-at-point)
+  (defun string-at-point ()
+    "Return the string at point."
+    (let ((bounds  (bounds-of-string-at-point)))
+      (and bounds (buffer-substring (car bounds) (cdr bounds)))))
+
+  (defun string-nearest-point ()
+    "Return the string nearest point."
+    (thing-nearest-point 'string)))
  
 ;;; COMMANDS ---------------------------------------------------------
 
+;;;###autoload
+(intern "whitespace-&-newlines") ; To have the symbol, e.g., for `thing-types' in `thing-cmds.el'.
+(defun forward-whitespace-&-newlines (arg)
+  "Move forward over contiguous whitespace to non-whitespace.
+Unlike `forward-whitespace', this moves over multiple contiguous
+newlines."
+  (interactive "p")
+  (if (natnump arg)
+      (re-search-forward "[ \t]+\\|\n+" nil 'move arg)
+    (while (< arg 0)
+      (when (re-search-backward "[ \t]+\\|\n+" nil 'move)  (skip-chars-backward " \t\n"))
+      (setq arg  (1+ arg)))))
+
 ;; Copied from `misc-cmds.el'.
+(intern "char-same-line") ; To have the symbol, e.g., for `thing-types' in `thing-cmds.el'.
 (unless (fboundp 'forward-char-same-line)
   (defun forward-char-same-line (&optional arg)
     "Move forward a max of ARG chars on the same line, or backward if ARG < 0.
 Return the signed number of chars moved if /= ARG, else return nil."
     (interactive "p")
-    (let* ((start (point))
-           (fwd-p (natnump arg))
-           (inhibit-field-text-motion t) ; Just to be sure, for end-of-line.
-           (max (save-excursion
-                  (if fwd-p (end-of-line) (beginning-of-line))
-                  (- (point) start))))
+    (let* ((start                      (point))
+           (fwd-p                      (natnump arg))
+           (inhibit-field-text-motion  t) ; Just to be sure, for end-of-line.
+           (max                        (save-excursion
+                                         (if fwd-p (end-of-line) (beginning-of-line))
+                                         (- (point) start))))
       (forward-char (if fwd-p (min max arg) (max max arg)))
       (and (< (abs max) (abs arg)) max))))
 
@@ -691,29 +854,28 @@ Return the signed number of chars moved if /= ARG, else return nil."
 With a prefix arg, or if no function or variable is near the cursor,
 prompt for the function or variable to find, instead."
   (interactive "P")
-  (let* ((symb (symbol-nearest-point))
-         (var (and (boundp symb) symb))
-         (fn (or (and (fboundp symb) symb) (function-called-at-point))))
+  (let* ((symb  (symbol-nearest-point))
+         (var   (and (boundp symb) symb))
+         (fn    (or (and (fboundp symb) symb)
+                    (function-called-at-point))))
     (condition-case nil
-        (progn
-          (push-mark nil t)
-          (cond ((or confirmp (not (or var fn)))
-                 (when (not (or var fn))
-                   (message "Symbol nearest cursor is not a function or variable")
-                   (sit-for 1))
-                 (call-interactively
-                  (if (y-or-n-p "Find function? (n means find variable) ")
-                      'find-function
-                    'find-variable)))                   
-                (var (find-variable var))
-                ((and (fboundp 'help-C-file-name) ; Emacs 22
-                      fn (subrp (symbol-function fn)))
-                 (let ((buf+pos
-                        (find-function-search-for-symbol
-                         fn nil (help-C-file-name (symbol-function fn) 'subr))))
-                   (when (car buf+pos) (pop-to-buffer (car buf+pos)))))
-                (fn (find-function fn))
-                (t (call-interactively 'find-function))))
+        (progn (push-mark nil t)
+               (cond ((or confirmp (not (or var fn)))
+                      (when (not (or var fn))
+                        (message "Symbol nearest cursor is not a function or variable")
+                        (sit-for 1))
+                      (call-interactively
+                       (if (y-or-n-p "Find function? (n means find variable) ")
+                           'find-function
+                         'find-variable)))                   
+                     (var (find-variable var))
+                     ((and (fboundp 'help-C-file-name) ; Emacs 22
+                           fn (subrp (symbol-function fn)))
+                      (let ((buf+pos  (find-function-search-for-symbol
+                                       fn nil (help-C-file-name (symbol-function fn) 'subr))))
+                        (when (car buf+pos) (pop-to-buffer (car buf+pos)))))
+                     (fn (find-function fn))
+                     (t (call-interactively 'find-function))))
       (quit (pop-mark)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;
