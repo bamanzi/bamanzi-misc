@@ -1,0 +1,269 @@
+Main page: VimMode
+
+This page is a collection of user defined motions and commands. Note that all motions and text objects are implemented in the file ##vim-motions.el##, normal-mode commands in ##vim-commands.el## and ex-mode commands in ##vim-ex-commands.el##. If you want to implement own commands and motions, these files provide a good starting point. As you can see most commands and motions have very simple implementations.
+
+== Bindings ==
+=== Shift+Cursor should enable Visual-Mode ===
+
+Many editors select a certain region of text by holding shift down and then using some cursor movement. Such a behaviour can easily be achieved with some clever key-bindings.
+
+  (vim:nmap (kbd "S-<left>") "vh")
+  (vim:nmap (kbd "S-<right>") "vl")
+  (vim:nmap (kbd "S-<up>") "Vk")
+  (vim:nmap (kbd "S-<down>") "Vj")
+  (vim:nmap (kbd "S-C-<left>") "vb")
+  (vim:nmap (kbd "S-C-<right>") "ve")
+  
+  (vim:vmap (kbd "S-<left>") "h")
+  (vim:vmap (kbd "S-<right>") "l")
+  (vim:vmap (kbd "S-<up>") "k")
+  (vim:vmap (kbd "S-<down>") "j")
+  (vim:vmap (kbd "S-C-<left>") "b")
+  (vim:vmap (kbd "S-C-<right>") "e")
+  
+Here for each movement we have a pair of keybindings, one binding for normal-mode which activates visual mode followed by an ordinary movement and one binding for visual-mode which is just mapped to a motion.
+
+== Commands ==
+
+=== Make and compile-log ===
+Execute ##make## via ex-mode command.
+
+  (vim:defcmd vim:cmd-make (nonrepeatable argument)
+   "Executes compile or recompile."
+   (if argument
+       (compile (concat "make " argument))
+     (recompile)))
+     
+  (vim:emap "make" 'vim:cmd-make)
+  (vim:emap "m" "make")
+  
+Goto next and previous errors with ##cnext## and ##cprev## ex-mode commands.
+  
+  (vim:defcmd vim:cmd-next-error (nonrepeatable count)
+   "Moves to the `count'th next error."
+   (next-error count))
+  
+  (vim:defcmd vim:cmd-prev-error (nonrepeatable count)
+   "Moves to the `count'th previous error."
+   (next-error (- (or count 1))))
+   
+  (vim:emap "cnext" 'vim:cmd-next-error)
+  (vim:emap "cn" "cnext")
+  (vim:emap "cprevious" 'vim:cmd-prev-error)
+  (vim:emap "cp" "cprevious")
+
+=== Grep ===
+Very simple version of :grep, similar to :make above.
+  
+  (vim:defcmd vim:cmd-grep (nonrepeatable argument:text)
+    "Run external grep."
+    (grep (concat "grep -nH -e" argument)))
+  
+  (vim:emap "grep" 'vim:cmd-grep)
+  (vim:emap "gr" "grep")
+  
+=== LaTeX make and errors ===
+These local bindings provide :cnext, :cprevious and :make commands for LaTeX.
+
+  (vim:defcmd vim:cmd-TeX-next-error (nonrepeatable count)
+   "Moves to the `count'th next TeX error."
+   (TeX-next-error count))
+  
+  (vim:defcmd vim:cmd-TeX-prev-error (nonrepeatable count)
+   "Moves to the `count'th previous TeX error."
+   (TeX-previous-error (- (or count 1))))
+   
+  (vim:defcmd vim:cmd-TeX-make (nonrepeatable)
+    "Execute the current master command."
+    (TeX-save-document (TeX-master-file))
+    (TeX-command "LaTeX" 'TeX-master-file))
+
+  (add-hook 'LaTeX-mode-hook
+            #'(lambda ()
+                 (vim:local-emap "cnext" 'vim:cmd-TeX-next-error)
+                 (vim:local-emap "cprevious" 'vim:cmd-TeX-previous-error)
+	         (vim:local-emap "make" 'vim:cmd-TeX-make)))
+
+=== Comment/Uncomment region ===
+The following command toggles the comments on a certain visual region.
+  
+  (vim:defcmd vim:visual-toggle-comment (motion)
+    "Toggles comments in the region."
+    (comment-or-uncomment-region (vim:motion-begin-pos motion)
+    			         (vim:motion-end-pos motion)))
+
+We bind the commands only in visual mode.
+
+  (vim:vmap (kbd "C-c :") 'vim:visual-toggle-comment)
+  (vim:vmap (kbd "C-c ;") 'vim:visual-toggle-comment)
+  
+=== Create new frame with ex-command ===
+Adds a command to open a new frame via ##:nf## or ##:newframe##.
+
+  (vim:defcmd vim:cmd-new-frame (nonrepeatable)
+    "Creates a new frame."
+    (make-frame-command))
+  
+  (vim:emap "newframe" 'vim:cmd-new-frame)
+  (vim:emap "nf" "newframe")
+  
+=== Rot13 encoding with motion or visual region === 
+
+This is an example for a command which operates on motion-defined region. A useful helper function is ##vim:apply-on-motion## which applies an operation which modifies a certain region on the region covered by the given motion. Note that we bind the command in both, normal-mode and visual-mode.
+
+  (vim:defcmd vim:cmd-rot13 (motion)
+    "Rot13 encode the given region."
+    (vim:apply-on-motion
+     motion 
+     #'(lambda (beg end)
+         (rot13 (current-buffer) beg end))))
+  
+  (vim:nmap "g?" 'vim:cmd-rot13)
+  (vim:vmap "g?" 'vim:cmd-rot13)
+  
+=== Simple :help command ===
+The following simple command can be used to lookup a symbol in the info files or open the emacs-lisp documentation.
+
+  (vim:defcmd vim:cmd-help (nonrepeatable argument)
+    "Search for the given pattern in the manual."
+    (if argument
+        (info-lookup-symbol argument)
+      (info-emacs-manual)))
+  
+  (vim:defcmd vim:cmd-help-elisp (nonrepeatable)
+    "Search for the given pattern in the emacs lisp manual."
+    (info "elisp"))
+  
+  (vim:emap "help" 'vim:cmd-help)
+  (vim:emap "h" "help")
+  (vim:emap "helpelisp" 'vim:cmd-help-elisp)
+  (vim:emap "helisp" "helpelisp")
+  
+=== Edit file with sudo ===
+Sometimes we want to edit a file as root which can be done easily with the follow command.
+
+  (vim:defcmd vim:cmd-sudo ((argument:file file) nonrepeatable)
+    "Edit file with sudo"
+    (if file
+        (find-file (concat "/sudo:root@localhost:" file))))
+ 
+ (vim:emap "sudo" 'vim:cmd-sudo)
+ 
+=== Open file at point ===
+Vim knows several commands to open the file which name is under the cursor currently. Emacs has commands for the same purpose, too, so here a some example bindings and commands to enhance vim-mode with apropriate key-bindings.
+
+==== Just use ffap ====
+The Emacs commands for opening the file at point come from the ##ffap## package which is part of Emacs. The easiest way is to just map key-bindings to those commands. The main difference is that ##ffap## does not open the file immediately but prompts for the file name instead (but see below).
+
+  (vim:nmap "gf" 'ffap)
+  (vim:wmap (kbd "C-w C-f") 'ffap-other-window)
+
+Note that the ##gf## binding may also be used in visual-mode. Unluckily, ##fap## does not use the region through prefix-arguments so vim-mode cannot detect that it uses the region and will not disable visual-mode after using this command. The simplest way is to define a small wrapper command. This command should set ##transient-mark-mode## to ##t## because ffap uses the region only in this case but visual-mode does *not* use it.
+
+  (vim:defcmd vim:cmd-ffap (nonrepeatable)
+    "Opens the file under point."
+    (let ((transient-mark-mode (vim:visual-mode-p)))
+      (ffap)))
+
+  (vim:defcmd vim:cmd-ffap-other-window (nonrepeatable)
+    "Opens the file under point in another window."
+    (let ((transient-mark-mode (vim:visual-mode-p)))
+      (ffap-other-window)))
+
+  (vim:vmap "gf" 'vim:cmd-ffap)
+  (vim:vmap (kbd "C-w C-f") 'vim:cmd-ffap-other-window)
+  
+==== Open file without prompting ====
+If you want a more Vim-like behaviour without prompting for the file-name, you have to write little commands and bind them appropriately. Note that those commands can be used in visual-mode, too.
+
+  (vim:defcmd vim:cmd-find-file-at-point (nonrepeatable)
+    "Opens the file at point."
+    (let* ((transient-mark-mode (vim:visual-mode-p))
+           (fname (ffap-file-at-point)))
+      (if fname (find-file-existing fname)
+        (error "File does not exist."))))
+
+  (vim:defcmd vim:cmd-find-file-at-point-other-window (nonrepeatable)
+    "Opens the file at point in another window."
+    (let* ((transient-mark-mode (vim:visual-mode-p))
+           (fname (ffap-file-at-point)))
+      (if fname (find-file-other-window fname)
+        (error "File does not exist."))))
+        
+  (vim:nmap "gf" 'vim:cmd-find-file-at-point)
+  (vim:nmap (kbd "C-w C-f") 'vim:cmd-find-file-at-point-other-window)
+  (vim:vmap "gf" 'vim:cmd-find-file-at-point)
+  (vim:vmap (kbd "C-w C-f") 'vim:cmd-find-file-at-point-other-window)
+  
+==== Force new window when opening file in other window ====
+Emacs reuses an existing window when opening a file in another window. Vim always opens a new window. The following function opens simulates Vim's behaviour, this time with prompting. Again this function can be used in visual-mode, too.
+
+  (vim:defcmd vim:cmd-find-file-at-point-new-window (nonrepeatable)
+    "Opens the file at point in a new window."
+    ;; without prompting use (ffap-file-at-point)
+    (let* ((transient-mark-mode (vim:visual-mode-p))
+           (fname (ffap-prompter)))
+      (if fname
+  	(progn
+  	  (split-window)     
+  	  (balance-windows)  ; balance windows like VIM
+  	  (find-file fname))
+        (error "File does not exist."))))
+        
+  (vim:nmap (kbd "C-w C-f") 'vim:cmd-find-file-at-point-new-window)
+  (vim:vmap (kbd "C-w C-f") 'vim:cmd-find-file-at-point-new-window)
+  
+==== Find at point with line-number ====
+Vim knows another command usually bound to ##gF##. This command opens the file under the cursor and places the cursor at the line-number just behind the file name. A simply variant of this command for vim-mode is the following which works in file-name of the kind //file-name:line-number//, i.e., if the line-number is separated by a colon from the file-name. Note that the original Vim command is slightly more flexible but ##ffap## is not on which this command depends. This command *does not* work in visual-mode because ##ffap## would use the line-number covered by the visual-region as part of the file-name.
+
+  (vim:defcmd vim:cmd-find-file-at-point-with-line (nonrepeatable)
+    "Opens the file at point and goes to line-number."
+    (let ((fname (ffap-file-at-point)))
+      (if fname
+  	(let ((line
+  	       (save-excursion
+  		 (goto-char (cadr ffap-string-at-point-region))
+  		 (and (re-search-backward ":\\([0-9]+\\)\\="
+  					  (line-beginning-position) t)
+  		      (string-to-int (match-string 1))))))
+  	  (find-file-existing fname)
+  	  (when line (goto-line line)))
+        (error "File does not exist."))))
+        
+  (vim:nmap "gF" 'vim:cmd-find-file-at-point-with-line)
+        
+== Motions ==
+
+=== LaTeX tag text objects ===
+
+Select text between two ##\begin{...}## and ##\end{...}## LaTeX tags with or without the tags itself. The code is very similar to the code used for XML-tags from ##vim-motions.el##. The motions are bound to ##il## and ##al## keys in operator-pending mode.
+
+  (defun vim:generic-motion-latex-blocks (block-function count)
+    "Calls a block selection function with regular expressions
+  matching LaTeX tags. `block-function' should be either
+  #'vim:inner-block or #'vim:outer-block."
+    (funcall block-function
+  	   "\\\\begin{\\([a-zA-Z]+?\\)}"
+  	   "\\\\end{\\([a-zA-Z]+?\\)}"
+  	   #'vim:compare-blocks-match1
+  	   (or count 1)))
+  
+  
+  (vim:defmotion vim:motion-inner-latex-tags (inclusive count)
+    "Select `count' enclosing pairs of \begin{tag} \end{tag}
+  exclusive."
+    (vim:generic-motion-latex-blocks #'vim:inner-block count))
+  
+  
+  (vim:defmotion vim:motion-outer-latex-tags (inclusive count)
+    "Select `count' enclosing pairs of \begin{tag} \end{tag}
+  inclusive."
+    (vim:generic-motion-latex-blocks #'vim:outer-block count))
+  
+  (vim:omap "il" #'vim:motion-inner-latex-tags)
+  (vim:omap "al" #'vim:motion-outer-latex-tags)
+  
+  
+== Other examples ==
+
+# [[coldnew]] added elscreen as tabpages for vim-mode ([http://www.emacswiki.org/emacs/vim-elscreen.el vim-elscreen.el]).
