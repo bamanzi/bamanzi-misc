@@ -56,7 +56,7 @@
 (mapc  '(lambda (file)
 	  (ignore-errors
 	    (load file)))
-       (directory-files "~/.emacs.d/init.d/" t "\.el$"))
+       (directory-files "~/.emacs.d/init.d/" t "[0-9[0-9].*\.el$"))
 
 ;; (load "~/.emacs.d/init.d/10-init.el")
 
@@ -72,7 +72,6 @@
 ;; (load "~/.emacs.d/init.d/80-mouse" t)
 
 ;; (load "~/.emacs.d/init.d/95-one-key" t)
-
 
 
 (if (fboundp 'idle-require-mode)
