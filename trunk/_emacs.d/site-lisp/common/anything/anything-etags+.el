@@ -1,14 +1,16 @@
-;;;; anything-etags+.el ---Another Etags anything.el interface
+;;; anything-etags+.el ---Another Etags anything.el interface
+;; Time-stamp: <Joseph 2011-09-29 03:01:39 星期四>
 
 ;; Filename: anything-etags+.el
-;; Description: Another Etags anything.el interface 
+;; Description: Another Etags anything.el interface
 ;; Author: Joseph <jixiuf@gmail.com>
 ;; Maintainer: Joseph <jixiuf@gmail.com>
 ;; Copyright (C) 2011~, Joseph, all rights reserved.
 ;; Created: 2011-02-23
-;; Version: 0.1.1
+;; Version: 0.1.3
 ;; URL:http://www.emacswiki.org/emacs/anything-etags+.el
-;; Keywords: anything, etags ,go back and forward 
+;; screencast:http://screencast-repos.googlecode.com/files/emacs-anything-etags-puls.mp4.bz2
+;; Keywords: anything, etags
 ;; Compatibility: (Test on GNU Emacs 23.2.1)
 ;;   I am trying to make it work with XEmacs ,
 ;;   but I haven't tested it on XEmacs.
@@ -83,7 +85,7 @@
 ;;        '("/home/me/Projects/bar/.*\\.py$" "/home/me/Projects/python/common/TAGS")
 ;;        '(".*\\.[ch]$" "/usr/local/include/TAGS")
 ;;        ))
-;; 
+;;
 ;;; Installation:
 ;;
 ;; Don't need anything-etags.el (another etags interface).
@@ -105,9 +107,9 @@
 ;; (global-set-key "\M-." 'anything-etags+-select-one-key)
 ;; ;;list all visited tags
 ;; (global-set-key "\M-*" 'anything-etags+-history)
-;; ;;go back directly 
+;; ;;go back directly
 ;; (global-set-key "\M-," 'anything-etags+-history-action-go-back)
-;; ;;go forward directly 
+;; ;;go forward directly
 ;; (global-set-key "\M-/" 'anything-etags+-history-action-go-forward)
 ;;
 ;; and how to work with etags-table.el
@@ -133,9 +135,9 @@
 ;;  `anything-etags+-select-one-key'
 ;;    you can bind this to `M-.'
 ;;  `anything-etags+-history-go-back'
-;;    Go Back. 
+;;    Go Back.
 ;;  `anything-etags+-history-go-forward'
-;;    Go Forward. 
+;;    Go Forward.
 ;;  `anything-etags+-history'
 ;;    show all tag historys using `anything'
 ;;
@@ -176,7 +178,7 @@
  search '(DISPLAY . REAL)' in anything.el for more info."
   :type 'boolean
   :group 'anything-etags+)
-        
+
 (defcustom anything-etags+-highlight-tag-after-jump t
   "*If non-nil, temporarily highlight the tag
   after you jump to it.
@@ -195,7 +197,7 @@
   "Font Lock mode face used to highlight tags.
   (borrowed from etags-select.el)"
   :group 'anything-etags+-)
-        
+
 (defun anything-etags+-highlight (beg end)
   "Highlight a region temporarily.
    (borrowed from etags-select.el)"
@@ -241,7 +243,7 @@ will set this variable.")
 (defvar anything-etags+-use-xemacs-etags-p
   (fboundp 'get-tag-table-buffer)
   "Use XEmacs etags?")
-                      
+
 (defvar anything-etags+-previous-matched-pattern nil
   "work with `anything-etags+-candidates-cache'.
   the value is (car (amp-mp-make-regexps anything-pattern))
@@ -313,7 +315,7 @@ getting candidates.")
     ;; Leave point on the next line of the tags file.
     (forward-line 1)
     (cons tag-text (cons line startpos))))
-    
+
 (defun anything-etags+-goto-tag-location (tag-info)
   "Go to location of tag specified by TAG-INFO.
 TAG-INFO is a cons (TEXT LINE . POSITION).
@@ -377,7 +379,7 @@ hits the start of file."
 	 (looking-at "\^m")
 	 (forward-char 1))
     (beginning-of-line)))
-    
+
 (defun anything-etags+-file-of-tag(&optional relative)
   (save-excursion
     (re-search-backward "\f\n\\([^\n]+\\),[0-9]*\n")
@@ -387,7 +389,7 @@ hits the start of file."
                             (symlink-expand-file-name default-directory))
         (expand-file-name str
                           (file-truename default-directory))))))
-                          
+
 
 (defun anything-etags+-get-tag-files()
   "Get tag files."
@@ -403,7 +405,7 @@ hits the start of file."
     (if (string-match "^ \\*Anything" (buffer-name))
         buf
        (rename-buffer (concat" *Anything etags+:" (buffer-name) "*") t)
-      )))
+      ))buf)
 
 (defun anything-etags+-get-tag-table-buffer (tag-file)
   "Get tag table buffer for a tag file."
@@ -433,7 +435,7 @@ will search `toString' in all tag files. and the found
 'toString' is stored in `anything-etags+-previous-matched-pattern'
 so when the `anything-pattern' become to 'toString System public'
 needn't search tag file again."
-  (let ((pattern anything-etags+-untransformed-anything-pattern));;default use whole anything-pattern to search in tag files 
+  (let ((pattern anything-etags+-untransformed-anything-pattern));;default use whole anything-pattern to search in tag files
     ;; first collect candidates using first part of anything-pattern
     (when (featurep 'anything-match-plugin)
       ;;for example  (amp-mp-make-regexps "boo far") -->("boo" "far")
@@ -489,6 +491,9 @@ needn't search tag file again."
             ;;(setq src-file-name (etags-file-of-tag))
             (setq src-file-name (anything-etags+-file-of-tag))
             (let ((display)(real (list  src-file-name tag-info full-tagname)))
+              (let ((tag-table-parent (file-name-directory (buffer-file-name tag-table-buffer))))
+                (when (string-match  tag-table-parent src-file-name)
+                  (setq src-file-name (substring src-file-name (length  tag-table-parent)))))
               (if anything-etags+-use-short-file-name
                   (setq src-file-name (file-name-nondirectory src-file-name)))
               (setq display (concat tag-line
@@ -514,7 +519,7 @@ needn't search tag file again."
       ;; tag file is valid.
       (setq src-file-buf (find-file src-file-name))
       (anything-etags+-goto-tag-location  tag-info)
-      
+
       (beginning-of-line)
       (when (search-forward tagname (point-at-eol) t)
         (goto-char (match-beginning 0))
@@ -525,11 +530,11 @@ needn't search tag file again."
         (when(and anything-etags+-highlight-tag-after-jump
                   (not anything-in-persistent-action))
           (anything-etags+-highlight (match-beginning 0) (match-end 0))))
-      
+
       (when (and anything-in-persistent-action ;;color
                  (fboundp 'anything-match-line-color-current-line))
         (anything-match-line-color-current-line))
-      
+
       (if anything-in-persistent-action ;;prevent from opening too much buffer in persistent action
           (progn
             (if (and previous-opened-buffer-in-persistent-action
@@ -560,6 +565,7 @@ needn't search tag file again."
               ;; Initialize input with current symbol
               init-pattern  prompt nil))
 
+;;;###autoload
 (defun anything-etags+-select()
   "Tag jump using etags and `anything'.
 If SYMBOL-NAME is non-nil, jump tag position with SYMBOL-NAME."
@@ -569,6 +575,7 @@ If SYMBOL-NAME is non-nil, jump tag position with SYMBOL-NAME."
         (anything-idle-delay anything-idle-delay-4-anything-etags+))
     (anything-etags+-select-internal nil "Find Tag(require 3 char): ")))
 
+;;;###autoload
 (defun anything-etags+-select-at-point()
   "Tag jump with current symbol using etags and `anything'."
   (interactive)
@@ -581,6 +588,7 @@ If SYMBOL-NAME is non-nil, jump tag position with SYMBOL-NAME."
              (if (featurep 'anything-match-plugin) " "))
      "Find Tag: ")))
 
+;;;###autoload
 (defun anything-etags+-select-one-key (&optional args)
   "you can bind this to `M-.'"
   (interactive "P")
@@ -588,6 +596,7 @@ If SYMBOL-NAME is non-nil, jump tag position with SYMBOL-NAME."
       (anything-etags+-select)
       (anything-etags+-select-at-point)))
 
+;;;###autoload
 (defvar anything-c-source-etags+-select
       '((name . "Etags+")
         (init . anything-etags+-get-available-tag-table-buffers)
@@ -643,7 +652,7 @@ If SYMBOL-NAME is non-nil, jump tag position with SYMBOL-NAME."
                                 (make-string (- (window-width)  6
                                                 (string-width  line-num)
                                                 (string-width file-name)
-                                                (string-width line-text)) 
+                                                (string-width line-text))
                                              ? )) "  "))
       (setq display (concat line-text empty-string
                             file-name ":[" line-num "]"))
@@ -687,6 +696,7 @@ If SYMBOL-NAME is non-nil, jump tag position with SYMBOL-NAME."
           (ring-remove anything-etags+-tag-marker-ring)))
 
 
+;;;###autoload
 (defun anything-etags+-history-go-back()
   "Go Back. "
   (interactive)
@@ -698,6 +708,7 @@ If SYMBOL-NAME is non-nil, jump tag position with SYMBOL-NAME."
         (anything-etags+-history-go-internel next-marker)
         (setq anything-etags+-current-marker-in-tag-marker-ring next-marker))))
 
+;;;###autoload
 (defun anything-etags+-history-go-forward()
   "Go Forward. "
   (interactive)
@@ -742,6 +753,7 @@ If SYMBOL-NAME is non-nil, jump tag position with SYMBOL-NAME."
         (action . (("Go" . anything-etags+-history-action-go)
                    ("Clear all history" . anything-etags+-history-clear-all)))))
 
+;;;###autoload
 (defun anything-etags+-history()
   "show all tag historys using `anything'"
   (interactive)
