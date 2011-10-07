@@ -7,9 +7,9 @@
 ;; Copyright (C) 1999-2011, Drew Adams, all rights reserved.
 ;; Created: Fri Mar 19 15:58:58 1999
 ;; Version: 21.2
-;; Last-Updated: Fri Jul  1 06:53:56 2011 (-0700)
+;; Last-Updated: Sat Sep  3 14:31:44 2011 (-0700)
 ;;           By: dradams
-;;     Update #: 4148
+;;     Update #: 4179
 ;; URL: http://www.emacswiki.org/cgi-bin/wiki/dired+.el
 ;; Keywords: unix, mouse, directories, diredp, dired
 ;; Compatibility: GNU Emacs: 20.x, 21.x, 22.x, 23.x
@@ -22,7 +22,8 @@
 ;;   `ediff-diff', `ediff-help', `ediff-init', `ediff-merg',
 ;;   `ediff-mult', `ediff-util', `ediff-wind', `ffap', `fit-frame',
 ;;   `info', `info+', `misc-fns', `mkhtml', `mkhtml-htmlize', `pp',
-;;   `pp+', `strings', `thingatpt', `thingatpt+', `w32-browser'.
+;;   `pp+', `strings', `thingatpt', `thingatpt+', `w32-browser',
+;;   `widget'.
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -254,6 +255,13 @@
 ;;
 ;;; Change log:
 ;;
+;; 2011/09/03 dadams
+;;     diredp-do-grep-1: Map shell-quote-argument over file names.  Thx to Joe Bloggs.
+;; 2011/08/07 dadams
+;;     diredp-bookmark (need to keep in sync with bmkp-make-record-for-target-file):
+;;       Instead of image-bookmark-make-record, use explicit function that includes file, type.
+;; 2011/07/25 dadams
+;;     Changed featurep to eval-after-load, for bookmark+-1.el and w32-browser.el.
 ;; 2011/07/01 dadams
 ;;     Fixed typo: dired-toggle-find-file-reuse-dir -> ...diredp....  Thx to pasja on Emacs Wiki.
 ;; 2011/06/18 dadams
@@ -1665,19 +1673,20 @@ If HDR is non-nil, insert a header line with the directory name."
                            dired-mode-map (current-global-map))
 
 ;; On Windows, bind some more keys.
-(when (featurep 'w32-browser)
-  (define-key dired-mode-map [(control return)] 'dired-w32-browser) ; `C-RET'
-  (define-key dired-mode-map [(meta return)] 'dired-w32explore) ; `M-RET'
-  (define-key diredp-menu-bar-immediate-menu [dired-w32-browser]
-    '(menu-item "Open Associated Windows App" dired-w32-browser
-      :help "Open file using the Windows app associated with its file type"))
-  (define-key diredp-menu-bar-immediate-menu [dired-w32explore]
-    '(menu-item "Open in Windows Explorer" dired-w32explore
-      :help "Open file in Windows Explorer"))
-  (define-key dired-mode-map [mouse-2] 'dired-mouse-w32-browser)
-  (define-key diredp-menu-bar-operate-menu [dired-multiple-w32-browser]
-    '(menu-item "Open Associated Windows Apps" dired-multiple-w32-browser
-      :help "Open files using the Windows apps associated with their file types")))
+(eval-after-load "w32-browser"
+  '(progn
+    (define-key dired-mode-map [(control return)] 'dired-w32-browser) ; `C-RET'
+    (define-key dired-mode-map [(meta return)] 'dired-w32explore) ; `M-RET'
+    (define-key diredp-menu-bar-immediate-menu [dired-w32-browser]
+      '(menu-item "Open Associated Windows App" dired-w32-browser
+        :help "Open file using the Windows app associated with its file type"))
+    (define-key diredp-menu-bar-immediate-menu [dired-w32explore]
+      '(menu-item "Open in Windows Explorer" dired-w32explore
+        :help "Open file in Windows Explorer"))
+    (define-key dired-mode-map [mouse-2] 'dired-mouse-w32-browser)
+    (define-key diredp-menu-bar-operate-menu [dired-multiple-w32-browser]
+      '(menu-item "Open Associated Windows Apps" dired-multiple-w32-browser
+        :help "Open files using the Windows apps associated with their file types"))))
 
 ;; Undefine some bindings that would try to modify a Dired buffer.  Their key sequences will
 ;; then appear to the user as available for local (Dired) definition.
@@ -2884,7 +2893,16 @@ If you use library `bookmark+.el' then the bookmark is an autofile."
           (let ((bookmark-make-record-function
                  (cond ((and (require 'image nil t) (require 'image-mode nil t)
                              (condition-case nil (image-type file) (error nil)))
-                        'image-bookmark-make-record)
+                        ;; Last two lines of function are from `image-bookmark-make-record'.
+                        ;; But don't use that directly, because it uses
+                        ;; `bookmark-make-record-default', which gets nil for `filename'.
+
+                        ;; NEED to keep this code sync'd with `bmkp-make-record-for-target-file'.
+                        (lambda ()
+                          `((filename   . ,file)
+                            (position   . 0)
+                            (image-type . ,(image-type file))
+                            (handler    . image-bookmark-jump))))
                        (t
                         (lambda ()
                           `((filename . ,file)
@@ -3307,15 +3325,17 @@ files in the Dired buffer."
 Non-nil optional arg FILES are the files to grep, overriding the files
 choice described for `diredp-do-grep'."
   (let ((default  (and (fboundp 'grep-default-command) (grep-default-command))))
-    (read-from-minibuffer "grep <pattern> <files> :  "
-                          (let ((up-to-files  (concat grep-command "   ")))
-                            (cons (concat up-to-files
-                                          (mapconcat #'identity
-                                                     (or files (dired-get-marked-files
-                                                                nil current-prefix-arg))
-                                                     " "))
-                                  (- (length up-to-files) 2)))
-                          nil nil 'grep-history default)))
+    (read-from-minibuffer
+     "grep <pattern> <files> :  "
+     (let ((up-to-files  (concat grep-command "   ")))
+       (cons (concat up-to-files
+                     (mapconcat #'identity
+                                (or files
+                                    (mapcar 'shell-quote-argument
+                                            (dired-get-marked-files nil current-prefix-arg)))
+                                " "))
+             (- (length up-to-files) 2)))
+     nil nil 'grep-history default)))
 
 ;;;###autoload
 (define-derived-mode diredp-w32-drives-mode fundamental-mode "Drives"
@@ -4400,9 +4420,9 @@ With non-nil prefix arg, mark them instead."
                          '("Open" . diredp-mouse-find-file)
                          '("Open in Other Window" . dired-mouse-find-file-other-window)
                          '("Open in Other Frame" . diredp-mouse-find-file-other-frame)
-                         (and (featurep 'w32-browser)
+                         (and (fboundp 'dired-mouse-w32-browser) ; In `w32-browser.el'.
                               '("Open Associated Windows App" . dired-mouse-w32-browser))
-                         (and (featurep 'w32-browser)
+                         (and (fboundp 'dired-mouse-w32explore) ; In `w32-browser.el'.
                               '("Open in Windows Explorer" . dired-mouse-w32explore))
                          '("View (Read Only)" . diredp-mouse-view-file)
 
@@ -4957,7 +4977,7 @@ General
 * \\[diredp-dired-for-files]\t- Open Dired on specific files
 * \\[diredp-dired-union]\t- Create union of some Dired buffers
 "
-    (and (featurep 'w32-browser)
+    (and (fboundp 'diredp-w32-drives)   ; In `w32-browser.el'.
          "* \\[diredp-w32-drives]\t- Go up to a list of MS Windows drives
 ")
 
@@ -4989,12 +5009,12 @@ Mouse
     "* \\[diredp-mouse-find-file-other-frame]\t- Open in another frame
 "
 
-    (and (featurep 'w32-browser)
+    (and (fboundp 'dired-mouse-w32-browser) ; In `w32-browser.el'.
          (where-is-internal 'dired-mouse-w32-browser dired-mode-map)
          "* \\[dired-mouse-w32-browser]\t- MS Windows `Open' action
 ")
 
-    (and (featurep 'w32-browser)
+    (and (fboundp 'dired-mouse-w32-browser-reuse-dir-buffer) ; In `w32-browser.el'.
          (where-is-internal 'dired-mouse-w32-browser-reuse-dir-buffer dired-mode-map)
          "* \\[dired-mouse-w32-browser-reuse-dir-buffer]\t- MS Windows `Open' action
 ")
@@ -5037,7 +5057,7 @@ Current file/subdir (current line)
 * \\[diredp-capitalize-this-file]\t- Capitalize (rename)
 * \\[diredp-ediff]\t- Ediff
 "
-    (and (featurep 'bookmark+-1)
+    (and (fboundp 'diredp-tag-this-file) ; In `bookmark+-1.el'.
          "* \\[diredp-tag-this-file]\t- Add some tags to this
 * \\[diredp-untag-this-file]\t- Remove some tags from this
 * \\[diredp-remove-all-tags-this-file]\t- Remove all tags from this
@@ -5047,17 +5067,17 @@ Current file/subdir (current line)
 * \\[diredp-set-tag-value-this-file]\t- Set a tag value for this
 ")
 
-    (and (featurep 'bookmark+-1)
+    (and (fboundp 'diredp-bookmark-this-file) ; In `bookmark+-1.el'.
          "* \\[diredp-bookmark-this-file]\t- Bookmark
 ")
 
-    (and (featurep 'w32-browser)
+    (and (fboundp 'dired-mouse-w32-browser) ; In `w32-browser.el'.
          (where-is-internal 'dired-mouse-w32-browser dired-mode-map)
          "* \\[dired-mouse-w32-browser]\t- MS Windows `Open' action
 * \\[dired-w32explore]\t- MS Windows Explorer
 ")
 
-    (and (featurep 'w32-browser)
+    (and (fboundp 'dired-mouse-w32-browser-reuse-dir-buffer) ; In `w32-browser.el'.
          (where-is-internal 'dired-mouse-w32-browser-reuse-dir-buffer dired-mode-map)
          "* \\[dired-mouse-w32-browser-reuse-dir-buffer]\t- MS Windows `Open' action
 * \\[dired-w32explore]\t- MS Windows Explorer
@@ -5076,7 +5096,7 @@ Marked (or next prefix arg) files/subdirs
 * \\[diredp-omit-unmarked]\t- Omit unmarked
 "
 
-    (and (featurep 'bookmark+-1)
+    (and (fboundp 'diredp-do-tag) ; In `bookmark+-1.el'.
          "* \\[diredp-do-tag]\t- Add some tags to marked
 * \\[diredp-do-untag]\t- Remove some tags from marked 
 * \\[diredp-do-remove-all-tags]\t- Remove all tags from marked
@@ -5095,18 +5115,18 @@ Marked (or next prefix arg) files/subdirs
 * \\[diredp-unmark-files-tagged-none]\t- Unmark those with none of the given tags
 ")
 
-    (and (featurep 'bookmark+-1)
+    (and (fboundp 'diredp-do-bookmark) ; In `bookmark+-1.el'.
          "* \\[diredp-do-bookmark]\t- Bookmark
 * \\[diredp-set-bookmark-file-bookmark-for-marked]\t- \
 Bookmark and create bookmark-file bookmark
 * \\[diredp-do-bookmark-in-bookmark-file]\t- Bookmark in specific bookmark file
 ")
 
-    (and (featurep 'w32-browser)
+    (and (fboundp 'dired-multiple-w32-browser) ; In `w32-browser.el'.
          "* \\[dired-multiple-w32-browser]\t- MS Windows `Open' action
 ")
 
-    (and (featurep 'bookmark+-1)
+    (and (fboundp 'diredp-tag-this-file) ; In `bookmark+-1.el'.
          "
 Tagging
 -------
@@ -5136,7 +5156,7 @@ Tagging
 * \\[diredp-unmark-files-tagged-none]\t- Unmark those with none of the given tags
 ")
 
-    (and (featurep 'bookmark+-1)
+    (and (fboundp 'diredp-bookmark-this-file) ; In `bookmark+-1.el'.
          "
 Bookmarking
 -----------

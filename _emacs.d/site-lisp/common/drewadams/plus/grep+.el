@@ -7,9 +7,9 @@
 ;; Copyright (C) 2005-2011, Drew Adams, all rights reserved.
 ;; Created: Fri Dec 16 13:36:47 2005
 ;; Version: 22.0
-;; Last-Updated: Thu Feb 24 15:16:55 2011 (-0800)
+;; Last-Updated: Mon Oct  3 20:01:04 2011 (-0700)
 ;;           By: dradams
-;;     Update #: 486
+;;     Update #: 621
 ;; URL: http://www.emacswiki.org/cgi-bin/wiki/grep+.el
 ;; Keywords: tools, processes, compile
 ;; Compatibility: GNU Emacs: 22.x, 23.x
@@ -17,8 +17,7 @@
 ;; Features that might be required by this library:
 ;;
 ;;   `avoid', `compile', `compile+', `compile-', `fit-frame',
-;;   `font-lock', `frame-fns', `grep', `misc-fns', `syntax',
-;;   `thingatpt', `thingatpt+'.
+;;   `frame-fns', `grep', `misc-fns', `thingatpt', `thingatpt+'.
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
@@ -37,6 +36,12 @@
 ;;  Put this in your initialization file (`~/.emacs'):
 ;;
 ;;    (require 'grep+)
+;;
+;;  Face suggestions (what I use):
+;;
+;;    `compilation-info-face':   Blue3' foreground,        no inherit
+;;    `compilation-line-number': DarkGoldenrod foreground, no inherit
+;;    `match':                   SkyBlue background,       no inherit
 ;;
 ;;
 ;;  New user options defined here:
@@ -77,8 +82,23 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
-;;; Change log:
+;;; Change Log:
 ;;
+;; 2011/10/03 dadams
+;;     Updated to fit latest Emac 24.
+;;       grep-default-command: Wrapped replacement of file pattern in condition-case.
+;;       grep: Added read-shell-command from Emacs 24 code, but commented it out, for now.
+;;       grep-regexp-alist: Removed initial regexp to match file and line.
+;;                          Removed escape codes in regexps.  Instead, lambdas pick up match face.
+;;       grep-mode-font-lock-keywords: Removed escape codes in regexps.  Emacs 24 code.
+;;       grep-mode: Use Emacs 24 definition.
+;; 2011/09/03 dadams
+;;     Removed unneeded require of font-lock.el.
+;; 2011/08/30 dadams
+;;     grepp-default-regexp-fn: symbol-name-nearest-point -> non-nil-symbol-name-nearest-point.
+;;                              Use functionp, not fboundp.
+;;     grep: Test value of function, not option, grepp-default-regexp-fn, before funcall.
+;;     Do not change any faces - just suggest.
 ;; 2011/02/15 dadams
 ;;     For Emacs 24+, do not set grep-hit-face to font-lock-keyword-face.
 ;;     grep-regexp-alist, grep-mode-font-lock-keywords, grep-mode: Updated for Emacs 24.
@@ -129,9 +149,8 @@
 ;;; Code:
 
 (require 'compile+ nil t) ;; (no error if not found) - to pick up enhancements for grep too.
-(require 'font-lock) ;; font-lock-keyword-face
 (require 'grep)
-(require 'thingatpt+ nil t) ;; (no error if not found) symbol-name-nearest-point
+(require 'thingatpt+ nil t) ;; (no error if not found) non-nil-symbol-name-nearest-point
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -143,12 +162,13 @@ The default value matches lines that begin with a Lisp comment."
   :type 'string :group 'grep)
 
 ;;;###autoload
-(defcustom grepp-default-regexp-fn (if (fboundp 'symbol-name-nearest-point)
-                                       'symbol-name-nearest-point
+(defcustom grepp-default-regexp-fn (if (fboundp 'non-nil-symbol-name-nearest-point)
+                                       'non-nil-symbol-name-nearest-point
                                      'word-at-point)
   "*Function of 0 args called to provide default search regexp to \\[grep].
-Some reasonable choices: `word-nearest-point',
-`symbol-name-nearest-point', `sexp-nearest-point'.
+Some reasonable choices are defined in `thingatpt+.el':
+`word-nearest-point', `non-nil-symbol-name-nearest-point',
+`region-or-non-nil-symbol-name-nearest-point', `sexp-nearest-point'.
 
 This is ignored if Transient Mark mode is on and the region is active
 and non-empty.  In that case, the quoted (\") region text is used as
@@ -159,7 +179,8 @@ If `grepp-default-regexp-fn' is nil and no prefix arg is given to
 
 Otherwise, if the value is not a function, then function
 `grepp-default-regexp-fn' does the defaulting."
-  :type '(choice (const :tag "No default search regexp (unless you use `C-u')" nil)
+  :type '(choice
+          (const :tag "No default search regexp (unless you use `C-u')" nil)
           (function :tag "Function of zero args to provide default search regexp"))
   :group 'grep)
 
@@ -175,12 +196,12 @@ first of these that references a defined function:
   - variable `grepp-default-regexp-fn'
   - variable `find-tag-default-function'
   - the `find-tag-default-function' property of the `major-mode'
-  - function `symbol-name-nearest-point', if bound
+  - function `non-nil-symbol-name-nearest-point', if bound
   - function `grep-tag-default'"
-  (cond ((fboundp grepp-default-regexp-fn) grepp-default-regexp-fn)
+  (cond ((functionp grepp-default-regexp-fn) grepp-default-regexp-fn)
         (find-tag-default-function)
         ((get major-mode 'find-tag-default-function))
-        ((fboundp 'symbol-name-nearest-point) 'symbol-name-nearest-point)
+        ((fboundp 'non-nil-symbol-name-nearest-point) 'non-nil-symbol-name-nearest-point)
         (t 'find-tag-default)))
 
 
@@ -189,23 +210,29 @@ first of these that references a defined function:
 ;;; Use `grepp-default-regexp-fn' to define `tag-default'.
 ;;;
 (defun grep-default-command ()
-  (let ((tag-default (shell-quote-argument (or (funcall (grepp-default-regexp-fn)) "")))
-        (sh-arg-re "\\(\\(?:\"\\(?:[^\"]\\|\\\\\"\\)+\"\\|'[^']+'\\|[^\"' \t\n]\\)+\\)")
-        (grep-default (or (car grep-history) grep-command)))
-    ;; Replace the thing matching for with that around cursor.
+  (let ((tag-default   (shell-quote-argument (or (funcall (grepp-default-regexp-fn)) "")))
+	;; Regexp to match single shell arguments.
+        (sh-arg-re     "\\(\\(?:\"\\(?:[^\"]\\|\\\\\"\\)+\"\\|'[^']+'\\|[^\"' \t\n]\\)+\\)")
+        (grep-default  (or (car grep-history) grep-command)))
+    ;; In the default command, find the arg that specifies the pattern.
     (when (or (string-match
                (concat "[^ ]+\\s +\\(?:-[^ ]+\\s +\\)*" sh-arg-re "\\(\\s +\\(\\S +\\)\\)?")
                grep-default)
               (string-match "\\(\\)\\'" grep-default)) ; If the string is not yet complete.
-      (unless (or (not (stringp buffer-file-name))
-                  (when (match-beginning 2)
-                    (save-match-data
-                      (string-match (wildcard-to-regexp (file-name-nondirectory
-                                                         (match-string 3 grep-default)))
-                                    (file-name-nondirectory buffer-file-name)))))
-        (setq grep-default (concat (substring grep-default 0 (match-beginning 2))
-                                   " *."
-                                   (file-name-extension buffer-file-name))))
+      ;; Maybe we will replace the pattern with the default tag.
+      ;; But first, maybe replace the file name pattern.
+      (condition-case nil
+          (unless (or (not (stringp buffer-file-name))
+                      (when (match-beginning 2)
+                        (save-match-data
+                          (string-match (wildcard-to-regexp (file-name-nondirectory
+                                                             (match-string 3 grep-default)))
+                                        (file-name-nondirectory buffer-file-name)))))
+            (setq grep-default  (concat (substring grep-default 0 (match-beginning 2)) " *."
+                                        (file-name-extension buffer-file-name))))
+	;; In case wildcard-to-regexp gets an error from invalid data.
+	(error nil))
+      ;; Replace the pattern with the default tag.
       (replace-match tag-default t t grep-default 1))))
 
 
@@ -217,9 +244,9 @@ first of these that references a defined function:
 (defun grep (command-args &optional highlight-regexp)
   "Run `grep', with user-specified args, and collect output in a buffer.
 COMMAND-ARGS are the user-specified arguments.
-While `grep' runs asynchronously, you can use the
-\\[next-error] command (M-x next-error), or \\<grep-mode-map>\\[compile-goto-error]
-in the *grep* output buffer, to find the text that `grep' hits refer to.
+While `grep' runs asynchronously, you can use 
+\\[next-error] (M-x next-error), or \\<grep-mode-map>\\[compile-goto-error]
+in output buffer `*grep*', to go to the lines where `grep' found matches.
 
 This command uses a special history list for its COMMAND-ARGS, so you can
 easily repeat a grep command.
@@ -236,10 +263,10 @@ The text (regexp) to find is defaulted as follows:
 - If `grepp-default-regexp-fn' is nil and no prefix arg is provided,
   then no default regexp is used.
 
-If a prefix arg is provided, then the default text is substituted
-into the last grep command in the grep command history (or into
-`grep-command' if that history list is empty).  That is, the same
-command options and files to search are used as the last time.
+If a prefix arg is provided, the default text is substituted into the
+last grep command in the grep command history (or into `grep-command'
+if that history list is empty).  That is, the same command options and
+files to search are used as the last time.
 
 If specified, optional second arg HIGHLIGHT-REGEXP is the regexp to
 temporarily highlight in visited source lines."
@@ -247,20 +274,35 @@ temporarily highlight in visited source lines."
    (progn
      (unless (and grep-command (or (not grep-use-null-device) (eq grep-use-null-device t)))
        (grep-compute-defaults))
-     (let ((default (grep-default-command)))
-       (list (read-from-minibuffer
-              "grep <pattern> <files> :  "
-              (if current-prefix-arg
-                  default
-                (concat grep-command
-                        (if (and transient-mark-mode mark-active
-                                 (not (eq (region-beginning) (region-end))))
-                            ;; $$$$$ Would it be better to use `shell-quote-argument' on the region?
-                            (concat "\"" (buffer-substring (region-beginning) (region-end)) "\"")
-                          (and grepp-default-regexp-fn (funcall (grepp-default-regexp-fn))))
-                        " "))
-              nil nil 'grep-history
-              (if current-prefix-arg nil default))))))
+     (let ((default  (grep-default-command)))
+       (list
+        (if nil ;;$$$$$$ UNCOMMENT if you prefer: (fboundp 'read-shell-command)
+            (read-shell-command "grep <pattern> <files> :  "
+                                (if current-prefix-arg
+                                    default
+                                  (concat
+                                   grep-command
+                                   (if (and transient-mark-mode mark-active
+                                            (not (eq (region-beginning) (region-end))))
+                                       ;; $$$$$ Would it be better to use `shell-quote-argument' on the region?
+                                       (concat "\"" (buffer-substring (region-beginning) (region-end)) "\"")
+                                     (and (grepp-default-regexp-fn) (funcall (grepp-default-regexp-fn))))
+                                   " "))
+                                'grep-history
+                                (if current-prefix-arg nil default))
+          (read-from-minibuffer
+           "grep <pattern> <files> :  "
+           (if current-prefix-arg
+               default
+             (concat grep-command
+                     (if (and transient-mark-mode mark-active
+                              (not (eq (region-beginning) (region-end))))
+                         ;; $$$$$ Would it be better to use `shell-quote-argument' on the region?
+                         (concat "\"" (buffer-substring (region-beginning) (region-end)) "\"")
+                       (and (grepp-default-regexp-fn) (funcall (grepp-default-regexp-fn))))
+                     " "))
+           nil nil 'grep-history
+           (if current-prefix-arg nil default)))))))
 
   ;; Setting process-setup-function makes exit-message-function work
   ;; even when async processes aren't supported.
@@ -290,7 +332,7 @@ Current buffer must be a grep buffer.  It is renamed to *grep*<N>."
 (defun grepp-choose-grep-buffer (buf)
   "Switch to a grep buffer."
   (interactive
-   (let ((bufs (grepp-buffers)))
+   (let ((bufs  (grepp-buffers)))
      (unless bufs (error "No grep buffers"))
      (list (completing-read "Grep buffer: " bufs nil t nil nil
                             (and grep-last-buffer (buffer-name grep-last-buffer))))))
@@ -300,7 +342,7 @@ Current buffer must be a grep buffer.  It is renamed to *grep*<N>."
 
 (defun grepp-buffers ()
   "List of names of grep buffers."
-  (let ((bufs nil))
+  (let ((bufs  ()))
     (dolist (buf (buffer-list))
       (when (string-match "\\*grep\\*" (buffer-name buf))
         (push (list (buffer-name buf)) bufs)))
@@ -325,12 +367,11 @@ to remove C++ comments that start with //, but not multi-line comments
 between /* and */."
   (interactive "P")
   (when (eq major-mode 'grep-mode) ; Do nothing otherwise, so can use in `compilation-filter-hook'.
-    (let ((inhibit-read-only t)
-          (regexp
-           (if read-regexp-p
-               (read-from-minibuffer "Comment regexp: " nil nil nil 'regexp-history
-                                     grepp-default-comment-line-regexp)
-             grepp-default-comment-line-regexp)))
+    (let ((inhibit-read-only  t)
+          (regexp  (if read-regexp-p
+                       (read-from-minibuffer "Comment regexp: " nil nil nil 'regexp-history
+                                             grepp-default-comment-line-regexp)
+                     grepp-default-comment-line-regexp)))
       (save-excursion (flush-lines regexp (point-min) (point-max))))))
 
 ;;;###autoload
@@ -363,11 +404,6 @@ between /* and */."
 (define-key grep-mode-map ";" 'grepp-remove-comments)
 (define-key grep-mode-map [(meta ?\;)] 'grepp-toggle-comments)
 
-;; New face values
-(set-face-foreground grep-match-face nil)
-(set-face-background grep-match-face "SkyBlue")
-(unless (> emacs-major-version 23) (setq grep-hit-face font-lock-keyword-face))
-
 
 
 ;;; REPLACE ORIGINAL `grep-regexp-alist' defined in `grep.el'.
@@ -375,22 +411,30 @@ between /* and */."
 ;;; Use mouseover on whole line.  Same as original, except for this.
 (unless (featurep 'grep+)
   (setq grep-regexp-alist
-        '(("^\\(.+?\\)\\(:[ \t]*\\)\\([1-9][0-9]*\\)\\2" 1 3)
-          ;; Rule to match column numbers is commented out since no known grep produces them
-          ;; ("^\\(.+?\\)\\(:[ \t]*\\)\\([0-9]+\\)\\2\\(?:\\([0-9]+\\)\\(?:-\\([0-9]+\\)\\)?\\2\\)?"
+        '(;; Rule to match column numbers is commented out since no known grep produces them
+          ;; ("^\\(.+?\\)\\(:[ \t]*\\)\\([1-9][0-9]*\\)\\2\\(?:\\([1-9][0-9]*\\)\
+          ;;\\(?:-\\([1-9][0-9]*\\)\\)?\\2\\)?"
           ;;  1 3 (4 . 5))
 
-          ;; DREW ADAMS: 1) appended `.*', 2) changed HIGHLIGHT to nil, to highlight whole match.
-          ("^\\(\\(.+?\\):\\([1-9][0-9]*\\):\\).*?\
-\\(\033\\[01;31m\\(?:\033\\[K\\)?\\)\\(.*?\\)\\(\033\\[[0-9]*m\\).*" ; DREW ADAMS appended `.*'.
-           2 3
-           ;; Calculate column positions (beg . end) of first grep match on a line
+          ;; use as tight a regexp as possible to try to handle weird file names (with colons) as well as
+          ;; possible.  E.g. use [1-9][0-9]* rather than [0-9]+ so as to accept ":034:" in file names.
+          ("^\\(.+?\\)\\(:[ \t]*\\)\\([1-9][0-9]*\\)\\2.*" ; DREW ADAMS appended `.*'
+           1 3
+           ;; Calculate column positions (col . end-col) of first grep match on a line
            ((lambda ()
-              (setq compilation-error-screen-columns nil)
-              (- (match-beginning 4) (match-end 1)))
+              (when grep-highlight-matches
+                (let* ((beg   (match-end 0))
+                       (end   (save-excursion (goto-char beg) (line-end-position)))
+                       (mbeg  (text-property-any beg end 'font-lock-face 'match)))
+                  (and mbeg (- mbeg beg)))))
             .
-            (lambda () (- (match-end 5) (match-end 1)
-                     (- (match-end 4) (match-beginning 4)))))
+            (lambda ()
+              (when grep-highlight-matches
+                (let* ((beg   (match-end 0))
+                       (end   (save-excursion (goto-char beg) (line-end-position)))
+                       (mbeg  (text-property-any beg end 'font-lock-face 'match))
+                       (mend  (and mbeg (next-single-property-change mbeg 'font-lock-face nil end))))
+                  (and mend (- mend beg))))))
            nil
            nil) ; DREW ADAMS changed HIGHLIGHT to nil, to highlight whole match.
           ("^Binary file \\(.+\\) matches$" 1 nil nil 0 1))))
@@ -402,46 +446,67 @@ between /* and */."
 ;;; Use mouseover on whole line.  Same as original, except for this.
 (unless (featurep 'grep+)
   (setq grep-mode-font-lock-keywords
-        '( ;; Command output lines.
-          ("^\\(.+?\\):\\([0-9]+\\):.*" (0 '(face nil mouse-face compilation-mouseover)))
-          ;; ("^\\([A-Za-z_0-9/\.+-]+\\)[ \t]*:" 1 font-lock-function-name-face)) ; Removed by Stefan, Emacs 24.
-          (": \\(.+\\): \\(?:Permission denied\\|No such \\(?:file or directory\\|device or \
+        (if (> emacs-major-version 23)
+            '( ;; Command output lines.
+              ("^\\(.+?\\):\\([0-9]+\\):.*" (0 '(face nil mouse-face compilation-mouseover)))
+
+              (": \\(.+\\): \\(?:Permission denied\\|No such \\(?:file or directory\\|device or \
 address\\)\\)$"
-           1 grep-error-face)
-          ;; remove match from grep-regexp-alist before fontifying
-          ;; Set both `compilation-message' and `message' to nil, since Emacs before version 24 uses `message'.
-          ("^Grep[/a-zA-z]* started.*"
-           (0 '(face nil compilation-message nil message nil help-echo nil mouse-face nil) t))
-          ("^Grep[/a-zA-z]* finished \\(?:(\\(matches found\\))\\|with \\(no matches found\\)\\).*"
-           ;; Set both `compilation-message' and `message' to nil, since Emacs before version 24 uses `message'.
-           (0 '(face nil compilation-message nil message nil help-echo nil mouse-face nil) t)
-           (1 compilation-info-face nil t)
-           (2 compilation-warning-face nil t))
-          ("^Grep[/a-zA-z]* \\(exited abnormally\\|interrupt\\|killed\\|terminated\\)\\(?:.*with \
+               1 grep-error-face)
+              ;; Remove match from `grep-regexp-alist' before fontifying.
+              ("^Grep[/a-zA-z]* started.*"
+               (0 '(face nil compilation-message nil help-echo nil mouse-face nil) t))
+              ("^Grep[/a-zA-z]* finished \\(?:(\\(matches found\\))\\|with \\(no matches found\\)\\).*"
+               (0 '(face nil compilation-message nil help-echo nil mouse-face nil) t)
+               (1 compilation-info-face nil t)
+               (2 compilation-warning-face nil t))
+              ("^Grep[/a-zA-z]* \\(exited abnormally\\|interrupt\\|killed\\|terminated\\)\\(?:.*with \
 code \\([0-9]+\\)\\)?.*"
-           ;; Set both `compilation-message' and `message' to nil, since Emacs before version 24 uses `message'.
-           (0 '(face nil compilation-message nil message nil help-echo nil mouse-face nil) t)
-           (1 grep-error-face)
-           (2 grep-error-face nil t))
-          ("^.+?-[0-9]+-.*\n" (0 grep-context-face))
-          ;; Highlight grep matches and delete markers
-          ("\\(\033\\[01;31m\\)\\(.*?\\)\\(\033\\[[0-9]*m\\)"
-           ;; Refontification does not work after the markers have been
-           ;; deleted.  So we use the font-lock-face property here as Font
-           ;; Lock does not clear that.
-           (2 (list 'face nil 'font-lock-face grep-match-face))
-           ((lambda (bound))
-            (progn
-              ;; Delete markers with `replace-match' because it updates
-              ;; the match-data, whereas `delete-region' would render it obsolete.
+               (0 '(face nil compilation-message nil help-echo nil mouse-face nil) t)
+               (1 grep-error-face)
+               (2 grep-error-face nil t))
+              ("^.+?-[0-9]+-.*\n" (0 grep-context-face)))
+
+          ;; Emacs 22, 23
+          '( ;; Command output lines.
+            ("^\\(.+?\\):\\([0-9]+\\):.*" (0 '(face nil mouse-face compilation-mouseover)))
+            (": \\(.+\\): \\(?:Permission denied\\|No such \\(?:file or directory\\|device or \
+address\\)\\)$"
+             1 grep-error-face)
+            ;; Remove match from grep-regexp-alist before fontifying.
+            ;; Set both `compilation-message' and `message' to nil, since Emacs before version 24 uses `message'.
+            ("^Grep[/a-zA-z]* started.*"
+             (0 '(face nil compilation-message nil message nil help-echo nil mouse-face nil) t))
+            ("^Grep[/a-zA-z]* finished \\(?:(\\(matches found\\))\\|with \\(no matches found\\)\\).*"
+             ;; Set both `compilation-message' and `message' to nil, since Emacs before version 24 uses `message'.
+             (0 '(face nil compilation-message nil message nil help-echo nil mouse-face nil) t)
+             (1 compilation-info-face nil t)
+             (2 compilation-warning-face nil t))
+            ("^Grep[/a-zA-z]* \\(exited abnormally\\|interrupt\\|killed\\|terminated\\)\\(?:.*with \
+code \\([0-9]+\\)\\)?.*"
+             ;; Set both `compilation-message' and `message' to nil, since Emacs before version 24 uses `message'.
+             (0 '(face nil compilation-message nil message nil help-echo nil mouse-face nil) t)
+             (1 grep-error-face)
+             (2 grep-error-face nil t))
+            ("^.+?-[0-9]+-.*\n" (0 grep-context-face))
+            ;; Highlight grep matches and delete markers
+            ("\\(\033\\[01;31m\\)\\(.*?\\)\\(\033\\[[0-9]*m\\)"
+             ;; Refontification does not work after the markers have been
+             ;; deleted.  So we use the font-lock-face property here as Font
+             ;; Lock does not clear that.
+             (2 (list 'face nil 'font-lock-face grep-match-face))
+             ((lambda (bound))
+              (progn
+                ;; Delete markers with `replace-match' because it updates
+                ;; the match-data, whereas `delete-region' would render it obsolete.
+                (when (> emacs-major-version 23) (syntax-ppss-flush-cache (match-beginning 0)))
+                (replace-match "" t t nil 3)
+                (replace-match "" t t nil 1))))
+            ("\033\\[[0-9;]*[mK]"
+             ;; Delete all remaining escape sequences
+             ((lambda (bound))
               (when (> emacs-major-version 23) (syntax-ppss-flush-cache (match-beginning 0)))
-              (replace-match "" t t nil 3)
-              (replace-match "" t t nil 1))))
-          ("\033\\[[0-9;]*[mK]"
-           ;; Delete all remaining escape sequences
-           ((lambda (bound))
-            (when (> emacs-major-version 23) (syntax-ppss-flush-cache (match-beginning 0)))
-            (replace-match "" t t))))))
+              (replace-match "" t t)))))))
 
 
 ;;; REPLACE ORIGINAL `grep-mode' defined in `grep.el'.
@@ -450,13 +515,19 @@ code \\([0-9]+\\)\\)?.*"
 ;;;
 (define-compilation-mode grep-mode "Grep"
   "Sets `grep-last-buffer' and `compilation-window-height'."
-  (setq grep-last-buffer (current-buffer))
+  (setq grep-last-buffer  (current-buffer))
   (when (boundp 'grep-mode-tool-bar-map)
     (set (make-local-variable 'tool-bar-map) grep-mode-tool-bar-map))
   (set (make-local-variable 'compilation-error-face) grep-hit-face)
   (set (make-local-variable 'compilation-error-regexp-alist) grep-regexp-alist)
+  ;; compilation-directory-matcher can't be nil, so we set it to a regexp that
+  ;; can never match.
+  (set (make-local-variable 'compilation-directory-matcher) '("\\`a\\`"))
   (set (make-local-variable 'compilation-process-setup-function) 'grep-process-setup)
-  (set (make-local-variable 'compilation-disable-input) t))
+  (set (make-local-variable 'compilation-disable-input) t)
+  (set (make-local-variable 'compilation-error-screen-columns)
+       grep-error-screen-columns)
+  (when (fboundp 'grep-filter) (add-hook 'compilation-filter-hook 'grep-filter nil t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 
