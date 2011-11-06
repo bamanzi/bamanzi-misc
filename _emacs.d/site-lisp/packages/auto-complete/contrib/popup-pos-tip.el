@@ -35,7 +35,7 @@
 ;; (require 'popup-pos-tip)
 ;; (defadvice popup-tip
 ;;   (around popup-pos-tip-wrapper (string &rest args) activate)
-;;   (if (eq window-system 'x)
+;;   (if (memq window-system '(x w32))
 ;;       (apply 'popup-pos-tip string args)
 ;;     ad-do-it))
 
