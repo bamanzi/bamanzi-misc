@@ -254,7 +254,9 @@ add an overlay for this heading."
 
     (qtmstr-outline-remove-overlays)))
 
-(add-hook 'outline-minor-mode-hook #'qtmstr-outline-mode-hook)
+;;(add-hook 'outline-minor-mode-hook #'qtmstr-outline-mode-hook)
+
+(provide 'qtmstr-outline)
 
 ;;; Emacs
 ;; Local Variables:
