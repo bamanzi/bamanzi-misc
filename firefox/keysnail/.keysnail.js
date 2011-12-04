@@ -62,11 +62,19 @@ ext.add("delete-other-windows", function() {
 
 
 ext.add("split-window-vertically" , function() {
-    SplitBrowser.addSubBrowser(window.content.location.href, SplitBrowser.activeSubBrowser, SplitBrowser.POSITION_BOTTOM);
+    if ( (typeof(SplitBrowser)) != "undefined" ) {
+        SplitBrowser.addSubBrowser(window.content.location.href, SplitBrowser.activeSubBrowser, SplitBrowser.POSITION_BOTTOM);
+    } else {
+        splitpannel.toggle(window._content.document.location, true, "bottom");
+    }
 }, 'split-window-vertically (Fox Splitter addon)');
 
 ext.add("split-window-horizontally", function() {
-    SplitBrowser.addSubBrowser(window.content.location.href, SplitBrowser.activeSubBrowser, SplitBrowser.POSITION_RIGHT);
+    if ( (typeof(SplitBrowser)) != "undefined" ) {
+        SplitBrowser.addSubBrowser(window.content.location.href, SplitBrowser.activeSubBrowser, SplitBrowser.POSITION_RIGHT);
+    } else {
+        splitpannel.toggle(window._content.document.location, true, "right");
+    }
 }, 'split-window-horizontally (Fox Splitter addon)');
 
 //make some ScrapBook (Plus)'s command could be manipulated with keyboard     
@@ -88,7 +96,7 @@ ext.add("scrapbook-save", function() {
 ext.add("is.gd", function () {
     let endpoint = "http://is.gd/api.php?longurl=" + encodeURIComponent(window._content.document.location);
     let result = util.httpGet(endpoint, true);
-    if (result.responseText) {
+    if (result.status == 200) {
         command.setClipboardText(result.responseText);
         display.echoStatusBar("Short URL copied into clipboard: " + result.responseText, 3000);
     }
@@ -96,6 +104,28 @@ ext.add("is.gd", function () {
         display.echoStatusBar("is.gd service failed: " + result.statusText, 3000);
 }, "Shorten current page's URL with http://is.gd service");
 
+//TODO: goo.gl
+
+ext.add("bookmark-on-delicious", function(ev, arg) {
+    var f='http://www.delicious.com/save?url='+encodeURIComponent(content.location.href)+
+        '&title='+encodeURIComponent(content.title)+
+        '&notes='+encodeURIComponent(''+(content.getSelection?
+                                         content.getSelection():
+                                         content.getSelection?
+                                               content.getSelection():
+                                               content.selection.createRange().text))+
+        '&v=6&';
+    var a=function(){
+        if(!window.open(f+'noui=1&jump=doclose','deliciousuiv6',
+                        'location=yes,links=no,scrollbars=no,toolbar=no,width=550,height=550'))
+            location.href=f+'jump=yes'
+    };
+    if(/Firefox/.test(navigator.userAgent)) {
+        setTimeout(a,0)}
+    else{
+        a();
+    }
+}, "bookmark current page on delicious.");
 
 //Yet Another Twitter Client KeySnail 
 plugins.options["twitter_client.keymap"] = {
@@ -176,16 +206,7 @@ ext.add("paste-to-tab-and-go", function() {
     }
 }, "Paste the URL or keyword from clipboard to a new tab and Go");
 
-ext.add("is.gd", function () {
-    let endpoint = "http://is.gd/api.php?longurl=" + encodeURIComponent(window._content.document.location);
-    let result = util.httpGet(endpoint, true);
-    if (result.responseText) {
-        command.setClipboardText(result.responseText);
-        display.echoStatusBar("Short URL copied into clipboard: " + result.responseText, 3000);
-    }
-    else
-        display.echoStatusBar("is.gd service failed: " + result.statusText, 3000);
-}, "Shorten current page's URL with http://is.gd service");
+
 
 // selection
 ext.add("search-selection", function() {
@@ -210,6 +231,37 @@ ext.add("previous-occur", function() {
     }
     gFindBar.onFindAgainCommand(true);
 }, "highlight previouse occurence of current selected word");
+
+ext.add("increase-digit-in-url", function() {
+    var pattern = /(.*?)([0]*)([0-9]+)([^0-9]*)$/;
+    var url = content.location.href;
+    var digit = url.match(pattern);
+    if (digit[1] && digit[3]) {
+        let len = digit[3].length;
+        let next = +digit[3] + (arg ? arg : 1);
+        content.location.href = digit[1] + (digit[2] || "").slice(next.toString().length - len) + next + (digit[4] || "");
+    }
+}, 'Increment last digit in the URL');
+
+ext.add("decrease-digit-in-url", function() {
+    var pattern = /(.*?)([0]*)([0-9]+)([^0-9]*)$/;
+    var url = content.location.href;
+    var digit = url.match(pattern);
+    if (digit[1] && digit[3]) {
+        let len = digit[3].length;
+        let next = +digit[3] - (arg ? arg : 1);
+        content.location.href = digit[1] + (digit[2] || "").slice(next.toString().length - len) + next + (digit[4] || "");
+    }
+}, 'Decrement last digit in the URL');
+
+ext.add("count-region", function(ev, arg) {
+    var aInput = ev.originalTarget;
+    var value = aInput.value;
+ 
+    var selcount = aInput.selectionEnd - aInput.selectionStart;
+ 
+    display.echoStatusBar("Total:" + value.length + " Selected:" + selcount, 3000);
+}, "Count chars.");
 
 function inputChars(ev, chars) {
     var aInput = ev.originalTarget;
@@ -286,6 +338,7 @@ hook.setHook('Unload', function () {
         return true;
     });
 });
+
 hook.addToHook('Unload', function () {
     util.getBrowserWindows().some(function (win) {
         if (win === window) {
@@ -347,19 +400,19 @@ key.setGlobalKey('C-m', function (ev) {
     key.generateKey(ev.originalTarget, KeyEvent.DOM_VK_RETURN, true);
 }, 'Generate the return key code');
 
-key.setGlobalKey(['C-x', 'l'], function (ev) {
+key.setGlobalKey(['M-g', 'M-d'], function (ev) {
     command.focusToById("urlbar");
 }, 'Focus to the location bar', true);
 
-key.setGlobalKey(['C-x', 'g'], function (ev) {
+key.setGlobalKey(['M-g', 'M-k'], function (ev) {
     command.focusToById("searchbar");
 }, 'Focus to the search bar', true);
 
-key.setGlobalKey(['C-x', 't'], function (ev) {
+key.setGlobalKey(['M-g', 'M-t'], function (ev) {
     command.focusElement(command.elementsRetrieverTextarea, 0);
 }, 'Focus to the first textarea', true);
 
-key.setGlobalKey(['C-x', 's'], function (ev) {
+key.setGlobalKey(['M-g', 'M-b'], function (ev, arg) {
     command.focusElement(command.elementsRetrieverButton, 0);
 }, 'Focus to the first button', true);
 
@@ -391,7 +444,7 @@ key.setGlobalKey([['C-x', 'K'], ['C-x', '5', '0']], function (ev) {
     closeWindow(true);
 }, 'Close the window');
 
-key.setGlobalKey(['C-x', 'n'], function (ev) {
+key.setGlobalKey([['C-x', 'n'], ['C-x', '5', '2']], function (ev) {
     OpenBrowserWindow();
 }, 'Open new window');
 
@@ -459,7 +512,7 @@ key.setGlobalKey(['C-c', 'C-e'], function (ev, arg) {
     ext.exec("hok-start-continuous-mode", arg, ev);
 }, 'Start Hit a Hint continuous mode', true);
 
-key.setGlobalKey(['C-c', 'g', 'u'], function (ev) {
+key.setGlobalKey([['C-c', 'g', 'u'], ['M-g', 'u']], function (ev) {
     var uri = getBrowser().currentURI;
     if (uri.path == "/") {
         return;
@@ -471,7 +524,7 @@ key.setGlobalKey(['C-c', 'g', 'u'], function (ev) {
     loadURI(uri.prePath + pathList.join("/") + "/");
 }, 'Go upper directory');
 
-key.setGlobalKey(['C-c', 'g', 'U'], function (ev) {
+key.setGlobalKey([['C-c', 'g', 'U'], ['M-g', 'U']], function (ev) {
     var uri = window._content.location.href;
     if (uri == null) {
         return;
@@ -925,17 +978,30 @@ key.setGlobalKey(['C-x', 'p'], function (ev, arg) {
     splitpannel.toggle(window._content.document.location, true, 'right');
 }, 'Open Split Panel and load current URL in it .');
 
-key.setGlobalKey(['C-x', 'i'], function (ev, arg) {
+key.setGlobalKey(['C-<f9>', 'i'], function (ev, arg) {
     splitpannel.toggle('http://space.cnblogs.com/mi/', true, 'right');
 }, 'Open Split Panel and load http://space.cnblogs.com/mi/ in it .');
 
-key.setGlobalKey(['C-x', 't'], function (ev, arg) {
+key.setGlobalKey(['C-<f9>', 't'], function (ev, arg) {
     splitpannel.toggle("http://translate.google.com/m?hl=zh-CN&sl=auto&tl=en&ie=UTF-8", true, 'right');
 }, 'Open Split Panel and load Google Translate (any->en) in it .');
 
-key.setGlobalKey(['C-x', 'T'], function (ev, arg) {
+key.setGlobalKey(['C-<f9>', 'T'], function (ev, arg) {
     splitpannel.toggle("http://translate.google.com/m?hl=zh-CN&sl=auto&tl=zh-CN&ie=UTF-8", true, 'right');
 }, 'Open Split Panel and load Google Translate (any->zh-CN) in it .');
+
+//toggle sidebar
+key.setGlobalKey(['C-<f11>', 'C-<f11>'], function (ev, arg) {
+    toggleSidebar("", false);
+}, 'close sidebar');
+ 
+key.setGlobalKey(['C-<f11>', 'r'], function (ev, arg) {
+    toggleSidebar("RIL_sidebarlist", true);
+}, 'Show ReadItLater sidebar. (readitlater extension)');
+ 
+key.setGlobalKey(['C-<f11>', '['], function (ev, arg) {
+    toggleSidebar("viewSidebar_save2read");
+}, 'Show Save-To-Read sidebar. (save2read extension)');
 
 key.setViewKey(['C-c', 'C-a'], function (ev, arg) {
     var pattern = /(.*?)([0]*)([0-9]+)([^0-9]*)$/;
@@ -947,6 +1013,7 @@ key.setViewKey(['C-c', 'C-a'], function (ev, arg) {
         content.location.href = digit[1] + (digit[2] || "").slice(next.toString().length - len) + next + (digit[4] || "");
     }
 }, 'Increment last digit in the URL');
+
 key.setViewKey(['C-c', 'C-d'], function (ev, arg) {
     var pattern = /(.*?)([0]*)([0-9]+)([^0-9]*)$/;
     var url = content.location.href;
@@ -982,5 +1049,38 @@ key.setEditKey(["C-x", '8', '-'], function(ev, arg) {
     inputChars(ev, "…");
 }, "Input …");
 
+key.setGlobalKey(["<C-f10>", 'p'], function(ev, arg) {
+    toggleproxy.toggleProxy();
+}, "Toggle proxy.");
 
+key.setGlobalKey(["<C-f10>", 'c'], function(ev, arg) {
+    addon9408.ctmain.btDoToggle();
+}, "Toggle color.");
+
+key.setGlobalKey(['C-<f10>', 'd'], function (ev, arg) {
+    var val = util.getBoolPref("extensions.gdic_gtrans.enableSelect", false);
+    val = !val;
+    util.setBoolPref("extensions.gdic_gtrans.enableSelect", val);
+    var wm = Components.classes['@mozilla.org/appshell/window-mediator;1'].getService(Components.interfaces.nsIWindowMediator);
+    var enumerator = wm.getEnumerator("navigator:browser");
+    while (enumerator.hasMoreElements()) {
+        var win = enumerator.getNext();
+        if (win && win.gd12) {
+            win.gd12.prefs.read();
+        }
+    }
+    display.echoStatusBar("select-to-translate now set to " + val , 3000);
+}, 'Toggle \'select-to-translate\' of Wiktionary & Google Translate extension.');
+
+key.setViewKey(['C-c', 'C-a'], function(ev, arg) {
+    ext.exec("increase-digit-in-url", arg);
+}, "Increase last digit in URL.");
+
+key.setViewKey(['C-c', 'C-d'], function(ev, arg) {
+    ext.exec("decrease-digit-in-url", arg);
+}, "Decrease last digit in URL.");
+
+key.setViewKey('M-=', function(ev, arg) {
+    ext.exec("count-region", arg, ev);
+}, "Count selected or all chars in current editbox.");
 
