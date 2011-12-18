@@ -17,7 +17,7 @@
       ("Code folding"
        ["hs-minor-mode" hs-minor-mode :style toggle :selected hs-minor-mode]
        ["  hideshowvis" hideshowvis-minor-mode :style toggle :selected hideshowvis-minor-mode
-        :active hs-minor-mode]
+        :active hs-minor-mode :help "+/- symbol on left-fringe for toggling folding."]
        ["outline-minor-mode" outline-minor-mode :style toggle :selected outline-minor-mode]
        ["  hide sublevels" hide-sublevels t]
        ["  show all" show-all t]

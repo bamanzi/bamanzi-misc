@@ -21,6 +21,7 @@
 
 (defcustom epy-static-checker "epylint"
   "Default static checker/lint program for python."
+  :group 'epy
   )
 
 (defun epy-set-checker (checker)
@@ -33,7 +34,7 @@
                               nil
                               epy-static-checker)))
   (setq epy-set-checker checker)
-  (message "Default python checker set to %s." checker)
+  (message "Default python checker set to %s." checker))
 
 
 
@@ -45,8 +46,15 @@
          (file-relative-name 
           temp-file 
           (file-name-directory buffer-file-name))))
-
-(defun flymake-command-parse (cmdline)...
+  
+(defun flymake-command-setup (command &optional options)
+  "Setup the command to be used with flymake, the command
+will be called in this way: COMMAND OPTIONS FILE The FILE varible
+is passed after the options."
+  ;; Make sure it's not a remote buffer or flymake would not work
+  (when (not (current-file-remotep)) 
+    (list command
+          (append options (list (flymake-create-copy-file))))))
 
 ;;Usage: (epy-setup-checker "epylint %f")
 (defun epy-setup-checker (cmdline)
@@ -90,8 +98,12 @@
 (add-hook 'python-mode-hook 'python-mode-hook-flymake)
 
 (when (require 'flymake "flymake-patch" t)
-  (setq flymake-info-line-regex
-        (append flymake-info-line-regex '("unused$" "^redefinition" "used$")))
+  (if (boundp 'flymake-info-line-regex)
+      (setq flymake-info-line-regex     ;;only available in `flymake-patch.el'
+            (append flymake-info-line-regex '("unused$" "^redefinition" "used$"))))
   
   (load "flymake-cursor" nil t)
   (require 'rfringe nil t))
+
+
+(provide 'epy-checker)

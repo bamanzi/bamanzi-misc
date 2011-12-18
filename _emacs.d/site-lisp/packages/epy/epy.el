@@ -8,9 +8,27 @@
 
 (add-to-list 'load-path epy-install-dir)
 
-(require 'epy-setup)
-(require 'epy-ropemacs)
+;; Adding paths to the variable load-path
+(dolist (relpath '(""
+                   "elisp"
+                   "extensions/"
+                   "extensions/yasnippet"
+                   "extensions/auto-complete"
+                   )
+                 )
+  (add-to-list 'load-path (concat epy-install-dir relpath)))
+
+;; add `epy/bin' to PATH, for epylint, pep8 etc
+(let ( (bin-path (concat epy-install-dir "bin")) )
+       (add-to-list 'exec-path bin-path)
+       (setenv "PATH" (concat bin-path path-separator (getenv "PATH"))))
+
+(defgroup epy nil
+  "emacs-for-python package"
+  :group  'python
+  :prefix "epy-")
+
+(require 'epy-completion)
 (require 'epy-menu)
-(require 'epy-misc)
 
 (provide 'epy)
