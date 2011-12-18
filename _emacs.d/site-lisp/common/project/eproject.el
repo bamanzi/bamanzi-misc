@@ -1,538 +1,1193 @@
-;; eproject.el - assign files to projects, programatically
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; Copyright (C) 2008, 2009 Jonathan Rockway <jon@jrock.us>
+;; eproject.el --- project workspaces for emacs
 ;;
-;; Author: Jonathan Rockway <jon@jrock.us>
-;; Maintainer: Jonathan Rockway <jon@jrock.us>
-;; Created: 20 Nov 2008
-;; Version: 1.5
-;; Keywords: programming, projects
+;; Copyright (C) 2008-2010 grischka
 ;;
-;; This file is not a part of GNU Emacs.
+;; Author: grischka -- grischka@users.sourceforge.net
+;; Created: 24 Jan 2008
+;; Version: 0.4
 ;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 2 of
-;; the License, or (at your option) any later version.
+;; This program is free software, released under the GNU General
+;; Public License (GPL, version 2). For details see:
+;;
+;;     http://www.fsf.org/licenses/gpl.html
 ;;
 ;; This program is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-;; GNU General Public License for more details.
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+;; General Public License for more details.
 ;;
-;; You should have received a copy of the GNU General Public
-;; License along with this program; if not, write to the Free
-;; Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
-;; MA 02111-1307, USA.
-;;
-;;; Commentary:
-;;
-;; Eproject is an extension that lets you group related files together
-;; as projects.  It aims to be as unobtrusive as possible -- no new
-;; files are created (or required to exist) on disk, and buffers that
-;; aren't a member of a project are not affected in any way.
-;;
-;; The main starting point for eproject is defining project types.
-;; There is a macro for this, define-project-type, that accepts four
-;; arguments, the type name (a symbol), a list of supertypes (for
-;; inheriting properties), a form that is executed to determine
-;; whether a file is a member of a project, and then a free-form
-;; property list.  An example will clear things up.
-;;
-;; Let's create a "perl" project type, for Perl projects that have a
-;; Makefile.PL.
-;;
-;; (define-project-type perl (generic)
-;;   (look-for "Makefile.PL")
-;;   :relevant-files ("\\.pm$" "\\.t$"))
-;;
-;; Now when you open a file and somewhere above in the directory tree
-;; there is a Makefile.PL, it will be a "perl project".
-;;
-;; There are a few things you get with this.  A hook called
-;; perl-project-file-visit-hook will be run, and the buffer will have
-;; the "eproject-mode" minor-mode turned on.  You can also read and
-;; set metadata via the eproject-attribute and
-;; eproject-add-project-metadatum calls.
-;;
-;; (This is mostly helpful to lisp programmers rather than end-users;
-;; if you want tools for visiting and managing projects (and ibuffer
-;; integration), load `eproject-extras'.  These extras are great
-;; examples of the eproject API in action, so please take a look even
-;; if you don't want those exact features.)
-;;
-;; Let's look at the mechanics of the define-project-type call.  The
-;; first argument is the name of the project type -- it can be any
-;; symbol.  The next argument is a list of other projects types that
-;; this project will inherit from.  That means that if you call
-;; eproject-get-project-metadatum and the current project doesn't
-;; define a value, we'll look at the supertypes until we get something
-;; non-nil.  Usually you will want to set this to (generic), which
-;; will make your type work correctly even if you don't define any of
-;; your own metadata.
-;;
-;; The next argument is a form that will be executed with the filename
-;; that was just opened bound to FILE.  It is expected to return the
-;; project root, or nil if FILE is not in a project of this type.  The
-;; look-for function will look up the directory tree for a file that
-;; is named the same as its argument (see the docstring for
-;; `eproject--look-for-impl' for all the details).  You can write any
-;; Lisp here you like; we'll see some more examples later.  (You only
-;; get one form, so if you need to execute more than one, just wrap it
-;; in a progn.)
-;;
-;; The final (&rest-style) argument is a property list of initial project
-;; metadata.  You can put anything you want here, as long as it is in the
-;; form of a property list (keyword, value, keyword, value, ...).
-;;
-;; After this form runs, eproject will be able to recognize files in
-;; the type of the project you defined.  It also creates a hook named
-;; <type>-project-file-visit-hook.  You can do anything you want here,
-;; including access (eproject-type) and (eproject-root).
-;;
-;; As an example, in my perl-project-file-visit-hook, I do this:
-;;
-;; (lambda ()
-;;   (ignore-errors
-;;     (stylish-repl-eval-perl
-;;      (format "use lib '%s'" (car (perl-project-includes)))))))
-;;
-;; This will add the library directory of this project to my current
-;; stylish-repl session, so that I can use my project in the REPL
-;; immediately.  (I do something similar for Lisp + SLIME projects)
-;;
-;; That's basically all there is.  eproject is designed to be minimal and
-;; extensible, so I hope it meets your needs.
-;;
-;; Please e-mail me or find me on #emacs (jrockway) if you have
-;; questions.  If you'd like to send a patch (always appreciated),
-;; please diff against the latest git version, available by running:
-;;
-;; $ git clone git://github.com/jrockway/eproject
-;;
-;; Share and enjoy.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;; Public API:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; User-configurable items:
 
-;; eproject-root (&optional buffer)
-;;
-;; - returns the project root for the project that buffer is a member
-;;   of. defaults to the current buffer
+(defvar prj-default-config '(
+  ("Make"         "make" "f9")
+  ("Clean"        "make clean" "C-f9")
+  ("Run"          "echo run what" "f8")
+  ("Stop"         "-e eproject-killtool" "C-f8")
+  ("---")
+  ("Configure"    "./configure")
+  ("---")
+  ("Explore Project" "nautilus --browser `pwd` &")
+  ("XTerm In Project" "xterm &")
+  )
+  "*The default tools menu for new projects in eproject."
+  )
 
-;; eproject-attribute (key &optional root)
-;;
-;; - returns the value of key for the project that buffer is a member
-;;   of.  root defaults to the current buffer's eproject-root
+(defvar prj-set-default-directory nil
+  "*Should eproject set the project directory as default-directory
+for all project files (nil/t).")
 
-;; eproject-list-project-files
+(defvar prj-set-framepos nil
+  "*Should eproject restore the last frame position/size (nil/t).")
 
-;; define-project-type
+(defvar prj-set-compilation-frame nil
+  "*Should eproject show compilation output in the other frame (nil/t).")
+  
+(defvar prj-set-multi-isearch nil
+  "*Should eproject setup multi-isearch in the project files (nil/t).")
 
-;; define-project-attribute
+;; End of user-configurable items
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Everything else is mostly used internally, and may change.
+;; There is a global file (~/.emacs.d/eproject.lst)
+(defun prj-globalfile ()
+  (expand-file-name "eproject.lst"
+     (if (boundp 'user-emacs-directory) user-emacs-directory
+       "~/.emacs.d/")
+     ))
 
-;;; Public commands:
+;; with the list of all projects
+(defvar prj-list)
 
-;; eproject-maybe-turn-on
-;;
-;; - turn on eproject for the current buffer, if possible
-;;   (if it's turned on, the hooks will be run)
+;; and the project that was open in the last session (if any)
+(defvar prj-last-open nil)
 
-;; eproject-reinitialize-project
-;;
-;; - re-read config for the current project, then run
-;;   eproject-maybe-turn-on
+;; and the frame coords from last session
+(defvar prj-frame-pos nil)
 
-;; See eproject-extras.el for more interesting / useful commands.
-;; This file is mostly "plumbing".
+;; eproject version that created the config file
+(defvar prj-version nil)
 
-;;; Bugs:
-;;
-;; You can't forward reference supertypes -- this will mess things up
-;; internally, but you won't get a warning.  This can be easily fixed
-;; by using a smarter algorithm for eproject--all-types.
-;;
-;; The "linearized isa" (i.e. "class precedence list") is computed
-;; with a depth-first search.  This is bad; we should really use the
-;; C3 ordering.
+;; Here is a function to reset these
+(defun prj-init ()
+  (setq prj-version nil)
+  (setq prj-list nil)
+  (setq prj-last-open nil)
+  (setq prj-frame-pos nil)
+  )
 
-;;; Website:
-;;
-;; The latest version is on github at
-;; http://github.com/jrockway/eproject/tree/master
-;;
-;; The wiki has lots more documentation:
-;; http://wiki.github.com/jrockway/eproject
-;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Each project has a directory
 
-;;; Changelog:
-;; 1.5 (Thu May 28 21:38:08 MST 2009)
-;;
-;; * Split out the non-core stuff into eproject-extras.el.
-;;   (slime-contrib style)
-;;
-;; 1.4 (Thu May 28 02:21:40 MST 2009)
-;;
-;; * Add support for "instance" metadata, instead of "class" (project)
-;;   metadata
-;;
-;; 1.3 (Wed May 27 20:47:48 MST 2009)
-;;
-;; * Officially support w32
-;;
-;; 1.2 (Thu May  7 02:18:01 CDT 2009)
-;;
-;; * Add ibuffer support
-;;
-;; 1.1 (Sat Jan 31 20:03:56 CST 2009)
-;;
-;; * Make the completing-read function customizable
-;;
-;; 1.0 (Nov 28 2008)
-;;
-;; * Initial release
-;;
+(defvar prj-directory)
 
-;;; Code:
+;; with a configuration files in it
+(defvar prj-default-cfg "eproject.cfg")
 
-(require 'cl)
-(require 'eshell) ;; For portable path handling
+;; This file defines:
 
-(defgroup eproject nil
-  "Eproject; provide support for grouping files and buffers into projects"
-  :prefix "eproject-"
-  :group 'convenience
-  :link '(emacs-commentary-link :tag "Commentary" "eproject.el")
-  :link '(emacs-library-link :tag "Optional extras" "eproject-extras.el")
-  :link '(url-link :tag "Github wiki" "http://wiki.github.com/jrockway/eproject"))
+;; the list of files
+(defvar prj-files)
 
-(defvar eproject-project-types nil
-  "An alist of project type name to (supertypes selector metadata-plist) pairs.")
+;; the current file
+(defvar prj-curfile)
 
-(defvar eproject-project-names nil
-  "A list of project names known to emacs.  Populated as projects are opened, but may be prepopulated via .emacs if desired.")
+;; an alist of settings
+(defvar prj-config)
 
-(defvar eproject-extra-attributes nil
-  "A list of pairs used to assign attributes to projects.
+;; a list of tools
+(defvar prj-tools)
 
-Each entry can be in the form of `(FUNCTION (ATTRIBUTES))'
-or `((KEY . TYPE) (ATTRIBUTES))'.
+;; a list of utility functions (feature incomplete)
+(defvar prj-functions nil)
 
-If FUNCTION is specified, it will be evaluated for each project
-root.  If it returns a non-nil value, ATTRIBUTES will be added to
-the project attributes.
+;; directory to run commands, default to prj-directory
+(defvar prj-exec-directory)
 
-If `(KEY . TYPE)' is specified, then TYPE is either
-`:root-regexp' or `:project-name' and KEY is interpreted
-accordingly.  If KEY matches a project root, its ATTRIBUTES are
-applied.
+;; The current project
+(defvar prj-current)
 
-ATTRIBUTES is a plist of attributes.")
+;; A list with generated functions for each tool
+(defvar prj-tools-fns)
 
-(defun define-project-attribute (key attributes)
-  "Define extra attributes to be applied to projects.
+;; A list with files removed from the project
+(defvar prj-removed-files)
 
-See `eproject-extra-attributes' for details on the format of KEY
-and ATTRIBUTES."
-  (check-type key (or function cons))
-  (check-type attributes list)
-  (add-to-list 'eproject-extra-attributes (list key attributes)))
+;; Here is a function to reset/close the project
+(defun prj-reset ()
+  (setq prj-version nil)
+  (setq prj-current nil)
+  (setq prj-directory nil)
+  (setq prj-exec-directory nil)
+  (setq prj-files nil)
+  (setq prj-removed-files nil)
+  (setq prj-curfile nil)
+  (setq prj-config nil)
+  (setq prj-tools-fns nil)
+  (setq prj-tools (copy-tree prj-default-config))
+  (prj-reset-functions)
+  )
 
-(defmacro define-project-type (type supertypes selector &rest metadata)
-  "Define a new project type TYPE that inherits from SUPERTYPES.
+(defun prj-reset-functions ()
+  (dolist (l prj-functions)
+    (if (eq (car l) 'setq)
+        (makunbound (cadr l))
+      (fmakunbound (cadr l))
+      ))
+  (setq prj-functions nil)
+  )
 
-SELECTOR is a form that is given a filename FILE and returns the
-project root if it is of this type of project, or NIL otherwise.
+(defun prj-set-functions (s)
+  (prj-reset-functions)
+  (setq prj-functions s)
+  (dolist (l s) (eval l))
+  )
 
-Optional argument METADATA is a plist of metadata that will
-become project attributes."
-  `(progn
-     (defvar ,(intern (format "%s-project-file-visit-hook" type)) nil
-       ,(format "Hooks that will be run when a file in a %s project is opened." type))
-       (setq eproject-project-types
-             (nconc (assq-delete-all ',type eproject-project-types)
-                    (list
-                     (list ',type ',supertypes
-                           (lambda (file) ,selector)
-                           ',metadata))))))
+;; Some more variables:
 
-(defun eproject--build-parent-candidates (start-at)
-  "Given directory START-AT, return a list of parent directories, including START-AT."
-    (loop for x on (reverse (eshell-split-path start-at)) by #'cdr
-          ;; i think eshell-split-path guarantees the
-          ;; file-name-as-directory application, but i don't want to
-          ;; debug it if it doesn't :)
-          collect (file-name-as-directory (apply #'concat (reverse x)))))
+;; the frame that exists on startup
+(defvar prj-initial-frame nil)
 
-(defun eproject--scan-parents-for (start-at predicate)
-  "Call PREDICATE with each parent directory of START-AT, returning the path to the first directory where PREDICATE returns T."
-  (find-if predicate (eproject--build-parent-candidates
-                          (file-name-as-directory start-at))))
+;; this is put into minor-mode-alist
+(defvar eproject-mode t)
 
-(defun eproject--find-file-named (start-at filename)
-  "Starting in directory START-AT, recursively check parent directories for a file named FILENAME.  Return the directory where the file is first found; return NIL otherwise."
-  (eproject--scan-parents-for start-at
-   (lambda (directory) ; note that directory always has the path separator on the end
-     (file-exists-p (concat directory filename)))))
+;; where this file is in
+(defvar eproject-directory)
 
-;; TODO: sugar around lambda/lambda, which is ugly
-(define-project-type generic () nil
-  :relevant-files (".*")
-  :irrelevant-files ("^[.]" "^[#]")
-  :file-name-map (lambda (root) (lambda (root file) file))
-  :config-file ".eproject")
+;; eproject version that created the files
+(defvar eproject-version "0.4")
 
-(define-project-type generic-eproject (generic) (look-for ".eproject"))
+;; Configuration UI
+(eval-and-compile
+  (defun eproject-setup-toggle () (interactive))
+  (defun eproject-setup-quit () (interactive))
+  (defun prj-config-get-result (s))
+  (defun prj-config-reset ())
+  (defun prj-config-print ())
+  (defun prj-config-parse ())
+  )
 
-(define-project-type generic-git (generic) (look-for ".git")
-  :irrelevant-files ("^[.]" "^[#]" ".git/"))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Small functions
 
-(defun eproject--type-info (type)
-  (or
-   (assoc type eproject-project-types)
-   (error "No type %s" type)))
+(defun caddr (l) (car (cddr l)))
 
-(defun eproject--project-supertypes (type)
-  (nth 1 (eproject--type-info type)))
+(defun prj-del-list (l e)
+  (let ((a (assoc (car e) l)))
+    (if a
+        (delq a l)
+      l)))
 
-(defun eproject--project-selector (type)
-  (nth 2 (eproject--type-info type)))
+(defun prj-add-list (l e)
+  (nconc (prj-del-list l e) (list e))
+  )
 
-(defun* eproject--look-for-impl (file expression &optional (type :filename))
-  "Implements the LOOK-FOR function that is flet-bound during
-`eproject--run-project-selector'.  EXPRESSION and TYPE specify
-what to look for.  Some examples:
+(defun prj-next-file (l e)
+  (and (setq e (assoc (car e) l))
+       (cadr (memq e l))
+       ))
 
-   (look-for \"Makefile.PL\") ; look up the directory tree for a file called Makefile.PL
-   (look-for \"*.PL\" :glob) ; look for a file matching *.PL
-"
-  (case type
-    (:filename (eproject--find-file-named file expression))
-    (:glob (eproject--scan-parents-for (file-name-directory file)
-             (lambda (current-directory)
-               (let ((default-directory current-directory))
-                 (and (not (equal file current-directory))
-                      (> (length (file-expand-wildcards expression)) 0))))))
-    (otherwise (error "Don't know how to handle %s in LOOK-FOR!" type))))
+(defun prj-prev-file (l e)
+  (prj-next-file (reverse l) e)
+  )
 
-(defun* eproject--run-project-selector (type &optional (file (buffer-file-name)))
-  "Run the selector associated with project type TYPE."
-  (when (not file)
-    (cond ((eq major-mode 'dired-mode)
-           (setq file (expand-file-name dired-directory)))
-          (t (error "Buffer '%s' has no file name" (current-buffer)))))
-  (flet ((look-for (expr &optional (expr-type :filename))
-                   (funcall #'eproject--look-for-impl file expr expr-type)))
-    (funcall (eproject--project-selector type) file)))
+ ; replace a closed file, either by the previous or the next.
+(defun prj-otherfile (l f)
+  (or (prj-prev-file l f)
+      (prj-next-file l f)
+      ))
 
-(defun eproject--linearized-isa (type &optional include-self)
-  (delete-duplicates
-   (nconc
-    (if include-self (list type))
-    (eproject--project-supertypes type)
-    (loop for stype in (eproject--project-supertypes type)
-          nconc (eproject--linearized-isa stype)))))
+;; make relative path, but only up to the second level of ..
+(defun prj-relative-path (f)
+  (let ((r (file-relative-name f prj-directory)))
+    (if (string-match "^\\.\\.[/\\]\\.\\.[/\\]\\.\\.[/\\]" r)
+        f
+      r
+      )))
 
-(defun eproject--all-types ()
-  ;; this should be most specific to least specific, as long as nothing
-  ;; is forward-referenced.
- (reverse (mapcar #'car eproject-project-types)))
+;; friendly truncate filename
+(defun prj-shortname (s)
+  (let ((l (length s)) (x 30) n)
+    (cond ((>= x l) s)
+          ((progn
+             (setq x (- x 3))
+             (setq n (length (file-name-nondirectory s)))
+             (if (< n l) (setq n (1+ n)))
+             (>= x n)
+             )
+           (concat (substring s 0 (- x n)) "..." (substring s (- n)))
+           )
+          ((= n l)
+           (concat (substring s 0 x) "...")
+           )
+          (t
+           (concat "..." (substring s (- n) (- (- x 3) n)) "...")
+           ))))
 
-;; metadata vs. attributes:
-;; * metadata is per-project-type
-;; * attributes are per-project-root (and includes the project-type metadata)
-(defun eproject--compute-all-applicable-metadata (type)
-  (loop for next-type in (eproject--linearized-isa type t)
-        append (nth 3 (eproject--type-info next-type))))
+(defun prj-settitle ()
+  (modify-frame-parameters
+   nil
+   (list (cons 'title
+               (and prj-current
+                    (format "emacs - %s" (car prj-current))
+                    )))))
 
-(defun eproject-get-project-metadatum (type key)
-  (getf (eproject--compute-all-applicable-metadata type) key))
+(defun eproject-addon (f)
+  (concat eproject-directory f)
+  )
 
-(defun eproject-add-project-metadatum (type key value)
-  (setf (getf (nth 3 (assoc type eproject-project-types)) key) value))
+(defun prj-goto-line (n)
+  (goto-char 1)
+  (beginning-of-line n)
+  )
 
-(defvar eproject-root nil
-  "A buffer-local variable set to the root of its eproject project.  NIL if it isn't in an eproject.")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Write configuration to file
 
-(make-variable-buffer-local 'eproject-root)
+(defun prj-print-list (s fp)
+  (let ((v (eval s)))
+    (setq v (list 'setq s
+      (if (and (atom v) (null (and (symbolp v) v)))
+          v
+          (list 'quote v)
+          )))
+    ;;(print v fp)
+    (pp v fp) (princ "\n" fp)
+    ))
 
-(defmacro* eproject--do-in-buffer ((buffer) &body forms)
-  `(with-current-buffer ,buffer
-     (when (not eproject-mode)
-       (error "Buffer is not an eproject buffer!"))
-     ,@forms))
+(defun prj-create-file (filename)
+  (let ((fp (generate-new-buffer filename)))
+    (princ ";; -*- mode: Lisp; -*-\n\n" fp)
+    fp))
 
-(defun* eproject-root (&optional (buffer (current-buffer)))
-  "Return the value of the eproject variable root.
-BUFFER defaults to the current buffer"
-  (eproject--do-in-buffer (buffer) eproject-root))
+(defun prj-close-file (fp)
+  (with-current-buffer fp
+    (condition-case nil
+      (and t (write-region nil nil (buffer-name fp) nil 0))
+      (error nil)
+      ))
+  (kill-buffer fp)
+  )
 
-(defvar eproject-attributes-alist nil
-  "An alist of project root -> plist of project metadata.")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Load/Save global project list and initial frame sizes
 
-(defun* eproject-attribute (key &optional (root (eproject-root)))
-  "Lookup the attribute KEY for the eproject ROOT
-ROOT defaults to the current buffer's project-root."
-  (getf (cdr (assoc root eproject-attributes-alist)) key))
+(defun prj-loadlist ()
+  (prj-init)
+  (load (prj-globalfile) t t)
+  (setq prj-version eproject-version)
+  )
 
-(defun eproject--known-project-roots ()
-  "Return a list of projects roots that have been visisted this session."
-  (loop for (key . value) in eproject-attributes-alist collect key))
+(defun prj-get-frame-pos (f)
+  (mapcar
+   (lambda (parm) (cons parm (frame-parameter f parm)))
+   '(top left width height)
+   ))
 
-(defmacro define-eproject-accessor (variable)
-  "Create a function named eproject-VARIABLE that return the value of VARIABLE in the context of the current project."
-  (let ((sym (intern (format "eproject-%s" variable))))
-  `(defun* ,sym
-       (&optional (buffer (current-buffer)))
-     ,(format "Return the value of the eproject variable %s.  BUFFER defaults to the current buffer." variable)
-     (eproject-attribute ,(intern (format ":%s" variable))))))
+(defun prj-savelist ()
+  (let ((g (prj-globalfile)) fp)
+    (unless (file-exists-p g)
+      (make-directory (file-name-directory g) t)
+      )
+    (setq prj-last-open (car prj-current))
+    (when (frame-live-p prj-initial-frame)
+      (setq prj-frame-pos (prj-get-frame-pos prj-initial-frame))
+      )
+    (setq fp (prj-create-file g))
+    (when fp
+      (prj-print-list 'prj-version fp)
+      (prj-print-list 'prj-list fp)
+      (prj-print-list 'prj-last-open fp)
+      (prj-print-list 'prj-frame-pos fp)
+      (prj-close-file fp)
+      )))
 
-(define-eproject-accessor type)
-(define-eproject-accessor name)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Load/Save local per-project configuration file
 
-(defun eproject-reinitialize-project ()
-  "Forget all project settings for the current eproject, then reload them."
+(defun prj-update-config ()
+  (let ((d (prj-get-directory prj-current))
+        (e (prj-getconfig "exec-root"))
+        )
+    (if e (setq d (expand-file-name e d)))
+    (setq prj-exec-directory (file-name-as-directory d))
+    ))
+
+(defun prj-get-directory (a)
+  (file-name-as-directory (expand-file-name (cadr a)))
+  )
+
+(defun prj-get-cfg ()
+  (expand-file-name (or (caddr prj-current) prj-default-cfg) prj-directory)
+  )
+
+(defun prj-loadconfig (a)
+  (let (lf e)
+    (prj-reset)
+    (setq prj-current a)
+    (setq prj-directory (prj-get-directory a))
+    (when (file-regular-p (setq lf (prj-get-cfg)))
+      (load lf nil t)
+      (setq prj-curfile
+            (or (assoc prj-curfile prj-files)
+                (car prj-files)
+                ))
+      )
+    (if (setq e (prj-getconfig "project-name"))
+        (setcar a e)
+        (prj-setconfig "project-name" (car a))
+        )
+    (prj-update-config)
+    (prj-set-functions prj-functions)
+    (setq prj-version eproject-version)
+    ))
+
+(defun prj-saveconfig ()
+  (when prj-current
+    (let (w c b files)
+      (prj-removehooks)
+      (setq w (selected-window))
+      (setq c (window-buffer w))
+      (dolist (f prj-files)
+        (cond ((setq b (get-buffer (car f)))
+               (set-window-buffer w b t)
+               (with-current-buffer b
+                 (let ((s (line-number-at-pos (window-start w)))
+                       (p (line-number-at-pos (window-point w)))
+                       )
+                   (push (list (car f) s p) files)
+                   )))
+              (t ;;(consp (cdr f))
+               (push f files)
+               )))
+      (set-window-buffer w c t)
+      (prj-addhooks)
+      (let ((fp (prj-create-file (prj-get-cfg)))
+            (prj-curfile (car prj-curfile))
+            (prj-files (nreverse files))
+            )
+        (when fp
+          (prj-print-list 'prj-version fp)
+          (prj-print-list 'prj-config fp)
+          (prj-print-list 'prj-tools fp)
+          (prj-print-list 'prj-files fp)
+          (prj-print-list 'prj-curfile fp)
+          (prj-print-list 'prj-functions fp)
+          (prj-close-file fp)
+          ))
+      )))
+
+(defun prj-saveall ()
+  (prj-saveconfig)
+  (prj-savelist)
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; The core functions:  Open / Close / Add / Remove  Project
+
+(defun eproject-open (a)
+  "Open another project."
+  (interactive
+   (list
+    (or (prj-config-get-result 'p)
+        (completing-read "Open Project: " (mapcar 'car prj-list))
+        )))
+  (unless (consp a)
+    (let ((b (assoc a prj-list)))
+      (unless b
+        (error "No such project: %s" a)
+        )
+      (setq a b)
+      ))
+  (setq a (or (car (member a prj-list)) a))
+  (unless (eq a prj-current)
+    (unless (file-directory-p (prj-get-directory a))
+      (error "No such directory: %s" (cadr a))
+      )
+    (setq prj-list (cons a (delq a prj-list)))
+    (eproject-close)
+    (prj-loadconfig a)
+    )
+  (prj-addhooks)
+  (prj-setup-all)
+  (prj-isearch-setup)
+  (unless (prj-edit-file prj-curfile)
+    (eproject-dired)
+    ))
+
+(defun eproject-close ()
+  "Close the current project."
   (interactive)
-  (let ((root (eproject-root)))
-    (setf eproject-attributes-alist
-          (delete-if (lambda (x) (equal (car x) root))
-                     eproject-attributes-alist)))
-  (eproject-maybe-turn-on))
+  (when prj-current
+    (prj-saveconfig)
+    (prj-removehooks)
+    (let (f)
+      (unwind-protect
+          (progn
+            (save-some-buffers nil)
+            (eproject-killbuffers t)
+            (setq f t)
+            )
+        (or f (prj-addhooks))
+        ))
+    (prj-reset)
+    (prj-config-reset)
+    (prj-setup-all)
+    (prj-isearch-setup)
+    ))
 
-(defun eproject--eval-user-data (project-name root)
-  "Interpret EPROJECT-EXTRA-ATTRIBUTES for PROJECT-NAME (in ROOT)."
-  (loop for (key attributes) in eproject-extra-attributes append
-        (cond ((functionp key)
-               (if (funcall key root) attributes nil))
-              ((not (listp key))
-               (error "Bad eproject user data (%s %s), %s must be a list/function"
-                      key attributes key))
-              ((and (eq (cdr key) :project-name)
-                    (equal (car key) project-name))
-               attributes)
-              ((and (eq (cdr key) :root-regexp)
-                    (string-match (car key) root))
-               attributes)
-              (t nil))))
-
-(defun eproject--interpret-metadata (data root)
-  "Interpret DATA with respect to ROOT.
-
-This mostly means evaluating functions and passing everything
-else through unchanged."
-  (loop for i in data collect (if (functionp i) (funcall i root) i)))
-
-(defun eproject--init-attributes (root type)
-  "Update the EPROJECT-ATTRIBUTES-ALIST for the project rooted at ROOT (of TYPE)."
-  (let ((project-data (assoc root eproject-attributes-alist)))
-    (when (null project-data)
-      (let* ((class-data (eproject--interpret-metadata
-                          (eproject--compute-all-applicable-metadata type)
-                          root))
-
-             ;; read the .eproject (or whatever) file
-             (config-file
-              (concat root (getf class-data :config-file ".eproject")))
-             (config-file-contents
-              (with-temp-buffer
-                (ignore-errors (insert-file-contents config-file nil nil nil t))
-                (buffer-substring-no-properties (point-min) (point-max))))
-             (config-file-sexp
-              (read (format "(list %s)" config-file-contents)))
-             (data-is-unsafe (unsafep config-file-sexp))
-             (config-file-data
-              (cond (data-is-unsafe
-                     (warn "Config file %s contains unsafe data (%s), ignoring!"
-                      config-file data-is-unsafe)
-                     nil)
-                    (t (let ((data (eval config-file-sexp)))
-                         (if data (nconc
-                                   (list :loaded-from-config-file config-file)
-                                   data)
-                           nil)))))
-
-             ;; combine class and config data; config overriding class
-             (class-and-config-data (cond
-                    ;; ensure that the config-file-data is really a plist
-                    ((evenp (length config-file-data))
-                     (nconc config-file-data class-data))
-                    (t class-data)))
-
-             ;; calculate the project name, as it's used by "user data"
-             (name (or (getf class-and-config-data :project-name)
-                       (directory-file-name
-                        (elt (reverse (eshell-split-path root)) 0))))
-
-             ;; finally, merge in the "user data"
-             (user-data
-              (eproject--interpret-metadata
-               (eproject--eval-user-data name root) root))
-
-             ;; now compute the final list of attributes
-             (data (nconc user-data class-and-config-data)))
-
-        (add-to-list 'eproject-attributes-alist
-                     (cons root (nconc (list :type type :name name) data)))))))
-
-(define-minor-mode eproject-mode
-  "A minor mode for buffers that are a member of an eproject project."
-  nil " Project"
-  '(("" . eproject-ifind-file)
-    ("" . eproject-ibuffer))
-  (when (null eproject-root)
-    (error "Please do not use this directly.  Call eproject-maybe-turn-on instead.")))
-
-(defun eproject-maybe-turn-on ()
-  "Turn on eproject for the current buffer, if it is in a project."
+(defun eproject-killbuffers (&optional from-project)
+  "If called interactively kills all buffers that
+do not belong to  project files"
   (interactive)
-  (loop for type in (eproject--all-types)
-        do (let ((root (eproject--run-project-selector type)))
-             (when root
-               (setq eproject-root (file-name-as-directory root))
-               (eproject--init-attributes eproject-root type)
-               (eproject-mode 1)
-               (add-to-list 'eproject-project-names (eproject-name))
-               (run-hooks (intern (format "%s-project-file-visit-hook" type)))
-               (return root)))))
+  (let (a b)
+    (dolist (f prj-files)
+      (setq b (get-buffer (car f)))
+      (if b
+          (setq a (cons (list b) a))
+          ))
+    (dolist (b (buffer-list))
+      (when (eq (consp (assoc b a)) from-project)
+        (kill-buffer b)
+        ))))
 
-(defun eproject--search-directory-tree (directory file-regexp ignore-regexp)
-  (loop for file in (directory-files (file-name-as-directory directory) t "^[^.]" t)
-        when (and (not (file-directory-p file))
-                  (not (string-match ignore-regexp file))
-                  (not (string-match ignore-regexp (file-name-nondirectory file)))
-                  (string-match file-regexp file))
-        collect file into files
-        when (file-directory-p file)
-        collect file into directories
-        finally return
-          (nconc files
-                 (loop for dir in directories
-                       nconc (eproject--search-directory-tree dir file-regexp
-                                                              ignore-regexp)))))
-(defun eproject-assert-type (type)
-  "Assert that the current buffer is in a project of type TYPE."
-  (when (not (memq type (eproject--linearized-isa (eproject-type) t)))
-    (error (format "%s is not in a project of type %s!"
-                   (current-buffer) type))))
+(defun eproject-add (dir &optional name cfg)
+  "Add a new or existing project to the list."
+  (interactive
+   (let (d n f)
+    (setq d (read-directory-name "Add project in directory: " prj-directory nil t))
+    (setq n (file-name-nondirectory (directory-file-name d)))
+    (setq n (read-string "Project name: " n))
+    (setq f (read-string "Project file: " prj-default-cfg))
+    (list d n f)
+    ))
+  (when dir
+    (setq dir (directory-file-name dir))
+    (unless name 
+      (setq name (file-name-nondirectory dir))
+      )
+    (when (and cfg (string-equal cfg prj-default-cfg))
+      (setq cfg nil)
+      )
+    (let ((a (if cfg (list name dir cfg) (list name dir))))
+      (push a prj-list)
+      (eproject-open a)
+      )))
 
-(defun eproject--combine-regexps (regexp-list)
-  (format "\\(?:%s\\)"
-          (reduce (lambda (a b) (concat a "\\|" b))
-                  (mapcar (lambda (f) (format "\\(?:%s\\)" f)) regexp-list))))
+(defun eproject-remove (a)
+  "Remove a project from the list."
+  (interactive
+   (list
+    (or (prj-config-get-result 'p)
+        (completing-read "Remove project: " (mapcar 'car prj-list))
+        )))
+  (unless (consp a)
+    (let ((b (assoc a prj-list)))
+      (unless b
+        (error "No such project: %s" a)
+        )
+      (setq a b)
+      ))
+  (when (progn
+          (beep)
+          (prog1 (y-or-n-p (format "Remove \"%s\"? " (car a)))
+            (message "")
+            ))
+    (setq prj-list (prj-del-list prj-list a))
+    (prj-setup-all)
+    ))
 
-(defun* eproject-list-project-files (&optional (root (eproject-root)))
-  "Return a list of all project files in PROJECT-ROOT."
-  (let ((matcher (eproject--combine-regexps
-                  (eproject-attribute :relevant-files root)))
-        (ignore (eproject--combine-regexps (cons
-                 (concat (regexp-opt completion-ignored-extensions t) "$")
-                 (eproject-attribute :irrelevant-files root)))))
-    (eproject--search-directory-tree root matcher ignore)))
+(defun eproject-save ()
+  "Save the project configuration to file."
+  (interactive)
+  (prj-config-parse)
+  (prj-config-print)
+  (prj-saveall)
+  )
 
-;; finish up
-(add-hook 'find-file-hook #'eproject-maybe-turn-on)
-(add-hook 'dired-mode-hook #'eproject-maybe-turn-on)
+(defun eproject-revert ()
+  "Reload the project configuration from file."
+  (interactive)
+  (prj-loadlist)
+  (if prj-current
+      (prj-loadconfig prj-current)
+    )
+  (prj-setup-all)
+  )
 
+(defun eproject-addfile (f)
+  "Add a file to the current project."
+  (interactive
+   (and prj-current
+        (list
+         (read-file-name "Add file to project: " nil nil t nil)
+         )))
+  (unless prj-current (error "No project open"))
+  (let ((a (prj-insert-file f (prj-config-get-result 'f))))
+    (unless (cdr a)
+      (message "Added to project: %s" (car a))
+      ))
+  (prj-config-print)
+  (prj-setmenu)
+  )
+
+(defun eproject-removefile (a)
+  "Remove a file from the current project."
+  (interactive (prj-get-existing-file-1 "Remove file from project: "))
+  (setq a (prj-get-existing-file-2 a))
+  (prj-remove-file a)
+  )
+
+(defun eproject-visitfile (a)
+  "Visit a file from the current project."
+  (interactive (prj-get-existing-file-1 "Visit file: "))
+  (setq a (prj-get-existing-file-2 a))
+  (prj-edit-file a)
+   )
+
+(defun prj-get-existing-file-1 (msg)
+  (and prj-current
+       (list
+        (or (prj-config-get-result 'f)
+            (completing-read msg (mapcar 'car prj-files))
+            ))))
+
+(defun prj-get-existing-file-2 (a)
+   (unless prj-current (error "No project open"))
+   (if (consp a)
+       a
+     (let ((b (assoc (prj-relative-path a) prj-files)))
+       (unless b (error "No such file in project: %s" a))
+       b
+       )))
+
+(defun eproject-help ()
+  "Show the eproject README."
+  (interactive)
+  (view-file (eproject-addon "eproject.txt"))
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Hook functions to track opening/closing files from emacs
+
+(defun prj-addhooks ()
+  (add-hook 'kill-buffer-hook 'prj-kill-buffer-hook)
+  (add-hook 'find-file-hook 'prj-find-file-hook)
+  (add-hook 'window-configuration-change-hook 'prj-wcc-hook)
+  )
+
+(defun prj-removehooks ()
+  (remove-hook 'window-configuration-change-hook 'prj-wcc-hook)
+  (remove-hook 'find-file-hook 'prj-find-file-hook)
+  (remove-hook 'kill-buffer-hook 'prj-kill-buffer-hook)
+  )
+
+(defun prj-wcc-hook ()
+  (let ((w (selected-window)) (b (window-buffer (selected-window))))
+    ;;(message "wcc-hook: %s" (prin1-to-string (list w b)))
+    (prj-register-buffer b)
+    ))
+
+(defun prj-find-file-hook ()
+  (run-with-idle-timer 0.2 nil 'prj-wcc-hook)
+  )
+
+(defun prj-kill-buffer-hook ()
+  (let ((b (current-buffer)) a)
+    (if (setq a (rassq b prj-files))
+        (prj-remove-file a t)
+        (if (setq a (rassq b prj-removed-files))
+            (setq prj-removed-files (delq a prj-removed-files))
+          ))))
+
+(defun prj-register-buffer (b)
+  (let (f a)
+    (setq f (buffer-file-name b))
+    (when (and f t) ;;(not (string-match "^\\." (file-name-nondirectory f))))
+      (setq a (rassq b prj-files))
+      (unless a
+        (setq a (prj-insert-file f nil t))
+        (when a
+          (unless (cdr a)
+            (message "Added to project: %s" (car a))
+            )
+          (prj-init-buffer a b)
+          ))
+      (when (and a (null (eq a prj-curfile)))
+        (setq prj-curfile a)
+        (prj-setmenu)
+        ))
+    a))
+
+(defun prj-insert-file (f &optional after on-the-fly)
+  (let ((r (prj-relative-path f)) a m)
+    (setq a (assoc r prj-files))
+    (unless (or a (and on-the-fly (assoc r prj-removed-files)))
+      (setq a (list r))
+      (setq m (memq (or after prj-curfile) prj-files))
+      (if m
+          (setcdr m (cons a (cdr m)))
+          (setq prj-files (prj-add-list prj-files a))
+          )
+      (setq prj-removed-files (prj-del-list prj-removed-files a))
+      )
+    a))
+
+(defun prj-remove-file (a &optional on-the-fly)
+  (let ((n (prj-otherfile prj-files a)) b)
+    (setq prj-files (prj-del-list prj-files a))
+    (when (eq prj-curfile a)
+      (setq prj-curfile n)
+      )
+    (unless on-the-fly
+        (setq prj-removed-files (prj-add-list prj-removed-files a))
+        )
+    (unless (prj-config-print)
+      (prj-edit-file prj-curfile)
+      )
+    (prj-setmenu)
+    (message "Removed from project: %s" (car a))
+    ))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Edit another file
+
+(defun prj-init-buffer (a b)
+  (with-current-buffer b
+    (rename-buffer (car a) t)
+    (when prj-set-default-directory
+      (cd prj-directory)
+      ))
+  (setcdr a b)
+  )
+
+(defun prj-find-file (a)
+  (when a
+    (let (f b pos)
+      (setq b (cdr a))
+      (setq f (expand-file-name (car a) prj-directory))
+      (setq b (get-file-buffer f))
+      (unless b
+        (prj-removehooks)
+        (setq b (find-file-noselect f))
+        (prj-addhooks)
+        (when (and b (consp (cdr a)))
+          (setq pos (cdr a))
+          ))
+      (when b
+        (prj-init-buffer a b)
+        (cons b pos)
+        ))))
+
+(defun prj-edit-file (a)
+  (let ((f (prj-find-file a)))
+    (when f
+      (eproject-setup-quit)
+      (switch-to-buffer (car f))
+      (prj-restore-edit-pos (cdr f) (selected-window))
+      (prj-setmenu)
+      ;;(message "dir: %s" default-directory)
+      )
+    (setq prj-curfile a)
+    ))
+
+(defun prj-restore-edit-pos (pos w)
+  (let ((top (car pos)) (line (cadr pos)))
+    (when (and (numberp top) (numberp line))
+      (prj-goto-line top)
+      (set-window-start w (point))
+      (prj-goto-line line)
+      )))
+
+(defun prj-select-window (w)
+  (let (focus-follows-mouse)
+    (select-window w)
+    (select-frame-set-input-focus (window-frame w))
+    ))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; choose next/previous file
+
+(defun eproject-nextfile ()
+  "Switch to the next file that belongs to the current project."
+  (interactive)
+  (prj-switch-file 'prj-next-file 'next-buffer)
+  )
+
+(defun eproject-prevfile ()
+  "Switch to the previous file that belongs to the current project."
+  (interactive)
+  (prj-switch-file 'prj-prev-file 'previous-buffer)
+  )
+
+(defun prj-switch-file (fn1 fn2)
+  (let ((a (rassoc (current-buffer) prj-files)))
+    (cond (a
+           (prj-edit-file (or (funcall fn1 prj-files a) a))
+           )
+          (prj-curfile
+           (prj-edit-file prj-curfile)
+           )
+          (t
+           (funcall fn2)
+           ))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Set key shortcuts
+
+(defun prj-setkeys ()
+  (let ((f (consp prj-current))
+        (a (assoc 'eproject-mode minor-mode-map-alist))
+        (map (make-sparse-keymap))
+        )
+    (if a
+        (setcdr a map)
+        (push (cons 'eproject-mode map) minor-mode-map-alist)
+        )
+    (when f
+      (define-key map [M-right] 'eproject-nextfile)
+      (define-key map [M-left] 'eproject-prevfile)
+      (define-key map [C-f5] 'eproject-dired)
+      (let ((n 0) fn s)
+        (dolist (a prj-tools)
+          (unless (setq fn (nth n prj-tools-fns))
+            (setq fn (list 'lambda))
+            (setq prj-tools-fns (nconc prj-tools-fns (list fn)))
+            )
+          (setcdr fn `(() (interactive) (prj-run-tool ',a)))
+          (setq n (1+ n))
+          (when (setq s (caddr a))
+            (define-key map (prj-parse-key s) (and f fn))
+            ))))
+    (define-key map [f5] 'eproject-setup-toggle)
+    ))
+
+(defun prj-parse-key (s)
+  (read
+   (if (string-match "[a-z][a-z0-9]+$" s)
+       (concat "[" s "]")
+       (concat "\"\\" s "\""))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Set menus
+
+(defun prj-list-sorted ()
+  (sort (append prj-list nil)
+        '(lambda (a b) (string-lessp (car a) (car b)))
+        ))
+
+(defun prj-setmenu ()
+  (let ((f (consp prj-current)) m1 m2 m3)
+
+    (setq m1
+          `(("Open" open ,@(prj-menulist-maker prj-list prj-current 'prj-menu-open))
+            ("Add/Remove" other
+             ("Add ..." "Add new or existing project to the list" . eproject-add)
+             ("Remove ..." "Remove project from the list" . eproject-remove)
+             ,@(and f '(("Close" "Close current project" . eproject-close)))
+             ("--")
+             ("Setup" "Enter the project setup area." . eproject-setup-toggle)
+             ("Help" "View eproject.txt" . eproject-help)
+             )
+            ))
+    (when f
+      (nconc m1 (cons '("--") (prj-menulist-maker prj-tools nil prj-tools-fns)))
+      (setq m2
+            `(("Dired" "Browse project directory in Dired - Use 'a' to add file(s) to the project" . eproject-dired)
+              ("--")
+              ,@(prj-menulist-maker prj-files prj-curfile 'prj-menu-edit)
+              )))
+
+    (prj-menu-maker
+     global-map
+     `((buffer "Project" project ,@m1)
+       (file "List" list ,@m2)
+       )
+     '(menu-bar)
+     )))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun prj-menu-edit ()
+  (interactive)
+  (let ((a (nth last-command-event prj-files)))
+    (if a (prj-edit-file a))
+    ))
+
+(defun prj-menu-open ()
+  (interactive)
+  (let ((a (nth last-command-event prj-list)))
+    (if a (eproject-open (car a)))
+    ))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun prj-menu-maker (map l v)
+  (let ((e (list nil)))
+    (setq v (append v e))
+    (dolist (k (reverse l))
+      (let (s a)
+        (when (symbolp (car k))
+          (setq a (pop k))
+          )
+        (cond
+         ((numberp (car k))
+          (setcar e (pop k))
+          )
+         ((and (consp (cdr k)) (symbolp (cadr k)))
+          (setcar e (cadr k))
+          (setq s (cddr k))
+          (setq k (and s (cons (car k) (make-sparse-keymap (car k)))))
+          )
+         (t
+          (setcar e (intern (downcase (car k))))
+          ))
+        (if a
+            (define-key-after map (vconcat v) k a)
+            (define-key map (vconcat v) k)
+            )
+        (if s (prj-menu-maker map s v))
+        ))))
+
+(defun prj-copy-head (l n)
+  (let (r)
+    (while (and l (> n 0))
+      (push (pop l) r)
+      (setq n (1- n))
+      )
+    (nreverse r)
+    ))
+
+(defun prj-split-list (l n)
+  (let (r)
+    (while l
+      (push (prj-copy-head l n) r)
+      (setq l (nthcdr n l))
+      )
+    (nreverse r)
+    ))
+
+(defun prj-menulist-maker (l act fns)
+  (let (r (w 30) s (m 0) (n 0) k)
+    (cond
+     ((< (length l) w)
+      (prj-menulist-maker-1 (list l fns n) act)
+      )
+     (t
+      ;; menu too long; split into submenus
+      (setq s (prj-split-list l w))
+      (setq k (prj-menulist-maker-1 (list (append (pop s) '(("--"))) fns n) act))
+      (setq r (nreverse k))
+      (dolist (l s)
+        (when (consp fns)
+          (setq fns (nthcdr w fns))
+          )
+        (setq n (+ n w))
+        (setq k (prj-menulist-maker-1 (list l fns n) act))
+        (push (cons (concat (prj-shortname (caar l)) " ...")
+                    (cons (intern (format "m_%d" (setq m (1+ m))))
+                          k)) r)
+        )
+      (nreverse r)
+      ))))
+
+(defun prj-menulist-maker-1 (l act)
+  (let (r e f s i n a)
+    (while (car l)
+      (setq a (caar l))
+      (setcar l (cdar l))
+      (setq n (caddr l))
+      (setcar (cddr l) (1+ n))
+      (setq f (if (consp (cadr l))
+                  (prog1 (car (cadr l)) (setcar (cdr l) (cdr (cadr l))))
+                  (cadr l)))
+
+      (setq i (car a))
+      (unless (string-match "^ *#" i)
+        (setq s (if (and (consp (cdr a)) (stringp (cadr a))) (cadr a) i))
+        (cond ((equal ">" i)
+               (setq e (cons s (cons (intern s) (prj-menulist-maker-1 l act))))
+               (setq r (cons e r))
+               )
+              ((equal "<" i)
+               (setq l nil)
+               )
+              (t
+               (setq i (prj-shortname i))
+               (setq e (cons n (if (eq a act)
+                                   `(menu-item ,i ,f :button (:toggle . t) :help ,s)
+                                 (cons i (cons s f)))))
+               (setq r (cons e r))
+               )))
+      )
+    (nreverse r)
+    ))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Run make and other commands
+
+(defun prj-compilation-in-frame (cmd)
+  (let ((bn "*compilation*") w h b c f)
+    (unless (get-buffer-window bn t)
+      (setq b (get-buffer-create bn))
+      (setq f (frame-list))
+      (cond ((cdr f)
+             (setq w (frame-first-window (car f)))
+             (delete-other-windows w)
+             )
+            (t
+             (setq h (/ (* 70 (frame-height)) 100))
+             (delete-other-windows w)
+             (setq w (split-window w h))
+             ))
+      (set-window-buffer w b)
+      ))
+  (let ((display-buffer-reuse-frames t) (f (selected-frame)))
+    (compile cmd)
+    (select-frame-set-input-focus f)
+    ))
+
+(defun prj-run (cmd)
+  (cond ((string-match "^-e +" cmd)
+         (setq cmd (read (substring cmd (match-end 0))))
+         (unless (commandp cmd)
+           (setq cmd `(lambda () (interactive) ,cmd))
+           )
+         (command-execute cmd)
+         )
+        ((let ((b (current-buffer)) 
+               (old-dir default-directory) 
+               (new-dir ".")
+               )
+           (when (string-match "^-in +\\([^[:space:]]+\\) +" cmd)
+             (setq new-dir (match-string-no-properties 1 cmd))
+             (setq cmd (substring cmd (match-end 0)))
+             )
+           (when prj-exec-directory
+             (setq new-dir (expand-file-name new-dir prj-exec-directory))
+             )
+           (cd new-dir)
+           (cond ((string-match "\\(.+\\)& *$" cmd)
+                  (start-process-shell-command 
+                   "eproject-async" nil (match-string 1 cmd))
+                  (message (match-string 1 cmd))
+                  )
+                 (prj-set-compilation-frame
+                  (prj-compilation-in-frame cmd)
+                  )
+                 (t
+                  (compile cmd)
+                  ))
+           (with-current-buffer b (cd old-dir))
+           ))))
+        
+(defun prj-run-tool (a)
+  (unless (string-match "^--+$" (car a))
+    (prj-run (or (cadr a) (car a)))
+    ))
+
+(defun eproject-killtool ()
+  (interactive)
+  (let ((bn "*compilation*") w0 w1)
+    (when (setq w1 (get-buffer-window bn t))
+      (when (fboundp 'kill-compilation)
+        (setq w0 (selected-window))
+        (select-window w1)
+        (kill-compilation)
+        (select-window w0)
+        ))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; run grep on project files
+
+(defun eproject-grep (command-args)
+  "Run the grep command on all the project files."
+  (interactive
+   (progn
+     (require 'grep)
+     (grep-compute-defaults)
+     (let ((default (grep-default-command)))
+       (list (read-from-minibuffer
+              "Run grep on project files: "
+              (if current-prefix-arg default grep-command)
+              nil
+              nil
+              'grep-history
+              (if current-prefix-arg nil default)
+              )))))
+  (let ((b (current-buffer)) (old-dir default-directory))
+    (dolist (f (mapcar 'car prj-files))
+      (setq command-args (concat command-args " " f))
+      )
+    (when prj-directory (cd prj-directory))
+    (grep command-args)
+    (with-current-buffer b (cd old-dir))
+    ))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; add files to the project with dired
+
+(require 'dired)
+
+(defun prj-dired-addfiles ()
+  (interactive)
+  (when prj-current
+    (let ((n 0) a)
+      (dolist (f (dired-get-marked-files))
+        (setq a (prj-insert-file f))
+        (unless (cdr a)
+          (setq n (1+ n))
+          (setq prj-curfile a)
+          ))
+      (message "Added to project: %d file(s)" n)
+      (prj-setmenu)
+      )))
+
+(defun prj-dired-run ()
+  (interactive)
+  (let ((f (dired-get-marked-files)) c)
+    (and (setq c (pop f))
+         (null f)
+         (let ((prj-directory (file-name-directory c)))
+           (prj-run c)))))
+
+(defun eproject-dired ()
+  "Start a dired window with the project directory."
+  (interactive)
+  (when prj-directory
+    (eproject-setup-quit)
+    ;;(message "Use 'a' to add marked or single files to the project.")
+    (dired prj-directory)
+    (let ((map dired-mode-map))
+      (define-key map [mouse-2] 'dired-find-file)
+      (define-key map "a" 'prj-dired-addfiles)
+      (define-key map "r" 'prj-dired-run)
+      (define-key map [menu-bar operate command] '("Add to Project"
+        "Add current or marked file(s) to project" . prj-dired-addfiles))
+      )))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun prj-setup-all ()
+  (prj-setkeys)
+  (prj-setmenu)
+  (prj-settitle)
+  (prj-config-print)
+)
+
+(defun prj-getconfig (n)
+  (let ((a (cdr (assoc n prj-config))))
+    (and (stringp a) a)
+    ))
+
+(defun prj-setconfig (n v)
+  (let ((a (assoc n prj-config)))
+    (unless a
+      (setq a (list n))
+      (setq prj-config (nconc prj-config (list a)))
+      )
+    (setcdr a v)
+    ))
+
+(defun prj-on-kill ()
+  (prj-saveall)
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; isearch in all project files
+
+(defun prj-isearch-function (b wrap)
+  (let (a d)
+    (or b (setq b (current-buffer)))
+    (cond (wrap
+           (if isearch-forward
+               (setq a (car prj-files))
+               (setq a (car (last prj-files)))
+               ))
+          ((setq a (rassoc b prj-files))
+           (if isearch-forward
+               (setq a (prj-next-file prj-files a))
+               (setq a (prj-prev-file prj-files a))
+               )
+            ))
+    (when a
+      (if (buffer-live-p (cdr a))
+          (setq d (cdr a))
+          (setq d (car (prj-find-file a)))
+          ))
+    ;; (print `(prj-isearch (wrap . ,wrap) ,b ,d) (get-buffer "*Messages*"))
+    d
+    ))
+
+(defun prj-isearch-setup ()
+  (cond ((and prj-set-multi-isearch prj-current)
+         (setq multi-isearch-next-buffer-function 'prj-isearch-function)
+         (setq multi-isearch-pause 'initial)
+         (add-hook 'isearch-mode-hook 'multi-isearch-setup)
+         )
+        (t
+         (remove-hook 'isearch-mode-hook 'multi-isearch-setup)
+         )))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Initialize
+
+(defun prj-startup-delayed ()
+  ;; load UI support
+  (load (eproject-addon "eproject-config") nil t)
+
+  ;; When no projects are specified yet, load the eproject project itself.
+  (unless prj-list
+    (load (eproject-addon prj-default-cfg))
+    )
+
+  ;; no project so far
+  (prj-reset)
+  (prj-setup-all)
+  (add-hook 'kill-emacs-hook 'prj-on-kill)
+
+  ;; inhibit open last project when a file was on the commandline
+  (unless (buffer-file-name (window-buffer))
+    (when prj-last-open
+
+      ;; open last project
+      (eproject-open prj-last-open)
+
+      ;; restore frame position
+      (when (and prj-set-framepos prj-frame-pos prj-initial-frame)
+        (modify-frame-parameters prj-initial-frame prj-frame-pos)
+        ;; emacs bug: when it's too busy it doesn't set frames correctly.
+        (sit-for 0.2)
+        ))))
+
+(defun prj-command-line-switch (option)
+  (setq prj-last-open (pop argv))
+  (setq inhibit-startup-screen t)
+  )
+
+(defun eproject-startup ()
+  ;; where is this file
+  (if load-file-name
+      (setq eproject-directory (file-name-directory load-file-name)))
+  (if (boundp 'prj-list)
+    (progn
+      (load (eproject-addon "eproject-config"))
+      (prj-setup-all))
+    (progn
+      (prj-loadlist)
+      (when prj-last-open (setq inhibit-startup-screen t))
+      (when (display-graphic-p) (setq prj-initial-frame (selected-frame)))
+      (push '("project" . prj-command-line-switch) command-switch-alist)
+      (run-with-idle-timer 0.1 nil 'prj-startup-delayed)
+      )))
+
+;;;###autoload(require 'eproject)
 (provide 'eproject)
-;;; eproject.el ends here
+(eproject-startup)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; eproject.el ends here
