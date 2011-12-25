@@ -1,10 +1,10 @@
 ;;* project
 
 ;;** ropemacs project
-(require 'epy-ropemacs)
+(require 'eepy-ropemacs)
 
 
 ;;** eproject
 
 
-(provide 'epy-project)
+(provide 'eepy-project)

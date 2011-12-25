@@ -8,7 +8,7 @@
 (autoload 'anything-browse-code  "anything-config"
   "Preconfigured anything to browse code." t)
 
-(defun epy-imenu ()
+(defun idomenu-or-imenu ()
   (interactive)
   (require 'idomenu nil t)
   (if (fboundp 'idomenu)
@@ -46,4 +46,4 @@
   "Edit multiple regions with the same content simultaneously." t)
 
 
-(provide 'epy-misc)
+(provide 'eepy-misc)
