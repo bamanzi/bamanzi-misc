@@ -59,13 +59,13 @@ load it with ropemacs."
 
 
 (defun setup-ropemacs ()
-  (require 'pymacs (concat epy-install-dir "extensions/pymacs.el"))
+  (require 'pymacs (concat eepy-install-dir "extensions/pymacs.el"))
   
   "Setup the ropemacs harness"
   ;; (setenv "PYTHONPATH"
   ;;         (concat
   ;;          (getenv "PYTHONPATH") path-separator
-  ;;          (concat epy-install-dir "python-libs/")))
+  ;;          (concat eepy-install-dir "python-libs/")))
   (pymacs-load "ropemacs" "rope-")
   
   ;; Stops from erroring if there's a syntax err
@@ -93,5 +93,5 @@ load it with ropemacs."
   '(progn
      (setup-ropemacs)))
 
-(provide 'epy-ropemacs)
+(provide 'eepy-ropemacs)
 

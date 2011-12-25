@@ -1,12 +1,12 @@
 ;; Trick to get the filename of the installation directory
-(defconst epy-install-dir
+(defconst eepy-install-dir
   (file-name-directory (or load-file-name
                            (when (boundp 'bytecomp-filename) bytecomp-filename)
                            buffer-file-name))
   "Installation directory of emacs-for-python"
 )
 
-(add-to-list 'load-path epy-install-dir)
+(add-to-list 'load-path eepy-install-dir)
 
 ;; Adding paths to the variable load-path
 (dolist (relpath '(""
@@ -16,19 +16,19 @@
                    "extensions/auto-complete"
                    )
                  )
-  (add-to-list 'load-path (concat epy-install-dir relpath)))
+  (add-to-list 'load-path (concat eepy-install-dir relpath)))
 
-;; add `epy/bin' to PATH, for epylint, pep8 etc
-(let ( (bin-path (concat epy-install-dir "bin")) )
+;; add `eepy/bin' to PATH, for epylint, pep8 etc
+(let ( (bin-path (concat eepy-install-dir "bin")) )
        (add-to-list 'exec-path bin-path)
        (setenv "PATH" (concat bin-path path-separator (getenv "PATH"))))
 
-(defgroup epy nil
+(defgroup eepy nil
   "emacs-for-python package"
   :group  'python
-  :prefix "epy-")
+  :prefix "eepy-")
 
-(require 'epy-completion)
-(require 'epy-menu)
+(require 'eepy-completion)
+(require 'eepy-menu)
 
-(provide 'epy)
+(provide 'eepy)

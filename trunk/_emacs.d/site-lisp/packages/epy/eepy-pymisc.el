@@ -24,4 +24,4 @@
 ;;...
 
 
-(provide 'epy-pymisc)
+(provide 'eepy-pymisc)
