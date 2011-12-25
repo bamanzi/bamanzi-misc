@@ -10,10 +10,10 @@
 
 ;; Adding paths to the variable load-path
 (dolist (relpath '(""
-                   "elisp"
                    "extensions/"
                    "extensions/yasnippet"
                    "extensions/auto-complete"
+                   "elisp"
                    )
                  )
   (add-to-list 'load-path (concat eepy-install-dir relpath)))
@@ -28,7 +28,6 @@
   :group  'python
   :prefix "eepy-")
 
-(require 'eepy-completion)
-(require 'eepy-menu)
+(require 'pymacs (concat eepy-install-dir "extensions/pymacs.el"))
 
 (provide 'eepy)
