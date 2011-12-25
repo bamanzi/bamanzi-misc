@@ -84,7 +84,8 @@ def get_all_completions(s, imports=None):
                 return []
     if sym is not None:
         s = dots[-1]
-        return [k for k in dir(sym) if k.startswith(s)]
+        #return [k for k in dir(sym) if k.startswith(s)]
+        return [ prefix + "." + k for k in dir(sym) if k.startswith(s)] #modified by EEPY
 
 def pycomplete(s, imports=None):
     completions = get_all_completions(s, imports)

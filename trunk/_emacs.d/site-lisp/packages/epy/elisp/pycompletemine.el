@@ -21,6 +21,14 @@
 
 (pymacs-load "pycomplete")
 
+(when (not (boundp 'py-dotted-expression-syntax-table))
+  (setq py-dotted-expression-syntax-table
+        (copy-syntax-table (if (boundp 'python-mode-syntax-table)
+                               python-mode-syntax-table
+                             py-mode-syntax-table)))
+  (modify-syntax-entry ?_ "_" py-dotted-expression-syntax-table)
+  (modify-syntax-entry ?. "_" py-dotted-expression-syntax-table))
+
 (defun py-symbol-near-point ()
   "Return the first textual item to the nearest point."
   ;; alg stolen from etag.el
