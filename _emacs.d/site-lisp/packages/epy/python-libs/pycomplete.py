@@ -105,6 +105,54 @@ if __name__ == "__main__":
     print "Enc ->", pycomplete("Enc")
     print "E ->", pycomplete("E")
 
+import inspect
+from StringIO import StringIO
+
+from Pymacs import lisp
+sys.path.append('.')
+
+def pyhelp(s, imports=None):
+    """Return object description"""
+    _import_modules(imports, globals(), None)
+    return _getdoc(s)
+def pysignature(s):
+    """Return info about function parameters"""
+    f = None
+    try:
+        f = eval(s)
+    except Exception, ex:
+        return "%s" % ex
+    if inspect.ismethod(f):
+        f = f.im_func
+    if not inspect.isfunction(f):
+        return ''
+    (args, varargs, varkw, defaults) = inspect.getargspec(f)
+    return('%s: %s'
+           % (f.__name__, inspect.formatargspec(args,varargs,varkw,defaults)))
+def _getdoc(s):
+    """Return string printed by `help` function"""
+    obj = None
+    try:
+        obj = eval(s)
+    except Exception, ex:
+        return "%s" % ex
+    out = StringIO()
+    old = sys.stdout
+    sys.stdout = out
+    help(obj)
+    sys.stdout = old
+    return out.getvalue()
+def _import_modules(imports, dglobals, dlocals):
+    """If given, execute import statements"""
+    if imports is not None:
+        for stmt in imports:
+            try:
+                exec stmt in dglobals, dlocals
+            except TypeError:
+                raise TypeError, 'invalid type: %s' % stmt
+            except:
+                continue
+
 # Local Variables :
 # pymacs-auto-reload : t
 # End :
