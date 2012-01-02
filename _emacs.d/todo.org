@@ -1,0 +1,240 @@
+
+
+* lisp
+** bmz-misc
+*** DONE copy-keymap-to-local
+
+** copy-without-sel: 
+*** DONE mark-between-pattern / char
+*** DONE mark-whole-word, mark-whole-sexp
+
+** outline-org-like
+*** face: +underline
+
+** outline-magic
+*** fix `show contents'
+
+** pascal-mode+
+*** DONE change keywords highlighting method
+*** DONE fix mark-defun
+
+* init.d
+** 00-init
+*** DONE (add-to-list 'custom-theme-load-path "~/.emacs.d/themes"))
+
+** 10-essential
+*** frame icon: 
+(set-frame-parameter (car (frame-list)) 'icon-type "~/.emacs.d/emacs_07.ico")
+
+** 10-emacs-env
+*** DONE help-fns+: describe-keymap, describe-key-briefly, 
+*** DONE C-h i ?
+C-h il - elisp-index-search
+*** DONE describe-this-file, 
+
+** 20-windows
+*** DONE split-window-v/h+, 
+*** DONE windmove, 
+*** <f11> 1..9, <f11> M-m: by number
+*** DONE move-or-swap by window name, 
+*** TODO perspective / escreen / elscreen / workgroups
+*** fullscreen
+http://www.emacswiki.org/emacs/FullScreen
+*** DONE s-w = <f11>
+*** sr-speedbar: speedbar in frame
+*** my default layout
+
+** 20-buffers
+*** DONE buffer list: C-c b: electric-buffer-list, C-c B: buffer-menu, C-c C-b: ibuffer,
+*** TIP: [[http://stackoverflow.com/questions/1852812/saving-all-modified-buffers-in-emacs-but-not-one-by-one][saving all modified buffers in emacs, but not one by one - Stack Overflow]]
+
+C-x C-b (M-x list-buffers) displays a list of all the buffers. Modified ones will be shown with a *
+next to them. You can mark a buffer for saving by pressing s. When you're done, press x to save all
+the buffers you marked.
+
+Unfortunately, as far as I know, there's no way to show only the unsaved buffers or to sort them so
+they're all at the top.
+
+(I actually prefer M-x ibuffer to M-x list-buffers, but ibuffer provides a similar feature.)
+
+*** ibuffer-vc
+
+** 20-files
+*** DONE bookmarks
+*** DONE locate
+  - [ ] anything-locate
+*** encoding
+  - [ ] revert-buffer-with-codeing-system
+  - [ ] find-file-with-encoding
+*** DONE sudo
+http://www.emacswiki.org/emacs/SudoSave
+http://xahlee.org/emacs/xah_emacs_generic.el
+
+*** builtin backup
+(setq backup-directory-alist `((".*" . "~/.emacs.d/backups/")))
+
+(setq backup-by-copying t
+    backup-by-copying-when-linked nil)
+
+*** TODO backup-dir.el
+*** DONE backup-each-save
+  - [ ] fix `backup-each-save-compute-location'
+
+#+begin_src emacs-lisp
+  (defun backup-each-save-compute-location (filename)
+    (let* ((containing-dir (replace-regexp-in-string ":" "" (file-name-directory filename)))
+#+end_src
+
+*** ediff & emerge
+ [[http://www.emacswiki.org/emacs-en/EmergeDiff][EmacsWiki: Emerge Diff]]
+
+*** TODO ido-find-file-in-current-dir (& anything), 
+*** DONE add `dir' param to `bmz/nav-goto-dir'
+
+** 30-shell
+*** DONE shell-toggle
+*** DONE toggle-gnu-shell-for-win32
+*** add-mode-line-dirtrack (shell PS1)
+
+** 25-tabbar
+*** TODO check tabbar-mode
+*** TODO some tabbar-buffer-group-function
+
+** 40-completion
+*** DONE change M-/ back to `dabbrev-expand'
+*** DONE ispell-complete-word
+*** TODO define-abbrev-table
+*** TODO pabbrev
+*** hippie-expand-filename,
+
+** 40-higlights
+*** TODO face highlight-changes: auto change with color theme
+#+begin_src emacs-lisp
+  (progn ;;NOTE: you need to call this each time you change your color-theme
+    (set-face-background 'highlight-changes (face-background 'fringe nil t))
+    (set-face-foreground 'highlight-changes 'unspecified)
+  )
+#+end_src
+
+*** TODO highlight TODO/FIXME
+http://emacs-fu.blogspot.com/2008/12/highlighting-todo-fixme-and-friends.html
+*** whitespaces
+  - [X]  develock
+    - [X] develock-py
+(setq develock-auto-enable t)
+
+*** TODO highlight URL
+*** highlight mark, current line & column pos
+  - [ ] hl-line, 
+*** ruler-mode, 
+*** hi-lock
+*** linkd
+  - [X] linkd faces
+*** pulse
+
+** 40-fold
+*** outline-prefix-map: wheel-up/down, up/down
+*** DONE move bm/linkd to 40-highlights.el
+*** TODO fix hideshowvis vs M-t: advice, hideshowvis-refresh-fringe, 
+*** DONE add foldout: < >,cancel C-z; 
+*** DONE add hide-region,
+
+** 40-symbol-fns: 
+*** bm-bookmark-symbol
+
+** 40-edit-basic
+*** DONE abs-indent
+*** DONE visible-mark.el
+*** DONE tab-stop-list
+*** auto-fill only for comment: comment-auto-fill-only-comments
+
+** 49-edit-misc
+
+*** toggle-show-paren-style,
+*** DONE show line number
+*** TODO iedit
+  - [ ] iedit-rename-symbol-in-defun
+*** ace-jump-mode, 
+*** M-g %, 
+*** copy-symbol-at-point, 
+*** transpose-selection, 
+*** copyfromabove, 
+*** goto-chg / goto-last-change, 
+*** titlecase,
+
+** 50-vi-keys
+*** open-next-line http://is.gd/yud6UE, 
+*** viper-describe-file
+
+** 59-misc-key: 
+*** TODO H-up/down ?
+*** http://xahlee.org/emacs/emacs_insert_brackets_by_pair.html
+
+** 59-mouse:
+
+** 60-prog-basic
+*** DONE comment-or-uncomment-line
+
+** TODO 60-prog-help
+
+** TODO 60-project
+ * [[http://misspent.wordpress.com/2011/05/31/eproject-anything-simple-emacs-project-management/][eproject + anything: simple emacs project management]]
+ * eproject (jrockway) https://github.com/jrockway/eproject/wiki/
+ * projectile https://github.com/bbatsov/projectile
+ * [[http://code.google.com/p/emacs-project-mode/wiki/QuickStart][emacs-project-mode - A Quick Start Guide to project-mode]]
+
+** 65-cedet-ecb
+[[http://alexott.net/en/writings/emacs-devenv/EmacsCedet.html][A Gentle introduction to Cedet]]
+
+*** TODO load-path prepend
+*** TODO cedet-called-interactively-p
+
+** 75-javascript
+[[http://blog.deadpansincerity.com/2011/05/setting-up-emacs-as-a-javascript-editing-environment-for-fun-and-profit/][Setting up Emacs as a Javascript editing environment for Fun or Profit « Deadpan Sincerity]]
+
+*** DONE serveral jslint methods 
+*** DONE my-js-mode-map
+*** DONE js-comint
+*** mozrepl
+
+** 75-autohotkey: 
+*** ahk: (modify-syntax-entry ?\; "< b") ... ?\n "> b")
+*** TAB -> abs-indent
+*** xahk: (modify-syntax-entry ?_ "w") awk:->
+
+** 90-foobar: 
+*** DONE show info in another frame
+ Based on [[http://snarfed.org/emacs_special-display-function_prefer-other-visible-frame][emacs special-display-function: prefer-other-visible-frame]]
+*** scratch-log
+[[http://dorophone.blogspot.com/2011/11/how-to-make-emacs-scratch-buffer.html][How to Make Emacs' Scratch Buffer Persistent Across Sessions]]
+*** command-log
+http://www.emacswiki.org/emacs/CommandLogMode
+
+** TODO 90-fun
+*** fortune,
+*** cowsay,
+*** hacker-type, 
+*** artist
+*** tip-of-the-day http://emacs.wordpress.com/2007/06/21/tip-of-the-day/
+
+** TODO 90-unicode
+*** xub-mode, 
+*** Replace Digits By Subscripts In Emacs http://irreal.org/blog/?p=305
+*** (set-input-method 'chinese-punct)
+http://stackoverflow.com/questions/8695974/how-to-type-guillemets-in-emacs
+
+;; Emacs and Unicode Tips
+;; http://xahlee.org/emacs/emacs_n_unicode.html
+;; HTML/XML Entities (Character/Unicode/Symbol) List
+;; http://xahlee.org/comp/unicode_html_entities.html
+;; Emacs File/Character Encoding/Decoding FAQ
+;; http://xahlee.org/emacs/emacs_encoding_decoding_faq.html
+;; xub Unicode Browser mode for Emacs
+;; http://xahlee.org/emacs/unicode-browser.html
+
+
+* eepy
+** eepy-completion
+*** built-in python completion
+  - python-symbol-completions-maybe
+  - ac-toggle...
