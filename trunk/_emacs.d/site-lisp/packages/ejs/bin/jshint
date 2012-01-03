@@ -1,0 +1,72 @@
+#!/usr/bin/env jsdb
+
+/* Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php */
+/* Copyright (c) 2011 Delyan Angelov */
+/* Based on this code: http://whereisandy.com/code/jslint/ */
+
+/*
+ * Fast command line javascript quality checker (lint like tool).
+ *
+ * Usage:
+ * jshint yourfile.js path/to/yourfile2.js ... fileX.js
+ *
+ */
+
+(function(arguments){
+   load('/usr/local/share/jshint.js');
+   
+   function checkInput(input,fname){
+      if (!input) {
+         print("No input!\n");
+      } else {
+         if (
+             !JSHINT(input, {
+                               passfail: false,
+                               asi:      false,
+                               jquery:   true,
+                               devel:    true,
+                               undef:    true
+                            }
+                    )
+            ){
+            el = JSHINT.errors.length;
+            for (var i = 0; i < el ; i ++) {
+               var e = JSHINT.errors[i];
+               if (e) {
+                  print(fname + ':' + (e.line) + ':' + (e.character) + ': ' + e.reason + ' ');
+                  print((e.evidence || '').replace(/^\s*(\S*(\s+\S+)*)\s*$/, "$1"));
+                  print("\n");
+               }
+            }
+         } else {
+            print("jshint: "+fname+": No lint found.\n");
+         }
+      }
+   }
+
+   function readfile(filename){
+      var thefile = new Stream(filename,'rt');
+      return thefile.read();
+   }
+   
+   function hintfile(fname){
+      if(system.exists(fname)){
+         var input=null;
+         input = readfile(fname);
+         return checkInput(input, fname);
+      }else{
+         print('jshint: '+fname+': No such file or directory'+'\n');
+         return false;
+      }
+   }
+
+   var i=0, n = system.arguments.length;
+   if(n>0){
+      for(;i<n;i++){
+         hintfile(system.arguments[i]);
+      }
+   }else{
+      print("Usage:\n   jshint filename1.js .. filenameX.js\n\n");
+   }
+   
+})();
