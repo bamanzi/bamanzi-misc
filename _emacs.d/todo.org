@@ -26,23 +26,45 @@
 *** frame icon: 
 (set-frame-parameter (car (frame-list)) 'icon-type "~/.emacs.d/emacs_07.ico")
 
-** 10-emacs-env
+** 10-emacs-env sdc
 *** DONE help-fns+: describe-keymap, describe-key-briefly, 
 *** DONE C-h i ?
 C-h il - elisp-index-search
 *** DONE describe-this-file, 
 
 ** 20-windows
-*** DONE split-window-v/h+, 
-*** DONE windmove, 
-*** <f11> 1..9, <f11> M-m: by number
-*** DONE move-or-swap by window name, 
+*** DONE layout
+  - [X] advice split-window-v/h+, 
+  - [X] my default layout
+  - [X] winner: layout history 
+
+*** jumping between windows 
+  - [X] windmove: jump by direction
+  - [X] ido-jump-to-window: jump by window name (buffer-name)
+     -  [X] move-or-swap by window name, 
+  - [X] window-numbering-mode : jump by number
+     - [X] <f11> 1..9, <f11> M-m: by number
+
+*** swap buffer between windows
+  - [ ] windmove
+  - [ ] by window name
+  - [ ] 
+
+*** manage window for special buffers
+  - [X] dedicated
+  - special-display-function: prefer-other-visible-frame
+    http://snarfed.org/emacs_special-display-function_prefer-other-visible-frame
+    - [ ] not work ? (at least on emacs 23)
+  - [X] show info in another frame
+    Based on [[http://snarfed.org/emacs_special-display-function_prefer-other-visible-frame][emacs special-display-function: prefer-other-visible-frame]]
+
 *** TODO perspective / escreen / elscreen / workgroups
-*** fullscreen
-http://www.emacswiki.org/emacs/FullScreen
-*** DONE s-w = <f11>
+*** frame
+  - [X] fullscreen http://www.emacswiki.org/emacs/FullScreen
+
+*** keys
+   - [ ] s-w = <f11>
 *** sr-speedbar: speedbar in frame
-*** my default layout
 
 ** 20-buffers
 *** DONE buffer list: C-c b: electric-buffer-list, C-c B: buffer-menu, C-c C-b: ibuffer,
@@ -148,6 +170,11 @@ http://emacs-fu.blogspot.com/2008/12/highlighting-todo-fixme-and-friends.html
 *** DONE tab-stop-list
 *** auto-fill only for comment: comment-auto-fill-only-comments
 
+*** region: if not region marked, take current line as region
+
+**** macro `allow-line-as-region-for-function'
+;;stolen from https://github.com/andrewsardone/emacs-config/blob/master/modules/aps-core.el#L69
+
 ** 49-edit-misc
 
 *** toggle-show-paren-style,
@@ -190,11 +217,30 @@ http://emacs-fu.blogspot.com/2008/12/highlighting-todo-fixme-and-friends.html
 *** TODO cedet-called-interactively-p
 
 ** 75-javascript
-[[http://blog.deadpansincerity.com/2011/05/setting-up-emacs-as-a-javascript-editing-environment-for-fun-and-profit/][Setting up Emacs as a Javascript editing environment for Fun or Profit « Deadpan Sincerity]]
+[[http://blog.deadpansincerity.com/2011/05/setting-up-emacs-as-a-javascript-editing-environment-for-fun-and-profit/][  Setting up Emacs as a Javascript editing environment for Fun or Profit « Deadpan Sincerity]]
+  [[http://edward.oconnor.cx/2005/09/editing-javascript-in-emacs][Editing JavaScript in Emacs — Edward O’Connor]]
+  [[http://www.emacswiki.org/emacs/JavaScriptMode][EmacsWiki: Java Script Mode]]
+
+*** major modes
+  + espresso-mode
+  + js2-mode
+  + js3-mode
 
 *** DONE serveral jslint methods 
+  + jslint-v8
+  + jsl (windows only)
+  + jshint + nodejs
+  + jsdb + ?
+  + jslint + rhino
+  
 *** DONE my-js-mode-map
-*** DONE js-comint
+*** TODO beautify
+    - [ ] https://github.com/einars/js-beautify
+    - [ ] [[http://sethmason.com/2011/04/28/jsbeautify-in-emacs.html][Beautify your JavaScript in Emacs - sethmason.com]]
+        - [ ] https://gist.github.com/712405
+
+*** jquery-doc http://splash-of-open-sauce.blogspot.com/2011/10/javascript-utilities.html
+*** DONE js-comint http://js-comint-el.sourceforge.net/
 *** mozrepl
 
 ** 75-autohotkey: 
@@ -203,8 +249,8 @@ http://emacs-fu.blogspot.com/2008/12/highlighting-todo-fixme-and-friends.html
 *** xahk: (modify-syntax-entry ?_ "w") awk:->
 
 ** 90-foobar: 
-*** DONE show info in another frame
- Based on [[http://snarfed.org/emacs_special-display-function_prefer-other-visible-frame][emacs special-display-function: prefer-other-visible-frame]]
+*** artist
+*** box
 *** scratch-log
 [[http://dorophone.blogspot.com/2011/11/how-to-make-emacs-scratch-buffer.html][How to Make Emacs' Scratch Buffer Persistent Across Sessions]]
 *** command-log
@@ -214,7 +260,8 @@ http://www.emacswiki.org/emacs/CommandLogMode
 *** fortune,
 *** cowsay,
 *** hacker-type, 
-*** artist
+*** screensave (zone)
+ - [ ] matrix https://bitbucket.org/dylanwen/elispport/src/18901bfc6c7e/zone-matrix.el
 *** tip-of-the-day http://emacs.wordpress.com/2007/06/21/tip-of-the-day/
 
 ** TODO 90-unicode
@@ -234,6 +281,9 @@ http://stackoverflow.com/questions/8695974/how-to-type-guillemets-in-emacs
 
 
 * eepy
+** eepy-checker
+   - [ ] [[http://people.cs.uct.ac.za/~ksmith/2011/better-python-flymake-integration-in-emacs.html][Better Python Flymake Integration in Emacs — Keegan Carruthers-Smith]]
+
 ** eepy-completion
 *** built-in python completion
   - python-symbol-completions-maybe
