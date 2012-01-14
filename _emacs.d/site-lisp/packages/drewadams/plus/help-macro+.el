@@ -4,19 +4,19 @@
 ;; Description: Extensions to `help-macro.el'.
 ;; Author: Drew Adams
 ;; Maintainer: Drew Adams
-;; Copyright (C) 1999-2011, Drew Adams, all rights reserved.
+;; Copyright (C) 1999-2012, Drew Adams, all rights reserved.
 ;; Created: Tue Aug 24 15:36:18 1999
 ;; Version: 20.0
-;; Last-Updated: Tue Jan  4 10:10:39 2011 (-0800)
+;; Last-Updated: Sun Jan  1 14:05:19 2012 (-0800)
 ;;           By: dradams
-;;     Update #: 110
+;;     Update #: 116
 ;; URL: http://www.emacswiki.org/cgi-bin/wiki/help-macro+.el
 ;; Keywords: help
 ;; Compatibility: GNU Emacs 20.x
 ;;
 ;; Features that might be required by this library:
 ;;
-;;   `backquote', `help-macro'.
+;;   `backquote', `help-macro', `naked'.
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -58,8 +58,11 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;;; Change log:
+;;; Change Log:
 ;;
+;; 2011/10/07 dadams
+;;     Added soft require of naked.el.
+;;     make-help-screen: Use naked-key-description if available.
 ;; 2011/01/04 dadams
 ;;     Added autoload cookie for defmacro.
 ;; 2007/12/14 dadams
@@ -98,6 +101,8 @@
 (require 'help-macro)
 (require 'backquote)
 
+(require 'naked nil t) ;; (no error if not found): naked-key-description
+
 ;;;;;;;;;;;;;;;;;;;;
 
 
@@ -135,8 +140,11 @@ and then returns."
                   config new-frame key char)
              (if (string-match "%THIS-KEY%" help-screen)
                  (setq help-screen
-                       (replace-match (key-description (substring (this-command-keys) 0 -1))
-                                      t t help-screen)))
+                       (replace-match
+                        (if (fboundp 'naked-key-description)
+                            (naked-key-description (substring (this-command-keys) 0 -1))
+                          (key-description (substring (this-command-keys) 0 -1)))
+                        t t help-screen)))
              (unwind-protect
                  (progn
                    (setcdr local-map ,helped-map)
