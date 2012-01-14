@@ -4,19 +4,19 @@
 ;; Description: Customizable behavior for `mouse-3'.
 ;; Author: Drew Adams
 ;; Maintainer: Drew Adams
-;; Copyright (C) 2010-2011, Drew Adams, all rights reserved.
+;; Copyright (C) 2010-2012, Drew Adams, all rights reserved.
 ;; Created: Tue Nov 30 15:22:56 2010 (-0800)
 ;; Version: 
-;; Last-Updated: Fri Feb 25 17:09:00 2011 (-0800)
+;; Last-Updated: Sun Jan  1 14:05:14 2012 (-0800)
 ;;           By: dradams
-;;     Update #: 1367
+;;     Update #: 1448
 ;; URL: http://www.emacswiki.org/cgi-bin/wiki/mouse3.el
 ;; Keywords: mouse menu keymap kill rectangle region
 ;; Compatibility: GNU Emacs: 20.x, 21.x, 22.x, 23.x
 ;; 
 ;; Features that might be required by this library:
 ;;
-;;   None
+;;   `naked'.
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
@@ -287,7 +287,6 @@
 ;;   `mouse3-region-popup-change-text-submenu',
 ;;   `mouse3-region-popup-check-convert-submenu',
 ;;   `mouse3-region-popup-copy-submenu',
-;;   `mouse3-region-popup-count-submenu',
 ;;   `mouse3-region-popup-highlight-submenu',
 ;;   `mouse3-region-popup-misc-submenu',
 ;;   `mouse3-region-popup-print-submenu',
@@ -308,6 +307,18 @@
 ;; 
 ;;; Change Log:
 ;;
+;; 2011/12/19 dadams
+;;     mouse3-dired-(un)mark-region-files, mouse3-dired-flag-region-files-for-deletion:
+;;       Use line-(beginning|end)-position, not (beginning|end)-of-line + point.
+;; 2011/12/09 dadams
+;;     Removed mouse3-region-popup-count-submenu.
+;;     mouse3-region-popup-x-popup-panes:
+;;       Use count-(words|lines)-region.  Use call-interactively and sleep-for.
+;;     mouse3-region-popup-misc-submenu: Added count-(words|lines)-region, similarly.
+;;     mouse3-region-popup-entries: Removed mouse3-region-popup-count-submenu..
+;; 2011/10/07 dadams
+;;     Added soft require of naked.el.
+;;     mouse3-region-popup-(remove/replace-items|rectangle-submenu): Use naked-key-description if available.
 ;; 2011/02/25 dadams
 ;;     mouse3-region-popup-x-popup-panes, mouse3-picture-mode-x-popup-panes:
 ;;       Distinguish separator choice by making command choice be non-nil.
@@ -367,6 +378,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 ;;; Code:
+
+(require 'naked nil t) ;; (no error if not found): naked-key-description
 
 ;; Quiet the byte-compiler.
 (defvar picture-killed-rectangle)
@@ -629,7 +642,7 @@ restore it by yanking."
      ("EPA Decrypt"                             . epa-decrypt-region)
      ("PGG Encrypt"                             . pgg-encrypt-region)
      ("PGG Decrypt"                             . pgg-decrypt-region))
-     ;; This will appear only if library `highlight.el' was already loaded.
+    ;; This will appear only if library `highlight.el' was already loaded.
     ,@(and (fboundp 'hlt-highlight-region) ; Defined in `highlight.el'.
            '(("Highlight"
               ("Highlight"                      . hlt-highlight-region)
@@ -653,13 +666,19 @@ restore it by yanking."
               '(("BNF PostScript Print "        . ebnf-print-region)))
      ,@`,(and (fboundp 'ebnf-print-region) ; Defined in `ebnf2ps.el'.
               '(("BNF PostScript Save"          . ebnf-eps-region))))
-    ("Count"
-     ;; This will appear only if library `misc-cmds.el' was already loaded.
-     ,@`,(and (fboundp 'region-length)  ; Defined in `misc-cmds.el'.
-              '(("Characters"                   . region-length)))
-     ("Words"                                   . count-words-region)
-     ("Lines"                                   . count-lines-region))
     ("Misc"
+     ,@`,(and (fboundp 'count-words-region) ; Emacs 24+
+              '(("Count Lines, Words, Chars"
+                 . (lambda ()
+                     (interactive)
+                     (call-interactively #'count-words-region)
+                     (sleep-for 3)))))
+     ,@`,(and (not (fboundp 'count-words-region)) ; Emacs < 24
+              '(("Count Lines and Chars"
+                 . (lambda ()
+                     (interactive)
+                     (call-interactively #'count-lines-region)
+                     (sleep-for 3)))))
      ("Narrow"                                  . narrow-to-region)
      ("Eval"                                    . eval-region)
      ("Key-Macro on Region Lines"               . apply-macro-to-region-lines)
@@ -716,7 +735,9 @@ not use this option.  Instead, set option
                                                   (current-kill 1))
                                                 (delete-region start end)
                                                 (yank))
-       :keys ,(key-description (car (where-is-internal 'yank))) ; "C-y"
+       :keys ,(if (fboundp 'naked-key-description)
+                  (naked-key-description (car (where-is-internal 'yank)))
+                  (key-description (car (where-is-internal 'yank)))) ; "C-y"
        :help "Replace selected text by last text killed."
        :visible (not buffer-read-only)
        :enable (and kill-ring (mouse3-nonempty-region-p))))
@@ -816,7 +837,9 @@ restore it by yanking."
           (yank-rectangle))
         :enable (and (boundp 'killed-rectangle) killed-rectangle)
         :visible (not buffer-read-only)
-        :keys ,(key-description (car (where-is-internal 'yank-rectangle))) ; "<M-S-insert>"
+        :keys ,(if (fboundp 'naked-key-description)
+                   (naked-key-description (car (where-is-internal 'yank-rectangle)))
+                   (key-description (car (where-is-internal 'yank-rectangle)))) ; "<M-S-insert>"
         :help "Replace the selected rectangle by the last rectangle killed.")
        (clear-rectangle              menu-item "Clear (Replace)"  clear-rectangle
         :visible (not buffer-read-only))
@@ -964,22 +987,22 @@ restore it by yanking."
   "Submenu for printing the mouse selection.")
 
 ;;;###autoload
-(defconst mouse3-region-popup-count-submenu
-    '(count-menu
-      menu-item "Count"
-      (keymap
-       (region-length      menu-item "Characters" region-length
-        :visible (fboundp 'region-length))
-       (count-words-region menu-item "Words" count-words-region)
-       (count-lines-region menu-item "Lines" count-lines-region))
-      :enable (mouse3-nonempty-region-p)) ; Disable this submenu if the region is empty.
-  "Submenu for counting text objects in the mouse selection.")
-
-;;;###autoload
 (defconst mouse3-region-popup-misc-submenu
     '(misc-menu
       menu-item "Misc"
       (keymap
+       (count-words-region menu-item "Count Lines, Words, Chars"
+        (lambda ()
+          (interactive)
+          (call-interactively #'count-words-region)
+          (sleep-for 3))
+        :visible (fboundp 'count-words-region)) ; Emacs 24+
+       (count-lines-region menu-item "Count Lines and Chars"
+        (lambda ()
+          (interactive)
+          (call-interactively #'count-lines-region)
+          (sleep-for 3))
+        :visible (not (fboundp 'count-words-region))) ; Emacs < 24
        (narrow-to-region            menu-item "Narrow" narrow-to-region)
        (eval-region                 menu-item "Eval" eval-region)
        (apply-macro-to-region-lines menu-item "Key-Macro on Region Lines" apply-macro-to-region-lines
@@ -1009,7 +1032,6 @@ restore it by yanking."
                                          ,(and (fboundp 'hlt-highlight-region)
                                                mouse3-region-popup-highlight-submenu)
                                          ,mouse3-region-popup-print-submenu
-                                         ,mouse3-region-popup-count-submenu
                                          ,mouse3-region-popup-misc-submenu
                                          )
   "*Entries for the `mouse-3' popup menu.
@@ -1430,8 +1452,8 @@ With non-nil prefix arg, unmark them instead."
   (let ((beg                        (min (point) (mark)))
         (end                        (max (point) (mark)))
         (inhibit-field-text-motion  t)) ; Just in case.
-    (setq beg  (save-excursion (goto-char beg) (beginning-of-line) (point))
-          end  (save-excursion (goto-char end) (end-of-line) (point)))
+    (setq beg  (save-excursion (goto-char beg) (line-beginning-position))
+          end  (save-excursion (goto-char end) (line-end-position)))
     (let ((dired-marker-char  (if unmark-p ?\040 dired-marker-char)))
       (dired-mark-if (and (<= (point) end) (>= (point) beg) (mouse3-dired-this-file-unmarked-p))
                      "region file"))))
@@ -1444,8 +1466,8 @@ With non-nil prefix arg, mark them instead."
   (let ((beg                        (min (point) (mark)))
         (end                        (max (point) (mark)))
         (inhibit-field-text-motion  t)) ; Just in case.
-    (setq beg  (save-excursion (goto-char beg) (beginning-of-line) (point))
-          end  (save-excursion (goto-char end) (end-of-line) (point)))
+    (setq beg  (save-excursion (goto-char beg) (line-beginning-position))
+          end  (save-excursion (goto-char end) (line-end-position)))
     (let ((dired-marker-char  (if mark-p dired-marker-char ?\040)))
       (dired-mark-if (and (<= (point) end) (>= (point) beg) (mouse3-dired-this-file-marked-p))
                      "region file"))))
@@ -1457,8 +1479,8 @@ With non-nil prefix arg, mark them instead."
   (let ((beg                        (min (point) (mark)))
         (end                        (max (point) (mark)))
         (inhibit-field-text-motion  t)) ; Just in case.
-    (setq beg  (save-excursion (goto-char beg) (beginning-of-line) (point))
-          end  (save-excursion (goto-char end) (end-of-line) (point)))
+    (setq beg  (save-excursion (goto-char beg) (line-beginning-position))
+          end  (save-excursion (goto-char end) (line-end-position)))
     (let ((dired-marker-char  dired-del-marker))
       (dired-mark-if (and (<= (point) end) (>= (point) beg) (mouse3-dired-this-file-unmarked-p ?\D))
                      "region file"))))

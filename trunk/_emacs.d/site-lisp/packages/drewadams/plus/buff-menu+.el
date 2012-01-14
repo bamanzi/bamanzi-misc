@@ -4,19 +4,20 @@
 ;; Description: Extensions to `buff-menu.el'
 ;; Author: Drew Adams
 ;; Maintainer: Drew Adams (concat "drew.adams" "@" "oracle" ".com")
-;; Copyright (C) 1996-2011, Drew Adams, all rights reserved.
+;; Copyright (C) 1996-2012, Drew Adams, all rights reserved.
 ;; Created: Mon Sep 11 10:29:56 1995
 ;; Version: 21.0
-;; Last-Updated: Wed Jun 29 13:26:06 2011 (-0700)
+;; Last-Updated: Sun Jan  1 15:13:35 2012 (-0800)
 ;;           By: dradams
-;;     Update #: 2730
+;;     Update #: 2744
 ;; URL: http://www.emacswiki.org/cgi-bin/wiki/buff-menu+.el
 ;; Keywords: mouse, local, convenience
 ;; Compatibility: GNU Emacs: 20.x, 21.x, 22.x, 23.x
 ;;
 ;; Features that might be required by this library:
 ;;
-;;   `avoid', `fit-frame', `frame-fns', `misc-cmds', `misc-fns'.
+;;   `avoid', `fit-frame', `frame-fns', `misc-cmds', `misc-fns',
+;;   `strings', `thingatpt', `thingatpt+'.
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -139,8 +140,12 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;;; Change log:
+;;; Change Log:
 ;;
+;; 2011/12/19 dadams
+;;     Buffer-menu-mode, Buffer-menu-mouse-3-menu: Use line-end-position, not end-of-line + point.
+;; 2011/10/27 dadams
+;;     Handle Dired buffers like file buffers, e.g., wrt arg FILES-ONLY.
 ;; 2011/06/29 dadams
 ;;     Buffer-menu-buffer+size: Corrected SPC syntax (for Emacs 20) from ?\s  to ?\ .
 ;; 2011/05/02 dadams
@@ -951,7 +956,7 @@ another window.  No select.
 \\[Buffer-menu-view]\t-- select current line's buffer, but in view-mode.
 \\[Buffer-menu-view-other-window]\t-- select that buffer in
   another window, in view-mode.
-\\[Buffer-menu-toggle-files-only]\t-- toggle whether the menu displays only file buffers.
+\\[Buffer-menu-toggle-files-only]\t-- toggle whether to display only file buffers.
 
 Marking/Unmarking Buffers to be Saved/Deleted
 ---------------------------------------------
@@ -997,9 +1002,7 @@ Bindings in Buffer Menu mode:
       (when (or (not (boundp 'Buffer-menu-use-header-line)) (not Buffer-menu-use-header-line))
         (forward-line 2))               ; First two lines are title, unless use header line.
       (while (not (eobp))
-        (put-text-property (point)
-                           (save-excursion (end-of-line) (point))
-                           'mouse-face 'highlight)
+        (put-text-property (point) (line-end-position) 'mouse-face 'highlight)
         (forward-line 1)))
     (set (make-local-variable 'revert-buffer-function) 'Buffer-menu-revert-function)
     (when (> emacs-major-version 21)
@@ -1081,7 +1084,7 @@ another window.  No select.
 \\[Buffer-menu-view]\t-- select current line's buffer, but in view-mode.
 \\[Buffer-menu-view-other-window]\t-- select that buffer in
   another window, in view-mode.
-\\[Buffer-menu-toggle-files-only]\t-- toggle whether the menu displays only file buffers.
+\\[Buffer-menu-toggle-files-only]\t-- toggle whether to display only file & Dired buffers.
 
 Marking/Unmarking Buffers to be Saved/Deleted
 ---------------------------------------------
@@ -1123,8 +1126,7 @@ Bindings in Buffer Menu mode:
         (when (or (not (boundp 'Buffer-menu-use-header-line)) (not Buffer-menu-use-header-line))
           (forward-line 2))             ; First two lines are title, unless use header line.
         (while (not (eobp))
-          (put-text-property (point) (save-excursion (end-of-line) (point))
-                             'mouse-face 'highlight)
+          (put-text-property (point) (line-end-position) 'mouse-face 'highlight)
           (forward-line 1))))
     (set (make-local-variable 'revert-buffer-function) 'Buffer-menu-revert-function)
     (set (make-local-variable 'buffer-stale-function) #'(lambda (&optional noconfirm) 'fast))
@@ -1362,6 +1364,7 @@ see `Buffer-menu-use-frame-buffer-list'"))
 ;; 4. Sort direction depends on sign of `Buffer-menu-sort-column'.
 ;; 5. Go to beginning of buffer if `desired-point' is not defined.
 ;; 6. Accommodate `frame-bufs.el'.
+;; 7. Treat Dired buffers like file buffers, e.g., wrt FILES-ONLY.
 ;;
 (when (> emacs-major-version 21)
   (defun list-buffers-noselect (&optional files-only buffer-list)
@@ -1457,7 +1460,8 @@ For more information, see the function `buffer-menu'."
                                                (selected-frame)))))
           (with-current-buffer buffer
             (let ((name  (buffer-name))
-                  (file  buffer-file-name))
+                  (file  (or buffer-file-name
+                             (and (eq major-mode 'dired-mode) default-directory))))
               (unless (and (not buffer-list)
                            (or
                             ;; Don't mention internal buffers.
@@ -1612,8 +1616,8 @@ For more information, see the function `buffer-menu'."
                          (set-buffer (window-buffer (posn-window mouse-pos)))
                          (save-excursion
                            (goto-char (posn-point mouse-pos))
-                           (save-excursion (setq bol  (progn (beginning-of-line) (point))
-                                                 eol  (progn (end-of-line) (point))))
+                           (setq bol  (line-beginning-position)
+                                 eol  (line-end-position))
                            (if Buffer-menu-overlay ; Don't recreate if exists.
                                (move-overlay Buffer-menu-overlay bol eol (current-buffer))
                              (setq Buffer-menu-overlay  (make-overlay bol eol))

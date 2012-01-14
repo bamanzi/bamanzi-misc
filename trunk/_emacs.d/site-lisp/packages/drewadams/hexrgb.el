@@ -4,12 +4,12 @@
 ;; Description: Functions to manipulate colors, including RGB hex strings.
 ;; Author: Drew Adams
 ;; Maintainer: Drew Adams
-;; Copyright (C) 2004-2011, Drew Adams, all rights reserved.
+;; Copyright (C) 2004-2012, Drew Adams, all rights reserved.
 ;; Created: Mon Sep 20 22:58:45 2004
 ;; Version: 21.0
-;; Last-Updated: Wed Feb 16 16:49:51 2011 (-0800)
+;; Last-Updated: Thu Jan  5 09:13:12 2012 (-0800)
 ;;           By: dradams
-;;     Update #: 782
+;;     Update #: 807
 ;; URL: http://www.emacswiki.org/cgi-bin/wiki/hexrgb.el
 ;; Keywords: number, hex, rgb, color, background, frames, display
 ;; Compatibility: GNU Emacs: 20.x, 21.x, 22.x, 23.x
@@ -80,8 +80,14 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;;; Change log:
+;;; Change Log:
 ;;
+;; 2012/01/05 dadams
+;;     hexrgb-complement: Added optional arg MSG-P.
+;;     Some doc-string cleanup.
+;; 2011/11/26 dadams
+;;     hexrgb-read-color: Changed arg order to match vanilla Emacs read-color.  Added MSGP.
+;;     *** THIS IS AN INCOMPATIBLE CHANGE.  IF YOU USE THIS FUNCTION THEN UPDATE YOUR CODE. ***
 ;; 2011/02/16 dadams
 ;;     hexrgb-increment-hex: INCOMPATIBLE CHANGE:
 ;;                           Swapped order of args NB-DIGITS, INCREMENT, to fit other functions.
@@ -272,8 +278,8 @@ are lowercased, whitespace is removed, and there are no duplicates."
 
 ;; RMS added this function to Emacs (23) as `read-color', with some feature loss.
 ;;;###autoload
-(defun hexrgb-read-color (&optional convert-to-RGB-p allow-empty-name-p prompt)
-  "Read a color name or RGB hex value: #RRRRGGGGBBBB.
+(defun hexrgb-read-color (&optional prompt convert-to-RGB-p allow-empty-name-p msgp)
+  "Read a color name or hex RGB hexadecimal color value #RRRRGGGGBBBB.
 Completion is available for color names, but not for RGB hex strings.
 If you input an RGB hex string, it must have the form #XXXXXXXXXXXX or
 XXXXXXXXXXXX, where each X is a hex digit.  The number of Xs must be a
@@ -301,6 +307,8 @@ color is used.
 \(You can copy a color using eyedropper commands such as
 `eyedrop-pick-foreground-at-mouse'.)
 
+Optional arg PROMPT is the prompt - nil means use a default prompt.
+
 Checks input to be sure it represents a valid color.  If not, raises
 an error (but see exception for empty input with non-nil
 ALLOW-EMPTY-NAME-P).
@@ -311,12 +319,12 @@ an input color name to an RGB hex string.  Returns the RGB hex string.
 Optional arg ALLOW-EMPTY-NAME-P controls what happens if you enter an
 empty color name (that is, you just hit `RET').  If non-nil, then
 `hexrgb-read-color' returns an empty color name, \"\".  If nil, then
-it raises an error.  Programs must test for \"\" if ALLOW-EMPTY-NAME-P
-is non-nil.  They can then perform an appropriate action in case of
-empty input.
+it raises an error.  Calling programs must test for \"\" if
+ALLOW-EMPTY-NAME-P is non-nil.  They can then perform an appropriate
+action in case of empty input.
 
-Optional arg PROMPT is the prompt.  Nil means use a default prompt."
-  (interactive "p")                     ; Always convert to RGB interactively.
+Interactively, or with non-nil MSGP, show color name in the echo area."
+  (interactive "i\np\ni\np")             ; Always convert to RGB interactively.
   (let* ((completion-ignore-case  t)
          ;; Free variables here: `eyedrop-picked-foreground', `eyedrop-picked-background'.
          ;; They are defined in library `palette.el' or library `eyedropper.el'.
@@ -360,7 +368,7 @@ Optional arg PROMPT is the prompt.  Nil means use a default prompt."
                          (try-completion color colors))))
           (error "No such color: %S" color))
         (when convert-to-RGB-p (setq color  (hexrgb-color-name-to-hex color))))
-      (when (interactive-p) (message "Color: `%s'" color))
+      (when msgp (message "Color: `%s'" color))
       color)))
 
 (defun hexrgb-rgb-hex-string-p (color &optional laxp)
@@ -375,15 +383,17 @@ returned; otherwise, t is returned."
       (and laxp (string-match "^\\([a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]\\)+$" color) t)))
 
 ;;;###autoload
-(defun hexrgb-complement (color)
-  "Return the color that is the complement of COLOR."
-  (interactive (list (hexrgb-read-color)))
+(defun hexrgb-complement (color &optional msg-p)
+  "Return the color that is the complement of COLOR.
+Non-interactively, non-nil optional arg MSG-P means show a message
+with the complement."
+  (interactive (list (hexrgb-read-color) t))
   (setq color  (hexrgb-color-name-to-hex color))
   (let ((red    (hexrgb-red color))
         (green  (hexrgb-green color))
         (blue   (hexrgb-blue color)))
     (setq color  (hexrgb-rgb-to-hex (- 1.0 red) (- 1.0 green) (- 1.0 blue))))
-  (when (interactive-p) (message "Complement: `%s'" color))
+  (when msg-p (message "Complement: `%s'" color))
   color)
 
 ;;;###autoload

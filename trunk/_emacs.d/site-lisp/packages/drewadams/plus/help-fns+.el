@@ -4,19 +4,19 @@
 ;; Description: Extensions to `help-fns.el'.
 ;; Author: Drew Adams
 ;; Maintainer: Drew Adams
-;; Copyright (C) 2007-2011, Drew Adams, all rights reserved.
+;; Copyright (C) 2007-2012, Drew Adams, all rights reserved.
 ;; Created: Sat Sep 01 11:01:42 2007
 ;; Version: 22.1
-;; Last-Updated: Mon Aug 22 09:51:16 2011 (-0700)
+;; Last-Updated: Wed Jan 11 06:29:33 2012 (-0800)
 ;;           By: dradams
-;;     Update #: 1035
+;;     Update #: 1121
 ;; URL: http://www.emacswiki.org/cgi-bin/wiki/help-fns+.el
-;; Keywords: help, faces
+;; Keywords: help, faces, characters, packages, description
 ;; Compatibility: GNU Emacs: 22.x, 23.x
 ;;
 ;; Features that might be required by this library:
 ;;
-;;   `button', `help-fns', `help-mode', `view', `wid-edit',
+;;   `button', `help-fns', `help-mode', `naked', `view', `wid-edit',
 ;;   `wid-edit+'.
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -25,6 +25,17 @@
 ;;
 ;;    Extensions to `help-fns.el'.  Also includes a redefinition of
 ;;    `describe-face', which is from `faces.el'.
+;;
+;;    ************************** IMPORTANT ***************************
+;;    *                                                              *
+;;    *  Byte-compiling this file in one Emacs version and using the *
+;;    *  compiled file in another version works ONLY as follows:     *
+;;    *                                                              *
+;;    *  If you compile in Emacs 22, use it only for Emacs 22.       *
+;;    *  If you compile in Emacs 23. use it for Emacs 22, 23, or 24. *
+;;    *  If you compile in Emacs 24, use it only for Emacs 24.       *
+;;    *                                                              *
+;;    ****************************************************************
 ;;
 ;;
 ;;  Keys bound here:
@@ -68,25 +79,25 @@
 ;;    23.2+), `variable-name-history'.
 ;;
 ;;
+;;  ***** NOTE: The following command defined in `faces.el'
+;;              has been REDEFINED HERE:
+;;
+;;  `describe-face'.
+;;
+;;
+;;  ***** NOTE: The following command defined in `help.el'
+;;              has been REDEFINED HERE:
+;;
+;;  `describe-mode'.
+;;
+;;
 ;;  ***** NOTE: The following functions defined in `help-fns.el'
 ;;              have been REDEFINED HERE:
 ;;
 ;;  `describe-function', `describe-function-1', `describe-variable'.
 ;;
 ;;
-;;  ***** NOTE: The following function defined in `help.el'
-;;              has been REDEFINED HERE:
-;;
-;;  `describe-mode'.
-;;
-;;
-;;  ***** NOTE: The following function defined in `faces.el'
-;;              has been REDEFINED HERE:
-;;
-;;  `describe-face'.
-;;
-;;
-;;  ***** NOTE: The following function defined in `package.el'
+;;  ***** NOTE: The following command defined in `package.el'
 ;;              has been REDEFINED HERE:
 ;;
 ;;  `describe-package'.
@@ -103,8 +114,22 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;;; Change log:
+;;; Change Log:
 ;;
+;; 2012/01/11 dadams
+;;     describe-variable: Remove * from beginning of doc string.
+;; 2011/11/25 dadams
+;;     Reverted yesterday's change and added IMPORTANT note to Commentary.
+;; 2011/11/24 dadams
+;;     Added Emacs 24 version of with-help-window.  They changed the signature of help-window-setup.
+;; 2011/10/14 dadams
+;;     describe-mode: Call help-documentation while in mode's buffer, in case no \\<...>.
+;; 2011/10/08 dadams
+;;     Info-make-manuals-xref: Do nothing if OBJECT is not a string or a symbol (e.g. is a keymap).
+;; 2011/10/07 dadams
+;;     Added soft require of naked.el.
+;;     help-substitute-command-keys, describe-function-1:
+;;       Use naked-key-description if available.
 ;; 2011/08/22 dadams
 ;;     describe-variable (Emacs 23+): Added terpri after Value: (for multiline value).
 ;; 2011/07/25 dadams
@@ -244,11 +269,14 @@
 ;;
 ;;; Code:
 
+
 (require 'help-fns)
 
 (require 'wid-edit+ nil t) ;; (no error if not found):
                            ;; redefined color widget (for help-var-is-of-type-p)
 (require 'wid-edit) ;; widget-convert
+
+(require 'naked nil t) ;; (no error if not found): naked-key-description
 
 (when (or (> emacs-major-version 23) (and (= emacs-major-version 23) (> emacs-minor-version 1)))
   (require 'info)) ;; Info-virtual-files
@@ -261,8 +289,6 @@
 (defvar dir-local-variables-alist)
 (defvar dir-locals-file)
 (defvar file-local-variables-alist)
-(defvar help-window)
-(defvar help-window-point-marker)
 (defvar Info-indexed-nodes)             ; In `info.el'
 (defvar help-cross-reference-manuals)   ; For Emacs < 23.2
 (defvar package-alist)
@@ -388,7 +414,11 @@ descriptions, which link to the key's command help."
                                 (symbolp (aref key 1)) follow-remap)
                       (setq mc            (aref key 1)
                             follow-remap  nil)))
-                  (setq key  (if key (key-description key) (concat "M-x " (symbol-name mc))))
+                  (setq key  (if key
+                                 (if (fboundp 'naked-key-description)
+                                     (naked-key-description key)
+                                   (key-description key))
+                               (concat "M-x " (symbol-name mc))))
                   (when add-help-buttons (setq key  (help-key-button-string key mc))))))
             (unless (or mk mc)          ; BINDINGS
               (save-match-data
@@ -486,8 +516,8 @@ so that matches are exact (ignoring case).")
                                      ;; (slow . t) ; $$$$$$ Useless here?
                                      ))
 
-  (defun Info-make-manuals-xref (symbol &optional no-newlines-after-p manuals)
-    "Create a cross-ref link for index entries for SYMBOL in manuals.
+  (defun Info-make-manuals-xref (object &optional no-newlines-after-p manuals)
+    "Create a cross-ref link for index entries for OBJECT in manuals.
 Non-`nil' optional arg NO-NEWLINES-AFTER-P means do not add two
 newlines after the cross reference.
 
@@ -499,19 +529,20 @@ Do nothing if the car of MANUALS is nil (no manuals to search).  If
 its cdr is `nil' then create the link without first searching any
 manuals.  Otherwise, create the link only if there are search hits in
 the manuals."
-    (unless manuals (setq manuals  help-cross-reference-manuals))
-    (when (car manuals)      ; Create no link if no manuals to search.
-      (let ((books         (car manuals))
-            (search-now-p  (cdr manuals))
-            (symb-name     (if (stringp symbol) symbol (symbol-name symbol))))
-        (when (or (not search-now-p)
-                  (save-current-buffer (Info-any-index-occurrences-p symb-name books)))
-          (let ((buffer-read-only  nil))
-            (insert (format "\n\nFor more information %s the "
-                            (if (cdr manuals) "see" "check")))
-            (help-insert-xref-button "manuals" 'help-info-manual-lookup symb-name books)
-            (insert ".")
-            (unless no-newlines-after-p (insert "\n\n")))))))
+    (when (or (stringp object) (symbolp object)) ; Exclude, e.g., a keymap as OBJECT.
+      (unless manuals (setq manuals  help-cross-reference-manuals))
+      (when (car manuals)    ; Create no link if no manuals to search.
+        (let ((books         (car manuals))
+              (search-now-p  (cdr manuals))
+              (symb-name     (if (stringp object) object (symbol-name object))))
+          (when (or (not search-now-p)
+                    (save-current-buffer (Info-any-index-occurrences-p symb-name books)))
+            (let ((buffer-read-only  nil))
+              (insert (format "\n\nFor more information %s the "
+                              (if (cdr manuals) "see" "check")))
+              (help-insert-xref-button "manuals" 'help-info-manual-lookup symb-name books)
+              (insert ".")
+              (unless no-newlines-after-p (insert "\n\n"))))))))
 
 
   (when (and (> emacs-major-version 21)
@@ -713,9 +744,10 @@ whose documentation describes the minor mode."
                 (save-excursion (re-search-backward "`\\([^`']+\\)'" nil t)
                                 (help-xref-button 1 'help-function-def mode file-name)))))
           (princ ":\n")
-          (let ((maj  major-mode))
+          (let* ((maj      major-mode)
+                 (maj-doc  (help-documentation maj nil 'ADD-HELP-BUTTONS)))
             (with-current-buffer standard-output
-              (insert (help-documentation maj nil 'ADD-HELP-BUTTONS))
+              (insert maj-doc)
               (Info-make-manuals-xref maj t)))))) ; Link to manuals.
     ;; For the sake of IELM and maybe others
     nil))
@@ -848,10 +880,16 @@ Return the description that was displayed, as a string."
                 (princ (if remapped ", which is bound to "  "It is bound to "))
                 ;; If lots of ordinary text characters run this command, don't mention them one by one.
                 (if (< (length non-modified-keys) 10)
-                    (princ (mapconcat 'key-description keys ", "))
+                    (princ (mapconcat (if (fboundp 'naked-key-description)
+                                          #'naked-key-description
+                                        #'key-description)
+                                      keys ", "))
                   (dolist (key  non-modified-keys) (setq keys  (delq key keys)))
                   (if keys
-                      (progn (princ (mapconcat 'key-description keys ", "))
+                      (progn (princ (mapconcat (if (fboundp 'naked-key-description)
+                                                   #'naked-key-description
+                                                 #'key-description)
+                                               keys ", "))
                              (princ ", and many ordinary text characters"))
                     (princ "many ordinary text characters"))))
               (when (or remapped keys non-modified-keys) (princ ".") (terpri))))
@@ -979,10 +1017,16 @@ Return the description that was displayed, as a string."
                     (princ (if remapped ", which is bound to "  "It is bound to "))
                     ;; If lots of ordinary text chars run this command, don't mention them one by one.
                     (if (< (length non-modified-keys) 10)
-                        (princ (mapconcat 'key-description keys ", "))
+                        (princ (mapconcat (if (fboundp 'naked-key-description)
+                                              #'naked-key-description
+                                            #'key-description)
+                                          keys ", "))
                       (dolist (key  non-modified-keys)  (setq keys  (delq key keys)))
                       (if keys
-                          (progn (princ (mapconcat 'key-description keys ", "))
+                          (progn (princ (mapconcat (if (fboundp 'naked-key-description)
+                                                       #'naked-key-description
+                                                     #'key-description)
+                                                   keys ", "))
                                  (princ ", and many ordinary text characters"))
                         (princ "many ordinary text characters"))))
                   (when (or remapped keys non-modified-keys)  (princ ".") (terpri)))))
@@ -1074,10 +1118,11 @@ Same as using a prefix arg with `describe-function'."
 
 ;; REPLACE ORIGINAL in `help.el':
 ;;
-;; With a prefix argument, candidates are user variables (options) only.
-;; Preferred default candidate is `symbol-nearest-point'.
-;; Uses `substitute-command-keys' on doc string.
-;; Preserves text properties.
+;; 1. With a prefix argument, candidates are user variables (options) only.
+;; 2. Preferred default candidate is `symbol-nearest-point'.
+;; 3. Remove initial `*' from doc string (indicates it is a user variable).
+;; 4. Use `substitute-command-keys' on doc string.
+;; 5. Preserve text properties.
 ;;
 (when (< emacs-major-version 23)
   (defun describe-variable (variable &optional buffer optionp)
@@ -1205,6 +1250,8 @@ it is displayed along with the global value."
                      (safe-var  (get variable 'safe-local-variable))
                      (doc       (or (documentation-property variable 'variable-documentation)
                                     (documentation-property alias 'variable-documentation))))
+                (when (and (> (length doc) 1)  (eq ?* (elt doc 0)))
+                  (setq doc  (substring doc 1))) ; Remove any user-variable prefix `*'.
                 (unless (eq alias variable)
                   (princ (format "\nThis variable is an alias for `%s'.\n" alias)))
                 (when (or obsolete safe-var) (terpri))
@@ -1224,7 +1271,7 @@ it is displayed along with the global value."
                            (format "`%s'.\n" safe-var))))
                 (princ "\nDocumentation:\n")
                 ;; Use `insert', not `princ', to keep text properties.
-                ;; (princ (or doc "Not documented as a variable.")))
+                ;; Was: (princ (or doc "Not documented as a variable.")))
                 (with-current-buffer standard-output
                   (insert (or (substitute-command-keys doc)
                               "Not documented as a variable."))))
@@ -1238,11 +1285,15 @@ it is displayed along with the global value."
               (print-help-return-message)
               (with-current-buffer standard-output (buffer-string))))))))); Return the text displayed.
 
-;;; These two macros are no different from what is in vanilla Emacs 23.
-;;; Add them here so this file can be byte-compiled with Emacs 22 and used with Emacs 23.
+;;; This macro is no different from what is in vanilla Emacs 23+.
+;;; Add it here so this file can be byte-compiled with Emacs 22 and used with Emacs 23+.
 (defmacro with-selected-frame (frame &rest body)
   "Execute the forms in BODY with FRAME as the selected frame.
-The value returned is the value of the last form in BODY.
+Save the selected frame, select FRAME, execute BODY, then restore the
+originally selected frame.
+This macro changes the order of neither the recently selected windows
+nor the buffers in the buffer list.  The value returned is the value
+of the last form in BODY.
 See also `with-temp-buffer'."
   (declare (indent 1) (debug t))
   (let ((old-frame   (make-symbol "old-frame"))
@@ -1254,47 +1305,15 @@ See also `with-temp-buffer'."
          (when (frame-live-p ,old-frame) (select-frame ,old-frame))
          (when (buffer-live-p ,old-buffer) (set-buffer ,old-buffer))))))
 
-(defmacro with-help-window (buffer-name &rest body)
-  "Display buffer BUFFER-NAME in a help window evaluating BODY.
-Select help window if the actual value of the user option
-`help-window-select' says so.  Return last value in BODY."
-  (declare (indent 1) (debug t))
-  ;; Bind list-of-frames to `frame-list' and list-of-window-tuples to a
-  ;; list of one <window window-buffer window-start window-point> tuple
-  ;; for each live window.
-  `(let ((list-of-frames         (frame-list))
-         (list-of-window-tuples  (let (list)
-                                   (walk-windows (lambda (window)
-                                                   (push (list window
-                                                               (window-buffer window)
-                                                               (window-start window)
-                                                               (window-point window))
-                                                         list))
-                                                 'no-mini t)
-                                   list)))
-     ;; Make `help-window' t to trigger `help-mode-finish' to set `help-window' to the actual
-     ;; help window.
-     (setq help-window  t)
-     ;; Make `help-window-point-marker' point nowhere
-     ;; (the only place where this should be set to a buffer position is within BODY).
-     (set-marker help-window-point-marker nil)
-     (prog1
-         ;; Return value returned by `with-output-to-temp-buffer'.
-         (with-output-to-temp-buffer ,buffer-name (progn ,@body))
-       (when (windowp help-window)
-         (help-window-setup list-of-frames list-of-window-tuples)); Set up help window.
-       ;; Reset `help-window' to nil to avoid confusing future calls of `help-mode-finish' with
-       ;; plain `with-output-to-temp-buffer'.
-       (setq help-window  nil))))
-
 
 ;; REPLACE ORIGINAL in `help.el':
 ;;
 ;; 1. With a prefix argument, candidates are user variables (options) only.
 ;; 2. Preferred default candidate is `symbol-nearest-point'.
-;; 3. Preserves text properties.
-;; 4. Call `Info-make-manuals-xref' to create a cross-ref link to manuals (Emacs 23.3).
-;; 5. Add key-description buttons to command help.  Use `insert', not `princ'.
+;; 3. Preserve text properties.
+;; 4. Remove initial `*' from doc string (indicates it is a user variable).
+;; 5. Call `Info-make-manuals-xref' to create a cross-ref link to manuals (Emacs 23.3).
+;; 6. Add key-description buttons to command help.  Use `insert', not `princ'.
 ;;
 (when (= emacs-major-version 23)
   (defun describe-variable (variable &optional buffer frame optionp)
@@ -1416,6 +1435,8 @@ it is displayed along with the global value."
                                       (help-documentation-property alias 'variable-documentation
                                                                    nil 'ADD-HELP-BUTTONS)))
                      (extra-line  nil))
+                (when (and (> (length doc) 1)  (eq ?* (elt doc 0)))
+                  (setq doc  (substring doc 1))) ; Remove any user-variable prefix `*'.
                 ;; Add a note for variables that have been `make-var-buffer-local'.
                 (when (and (local-variable-if-set-p variable)
                            (or (not (local-variable-p variable))
@@ -1490,9 +1511,10 @@ file local variable.\n")
 ;;
 ;; 1. With a prefix argument, candidates are user variables (options) only.
 ;; 2. Preferred default candidate is `symbol-nearest-point'.
-;; 3. Preserves text properties.
-;; 4. Call `Info-make-manuals-xref' to create a cross-ref link to manuals (Emacs 23.3).
-;; 5. Add key-description buttons to command help.  Use `insert', not `princ'.
+;; 3. Preserve text properties.
+;; 4. Remove initial `*' from doc string (indicates it is a user variable).
+;; 5. Call `Info-make-manuals-xref' to create a cross-ref link to manuals (Emacs 23.3).
+;; 6. Add key-description buttons to command help.  Use `insert', not `princ'.
 ;;
 (when (> emacs-major-version 23)
   (defun describe-variable (variable &optional buffer frame optionp)
@@ -1625,6 +1647,8 @@ it is displayed along with the global value."
                                       (help-documentation-property alias 'variable-documentation
                                                                    nil 'ADD-HELP-BUTTONS)))
                      (extra-line  nil))
+                (when (and (> (length doc) 1)  (eq ?* (elt doc 0)))
+                  (setq doc  (substring doc 1))) ; Remove any user-variable prefix `*'.
                 ;; Add a note for variables that have been `make-var-buffer-local'.
                 (when (and (local-variable-if-set-p variable)
                            (or (not (local-variable-p variable))
