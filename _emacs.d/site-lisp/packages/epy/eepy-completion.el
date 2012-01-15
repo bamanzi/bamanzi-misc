@@ -29,7 +29,8 @@
        (setq ac-dwim t)
        (ac-config-default))
      
-     (add-to-list 'ac-dictionary-directories (concat eepy-install-dir "extensions/auto-complete/dict/"))
+     (add-to-list 'ac-dictionary-directories
+                  (concat eepy-install-dir "extensions/auto-complete/dict/"))
      ))
 
 ;;*** Emacs's built-in completion python.el
@@ -43,8 +44,15 @@
 ;;      - no doc info, nor function signature
 ;;      - in order to get completions, you need to send some python code to inferior python
 
+(defun python-symbol-completions-maybe (prefix)
+  (let ((python-el (symbol-file major-mode)))
+    (if (string-match "lisp/progmodes/python.el" python-el) ;;Emacs builtin lisp.el
+        (python-symbol-completions prefix)
+      nil) ;;otherwise, return nil
+    ))
+
 (ac-define-source python
-  '( (candidates . (python-symbol-completions ac-prefix))
+  '( (candidates . (python-symbol-completions-maybe ac-prefix))
      (symbol . "py")
      (prefix . "[ \t\n['\",()]\\([^\t\n['\",()]+\\)\\=") ))
 
@@ -59,11 +67,12 @@
 
 ;;(ac-define-source pycomplete
 (setq ac-source-pycompletemine
-  '((depends pycompletemine)
+  '((depends pycompletemine)  ;;FIXME: ok?
     (prefix .  "[ \t\n['\",()]\\([^\t\n['\",()]+\\)\\=")
     (candidates . (pycomplete-get-all-completions ac-prefix))
     (symbol . "pyc")
     (document . py-complete-help)))
+
 
 ;;** ropemacs: (code completion (and other features) for project
 (require 'eepy-ropemacs)
