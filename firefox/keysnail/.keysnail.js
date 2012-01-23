@@ -274,6 +274,86 @@ function inputChars(ev, chars) {
     aInput.selectionEnd = aInput.selectionStart;
 }
 
+//{{{ inline translate:
+// based on code stolen from Mar Mod extension
+function google_translate (whatToTranslate, lang, callback) {
+     if (whatToTranslate.length<=0 || whatToTranslate.length>=1000) {
+         alert('Text is too long');
+         return;
+     }
+    
+    var httpRequest = null;
+
+    var fullUrl = "http://translate.google.hu/translate_t?text=" + whatToTranslate +
+        "&hl=" + lang + "&langpair=auto|" + lang + "&tbb=1" ;
+
+    function removeHTMLTags(mitkell) {  //clean up a string from html tags
+ 	    var strInputCode = mitkell;
+ 	    var strTagStrippedText = strInputCode.replace(/<\/?[^>]+(>|$)/g, "");
+ 	    return strTagStrippedText;
+ 	}
+
+    function infoReceived() {  // if there is response from Google then write out translation
+        var output = httpRequest.responseText;
+        if (output.length) {
+            // Build the output string from Google Page
+            output = output.replace(/&quot;/gi,'"');
+            output = output.replace(/&lt;/gi,'<');
+            output = output.replace(/&gt;/gi,'>');
+            output = output.replace(/&amp;/gi,'&');
+            output = output.replace(/&#39;/gi,"'");
+            var fieldArray = output.split('</head>');
+            if (fieldArray[1].search('class="short_text"')!=-1) {
+                var tempResz = fieldArray[1].split('<span id=result_box class="short_text">');
+            }
+            else if (fieldArray[1].search('class="medium_text"')!=-1) {
+                var tempResz = fieldArray[1].split('<span id=result_box class="medium_text">');
+            }
+            else {
+                var tempResz = fieldArray[1].split('<span id=result_box class="long_text">');
+            }
+            var kimenet = tempResz[1].split('</span></div>');
+            if (callback) {
+                callback(kimenet[0]);
+            } else {
+                display.echoStatusBar("Total:" + value.length + " Selected:" + selcount, 3000);               
+            }
+        }
+    }
+    
+    httpRequest = new XMLHttpRequest();
+    httpRequest.open("GET", fullUrl, true);
+    httpRequest.onload = callback;
+    httpRequest.send(null);
+}
+
+function inline_translate_selection(lang) {
+    
+    var callback = function (result) {
+             var range = content.getSelection().getRangeAt(0);
+             range.deleteContents();
+             range.insertNode(document.createTextNode(removeHTMLTags(result[0])));
+    };
+
+    google_translate(content.getSelection(), lang, callback);
+}
+
+ext.add("inline-translate-selection", function() {
+    inline_translate_selection("en");
+}, "Translate the selection and replace it with result.");
+
+ext.add("inline-translate-selection-cn", function() {
+    inline_translate_selection("zh-CN");
+}, "Translate the selection and replace it with result.");
+
+ext.add("translate-selection", function() {
+    var selection = content.getSelection();
+    var callback = function(result) {
+        display.echoStatusBar(selection + ": " + result, 5000)
+    }
+    google_translate(selection, "en", callback);
+}, "Translate the selection and show result in status bar.");
+
 //}}%PRESERVE%
 // ========================================================================= //
 
@@ -1072,6 +1152,23 @@ key.setGlobalKey(['C-<f10>', 'd'], function (ev, arg) {
     display.echoStatusBar("select-to-translate now set to " + val , 3000);
 }, 'Toggle \'select-to-translate\' of Wiktionary & Google Translate extension.');
 
+key.setGlobalKey(['C-<f10>', 'D'], function (ev, arg) {
+    var prefkey = "extensions.gdic_gtrans.enableDoubleClick";
+    var val = util.getBoolPref(prefkey, false);
+    val = !val;
+    util.setBoolPref(prefkey, val);
+    var wm = Components.classes['@mozilla.org/appshell/window-mediator;1'].getService(Components.interfaces.nsIWindowMediator);
+    var enumerator = wm.getEnumerator("navigator:browser");
+    while (enumerator.hasMoreElements()) {
+        var win = enumerator.getNext();
+        if (win && win.gd12) {
+            win.gd12.prefs.read();
+        }
+    }
+    display.echoStatusBar("double-click-to-translate now set to " + val , 3000);
+}, 'Toggle \'double-click-to-translate\' of Wiktionary & Google Translate extension.');
+
+
 key.setViewKey(['C-c', 'C-a'], function(ev, arg) {
     ext.exec("increase-digit-in-url", arg);
 }, "Increase last digit in URL.");
@@ -1084,3 +1181,10 @@ key.setViewKey('M-=', function(ev, arg) {
     ext.exec("count-region", arg, ev);
 }, "Count selected or all chars in current editbox.");
 
+key.setGlobalKey(['<f5>', 't'], function (ev, arg) {
+    allTabs.open();
+}, 'select tab in of current tab group(firefox 4+)');
+
+key.setGlobalKey(['<f5>', 'T'], function (ev, arg) {
+    gPano.pane.toggleOpen();
+}, 'select tab (pano extension)');
