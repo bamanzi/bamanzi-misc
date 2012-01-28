@@ -1062,11 +1062,25 @@ key.setGlobalKey(['C-<f9>', 'i'], function (ev, arg) {
     splitpannel.toggle('http://space.cnblogs.com/mi/', true, 'right');
 }, 'Open Split Panel and load http://space.cnblogs.com/mi/ in it .');
 
-key.setGlobalKey(['C-<f9>', 't'], function (ev, arg) {
+key.setGlobalKey(['C-<f9>', 't'], function(ev, arg) {
+    var sel = getBrowserSelection();
+    if (sel) {
+        splitpannel.toggle("http://translate.google.com/m?hl=zh-CN&sl=auto&tl=en&ie=UTF-8&q=" + encodeURIComponent(sel), true, 'right');
+    }
+}, 'Translate selection to English and show result in Split Panel.');
+
+key.setGlobalKey(['C-<f9>', 'T'], function(ev, arg) {
+    var sel = getBrowserSelection();
+    if (sel) {
+        splitpannel.toggle("http://translate.google.com/m?hl=zh-CN&sl=auto&tl=zh-CN&ie=UTF-8&q=" + encodeURIComponent(sel), true, 'right');
+    }
+}, 'Translate selection to English and show result in Split Panel.');
+
+key.setGlobalKey(['C-<f9>', 'C-t'], function (ev, arg) {
     splitpannel.toggle("http://translate.google.com/m?hl=zh-CN&sl=auto&tl=en&ie=UTF-8", true, 'right');
 }, 'Open Split Panel and load Google Translate (any->en) in it .');
 
-key.setGlobalKey(['C-<f9>', 'T'], function (ev, arg) {
+key.setGlobalKey(['C-<f9>', 'C-T'], function (ev, arg) {
     splitpannel.toggle("http://translate.google.com/m?hl=zh-CN&sl=auto&tl=zh-CN&ie=UTF-8", true, 'right');
 }, 'Open Split Panel and load Google Translate (any->zh-CN) in it .');
 
