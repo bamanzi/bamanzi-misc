@@ -89,7 +89,35 @@ def parse_scrapbook_rdf(sbrdffile):
     px.Parse(file(sbrdffile).read(), 1)
 
     return CF.DICTRDF
-        
+
+def scrapbook_to_html(sbdata, output)
+    HTML_TMPL_BEGIN_FOLDER = ""
+    HTML_TMPL_END_FOLDER   = ""
+    HTML_TMPL_ITEM         = ""
+    
+    def item_to_html(itemid):
+        itemdata = sbdata.DESC[itemid]
+        if not itemdata:
+            sys.stderr.write("ERROR: description for item %s not exist.\n" % itemid)
+        else:
+            type = itemdata["type"]
+            
+        if type=="folder":
+            output.write(HTML_TMPL_BEGIN_FOLDER % itemdata)
+            seq = sbdata.SEQ[itemid]
+            if not seq:
+                sys.stderr.write("ERROR: seq for item %s not exist.\n" % itemid)
+            else:
+                for item in seq:
+                    item_to_html(item)
+            output.write(HTML_TMPL_END_FOLDER % itemdata)
+        else:  #site, bookmark, marked,
+            output.write(HTML_TMPL_ITEM % itemdata)
+
+    output.write(HTML_TMPL_HEADER)
+    for item in sbdata.ROOT["li"]:
+        item_to_html(item)
+    output.write(HTML_TMPL_FOOTER)
 
 
 if __name__=='__main__':
@@ -97,9 +125,12 @@ if __name__=='__main__':
     rdffile = os.path.abspath(sys.argv[1])
     sbdata = parse_scrapbook_rdf(rdffile)
                                  
-    import pickle
-    output = open('scraptools_%s.pkl' % os.path.dirname(rdffile)[-1] , 'wb')
-    pickle.dump(sbdata, output)
+    # import pickle
+    # output = open('scraptools_%s.pkl' % os.path.dirname(rdffile)[-1] , 'wb')
+    # pickle.dump(sbdata, output)
     #output.close
+
+    output = open('index.html', 'w')
+    scrapbook_to_html(sbdata, output)
 
 
