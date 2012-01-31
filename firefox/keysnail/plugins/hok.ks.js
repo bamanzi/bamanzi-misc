@@ -5,7 +5,7 @@ const PLUGIN_INFO =
     <name>HoK</name>
     <description>Hit a hint for KeySnail</description>
     <description lang="ja">キーボードでリンクを開く</description>
-    <version>1.2.9</version>
+    <version>1.3.1</version>
     <updateURL>https://github.com/mooz/keysnail/raw/master/plugins/hok.ks.js</updateURL>
     <iconURL>https://github.com/mooz/keysnail/raw/master/plugins/icon/hok.icon.png</iconURL>
     <author mail="stillpedant@gmail.com" homepage="http://d.hatena.ne.jp/mooz/">mooz</author>
@@ -334,8 +334,8 @@ const pOptions = plugins.setupOptions("hok", {
     },
 
     "selector" : {
-        preset: 'a[href], input:not([type="hidden"]), textarea, iframe, area, select, button, ' +
-            '*[onclick], *[onmouseover], *[onmousedown], *[onmouseup], *[oncommand], *[role="link"]',
+        preset: 'a[href], input:not([type="hidden"]), textarea, iframe, area, select, button, embed,' +
+            '*[onclick], *[onmouseover], *[onmousedown], *[onmouseup], *[oncommand], *[role="link"], *[role="button"]',
         description: M({
             en: "Selectors API Path query",
             ja: "ヒントの取得に使う Selectors API クエリ"
@@ -1275,7 +1275,7 @@ var actions = [
 ];
 
 if (pOptions["actions"])
-    pOptions["actions"].forEach(function (aRow) actions.push(aRow));
+    addActions(pOptions["actions"]);
 
 function doAction(aStr) {
     for (var i = 0; i < actions.length; ++i)
@@ -1338,5 +1338,31 @@ plugins.withProvides(function (provide) {
         });
     }, M({ja: "HoK - 拡張ヒントモードを開始", en: "Start Hit a Hint extended mode"}));
 }, PLUGIN_INFO);
+
+// }} ======================================================================= //
+
+// External APIs {{ ========================================================= //
+
+function addActions(aActions){
+    if (typeof aActions[0] === 'string')
+        addAction(aActions);
+    else
+        aActions.forEach(addAction);
+
+    function addAction(aAction) {
+        let i = seekAction(actions, aAction[0]);
+        if (i >= 0)
+            actions[i] = aAction;
+        else
+            actions.push(aAction);
+    }
+
+    function seekAction(aActions, aKey) {
+        for (let i = 0; i < aActions.length; ++i)
+            if (aActions[i][0] === aKey)
+                return i;
+        return -1;
+    }
+}
 
 // }} ======================================================================= //

@@ -8,7 +8,7 @@ let PLUGIN_INFO =
     <author>958</author>
     <iconURL>https://sites.google.com/site/958site/Home/files/RILnail.ks.png</iconURL>
     <updateURL>https://gist.github.com/raw/895703/RILnail.ks.js</updateURL>
-    <version>0.1.7</version>
+    <version>0.1.10</version>
     <license>MIT</license>
     <minVersion>1.8.0</minVersion>
     <include>main</include>
@@ -123,19 +123,42 @@ hook.addToHook('PluginLoaded', function () {
 plugins.withProvides(function (provide) {
     provide("ril-append",
         function (ev, arg) {
-            let itemId = RIL.addCurrent();
-            let item = RIL.APP.LIST.itemById(itemId);
-            if (item) {
+            let item = RIL.APP.LIST.itemByUrl(window.content.location.href);
+            if (!item) {
+                let itemId = RIL.addCurrent();
                 display.echoStatusBar("Append RIL - " + window.content.document.wrappedJSObject.title.toString() || "", 3000);
             }
         },
         M({ja: "RIL - 現在のタブを RIL に追加", en: "RIL - Append current tab"}));
+    provide("ril-remove",
+        function (ev, arg) {
+            let item = RIL.APP.LIST.itemByUrl(window.content.location.href);
+            if (item) {
+                RIL.markCurrentAsRead()
+                display.echoStatusBar("Remove RIL - " + window.content.document.wrappedJSObject.title.toString() || "", 3000);
+            }
+        },
+        M({ja: "RIL - 現在のタブを RIL から削除", en: "RIL - Remove current tab"}));
+    provide("ril-toggle",
+        function (ev, arg) {
+            let item = RIL.APP.LIST.itemByUrl(window.content.location.href);
+            if (item) {
+                RIL.markCurrentAsRead()
+                display.echoStatusBar("Remove RIL - " + window.content.document.wrappedJSObject.title.toString() || "", 3000);
+            } else {
+                let itemId = RIL.addCurrent();
+                display.echoStatusBar("Append RIL - " + window.content.document.wrappedJSObject.title.toString() || "", 3000);
+            }
+        },
+        M({ja: "RIL - 現在のタブを RIL に追加 または 削除", en: "RIL - Append or remove current tab"}));
     provide("ril-append-and-close",
         function (ev, arg) {
-            let itemId = RIL.addCurrent();
-            let item = RIL.APP.LIST.itemById(itemId);
-            if (item) {
+            let item = RIL.APP.LIST.itemByUrl(window.content.location.href);
+            if (!item) {
+                let itemId = RIL.addCurrent();
                 display.echoStatusBar("Append RIL - " + window.content.document.wrappedJSObject.title.toString() || "", 3000);
+            }
+            if (arg || !item) {
                 gBrowser.removeTab(gBrowser.mCurrentTab);
             }
         },
@@ -148,7 +171,7 @@ plugins.withProvides(function (provide) {
                 let favicon = util.getFaviconPath(url);
                 collection.push([
                     favicon,
-                    RIL.APP.LIST.list[i].title,
+                    html.unEscapeTag(RIL.APP.LIST.list[i].title),
                     url,
                     toAgo(RIL.APP.LIST.list[i].timeUpdated * 1000),
                     RIL.APP.LIST.list[i].timeUpdated,
