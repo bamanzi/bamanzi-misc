@@ -12,7 +12,7 @@ const PLUGIN_INFO =
     <name>Yet Another Twitter Client KeySnail</name>
     <description>Make KeySnail behave like Twitter client</description>
     <description lang="ja">KeySnail を Twitter クライアントに</description>
-    <version>3.0.0</version>
+    <version>3.0.9</version>
     <updateURL>https://github.com/mooz/keysnail/raw/master/plugins/yet-another-twitter-client-keysnail.ks.js</updateURL>
     <iconURL>https://github.com/mooz/keysnail/raw/master/plugins/icon/yet-another-twitter-client-keysnail.icon.png</iconURL>
     <author mail="stillpedant@gmail.com" homepage="http://d.hatena.ne.jp/mooz/">mooz</author>
@@ -286,7 +286,7 @@ const LOG_LEVEL_WARNING = 20;
 const LOG_LEVEL_ERROR   = 30;
 
 let pOptions = plugins.setupOptions("twitter_client", {
-    "retry_count"                  : { preset: -1 },
+    "retry_count"                  : { preset: 5 },
     "retry_interval"               : { preset: 2000 },
     "log_level"                    : { preset: LOG_LEVEL_MESSAGE },
     "update_interval"              : {
@@ -439,6 +439,11 @@ let pOptions = plugins.setupOptions("twitter_client", {
     "selected_user_reply_to_reply_to_style" : { preset: "background-color:#ffe9d4; color:black;" },
     "search_result_user_name_style"         : { preset: "color:#003870;" },
     // j.mp settings
+    "use_jmp"                               : {
+        preset: false,
+        description: M({en: "Use j.mp or not. If not, URLs will be automatically shortened by Twitter.",
+                        ja: "j.mp をつかって URL を短縮するか指定します。しない場合、 Twitter が自動で短縮します。" })
+    },
     "jmp_id"                                : {
         preset: "stillpedant",
         description: M({en: "Specify ID of your j.mp account if you want use your one",
@@ -455,6 +460,26 @@ let pOptions = plugins.setupOptions("twitter_client", {
         preset: false,
         description: M({ ja: "ユーザのアイコンが Gif 画像であった場合は隠す",
                          en: "When user icon is Gif, hide it" })
+    },
+    "show_screen_name_on_tweet": {
+        preset: false,
+        description: M({ ja: "ツイート入力時に自分のスクリーン名を表示する",
+                         en: "Display your screen name in tweet box." })
+    },
+    "filters": {
+        preset: [],
+        description: M({ ja: "各 status (つぶやき) はこのオプションに登録された関数に渡され、関数が false, null, undefined など falsy な値を返した場合、一覧から削除されます。",
+                         en: "Remove tweets when one of the functions returns falsy value." })
+    },
+    "list_include_rts": {
+        preset: true,
+        description: M({ ja: "リストのタイムラインに公式RTを含めるかどうか",
+                         en: "When set to either true, t or 1, list timelines will contain native retweets (if they exist) in addition to the standard stream of tweets."})
+    },
+   "user_include_rts": {
+        preset: true,
+        description: M({ ja: "ユーザのタイムラインに公式RTを含めるかどうか",
+                         en: "When set to either true, t or 1, user timelines will contain native retweets (if they exist) in addition to the standard stream of tweets."})
     }
 }, PLUGIN_INFO);
 
@@ -515,23 +540,28 @@ const $U = {
 
     shortenURL:
     function shortenURL(aURL, next) {
-        const id  = pOptions["jmp_id"];
-        const key = pOptions["jmp_key"];
+        if (pOptions["use_jmp"]) {
+            const id  = pOptions["jmp_id"];
+            const key = pOptions["jmp_key"];
 
-        var endPoint = "http://api.j.mp/shorten?" +
-            util.format('version=2.0.1&login=%s&apiKey=%s&longUrl=%s',
-                        id, key,
-                        encodeURIComponent(aURL));
+            var endPoint = "http://api.j.mp/shorten?" +
+                util.format('version=2.0.1&login=%s&apiKey=%s&longUrl=%s',
+                            id, key,
+                            encodeURIComponent(aURL));
 
-        util.httpGet(endPoint, false, function (xhr) {
-            let response = $U.decodeJSON(xhr.responseText);
+            util.httpGet(endPoint, false, function (xhr) {
+                let response = $U.decodeJSON(xhr.responseText);
 
-            let url = (response && response.results && response.results[aURL]) ?
-                response.results[aURL].shortUrl :
-                aURL;
+                let url = (response && response.results && response.results[aURL]) ?
+                    response.results[aURL].shortUrl :
+                    aURL;
 
-            next(url);
-        });
+                next(url);
+            });
+        } else {
+            next(aURL);
+        }
+
     },
 
     delayed: function (f) {
@@ -828,17 +858,12 @@ const twitterAPI = {
                 if (xhr.status === 200) {
                     context.ok(res, xhr);
                 } else {
-                    // Failed
-                    if (xhr.status === 401) {
-                        if (res.indexOf("expired") !== -1)
-                            return twitterClient.reAuthorize();
-
-                        if ((res.indexOf("Could not authenticate you") !== -1) ||
-                            (res.indexOf("This method requires authentication") !== -1))
-                            return retry();
+                    if (twitterAPI.isRetryable(xhr)) {
+                        retry();
+                    } else if (twitterAPI.ensureReauthorizationNotRequired(xhr)) {
+                        if (typeof context.ng === "function")
+                            context.ng(res, xhr);
                     }
-
-                    context.ng(res, xhr);
                 }
             }
         });
@@ -850,12 +875,12 @@ const twitterAPI = {
         // ============================================================ //
 
         "oauth/request_token": {
-            action : "http://api.twitter.com/oauth/request_token",
+            action : "https://api.twitter.com/oauth/request_token",
             method : "GET"
         },
 
         "oauth/access_token": {
-            action : "http://api.twitter.com/oauth/access_token",
+            action : "https://api.twitter.com/oauth/access_token",
             method : "GET"
         },
 
@@ -864,17 +889,17 @@ const twitterAPI = {
         // ============================================================ //
 
         "statuses/home_timeline": {
-            action : "http://api.twitter.com/1/statuses/home_timeline.json",
+            action : "https://api.twitter.com/1/statuses/home_timeline.json",
             method : "GET"
         },
 
         "statuses/user_timeline": {
-            action : "http://api.twitter.com/1/statuses/user_timeline.json",
+            action : "https://api.twitter.com/1/statuses/user_timeline.json",
             method : "GET"
         },
 
         "statuses/mentions": {
-            action : "http://api.twitter.com/1/statuses/mentions.json",
+            action : "https://api.twitter.com/1/statuses/mentions.json",
             method : "GET"
         },
 
@@ -883,22 +908,22 @@ const twitterAPI = {
         // ============================================================ //
 
         "statuses/update": {
-            action : "http://api.twitter.com/1/statuses/update.json",
+            action : "https://api.twitter.com/1/statuses/update.json",
             method : "POST"
         },
 
         "statuses/destroy": {
-            action : "http://api.twitter.com/1/statuses/destroy/{id}.json",
+            action : "https://api.twitter.com/1/statuses/destroy/{id}.json",
             method : "DELETE"
         },
 
         "statuses/retweet": {
-            action : "http://api.twitter.com/1/statuses/retweet/{id}.json",
+            action : "https://api.twitter.com/1/statuses/retweet/{id}.json",
             method : "POST"
         },
 
         "statuses/show": {
-            action : "http://api.twitter.com/1/statuses/show/{id}.json",
+            action : "https://api.twitter.com/1/statuses/show/{id}.json",
             method : "GET"
         },
 
@@ -907,22 +932,22 @@ const twitterAPI = {
         // ============================================================ //
 
         "favorites": {
-            action : "http://api.twitter.com/1/favorites.json",
+            action : "https://api.twitter.com/1/favorites.json",
             method : "GET"
         },
 
         "favorites/user": {
-            action : "http://api.twitter.com/1/favorites/{user}.json",
+            action : "https://api.twitter.com/1/favorites/{user}.json",
             method : "GET"
         },
 
         "favorites/create": {
-            action : "http://api.twitter.com/1/favorites/create/{id}.json",
+            action : "https://api.twitter.com/1/favorites/create/{id}.json",
             method : "POST"
         },
 
         "favorites/destroy": {
-            action : "http://api.twitter.com/1/favorites/destroy/{id}.json",
+            action : "https://api.twitter.com/1/favorites/destroy/{id}.json",
             method : "POST"
         },
 
@@ -931,13 +956,13 @@ const twitterAPI = {
         // ============================================================ //
 
         "lists/index": {
-            action : "http://api.twitter.com/1/{user}/lists.json",
+            action : "https://api.twitter.com/1/lists.json",
             method : "GET"
         },
 
         "lists/statuses": {
-            action : "http://api.twitter.com/1/{user}/lists/{id}/statuses.json",
-            host   : "http://api.twitter.com/",
+            action : "https://api.twitter.com/1/lists/statuses.json",
+            host   : "https://api.twitter.com/",
             method : "GET"
         },
 
@@ -946,7 +971,7 @@ const twitterAPI = {
         // ============================================================ //
 
         "search": {
-            action : "http://search.twitter.com/search.json",
+            action : "https://search.twitter.com/search.json",
             method : "GET"
         },
 
@@ -955,12 +980,12 @@ const twitterAPI = {
         // ============================================================ //
 
         "direct_messages": {
-            action : "http://api.twitter.com/1/direct_messages.json",
+            action : "https://api.twitter.com/1/direct_messages.json",
             method : "GET"
         },
 
         "direct_messages/sent": {
-            action : "http://api.twitter.com/1/direct_messages/sent.json",
+            action : "https://api.twitter.com/1/direct_messages/sent.json",
             method : "GET"
         },
 
@@ -969,8 +994,65 @@ const twitterAPI = {
         // ============================================================ //
 
         "account/verify_credentials": {
-            action: "http://api.twitter.com/1/account/verify_credentials.json",
+            action: "https://api.twitter.com/1/account/verify_credentials.json",
             method: "GET"
+        },
+
+        // ============================================================ //
+        // Friends
+        // ============================================================ //
+
+        "statuses/friends": {
+            action: "https://api.twitter.com/1/statuses/friends.json",
+            method: "GET"
+        }
+    },
+
+    ERROR_CODES: {
+        DOES_NOT_HAVE_DM_PRIVILEGE: 93
+    },
+
+    isRetryable:
+    function isRetryable(xhr) {
+        return (xhr.status === 401)
+            && ((xhr.responseText.indexOf("Could not authenticate you") !== -1) ||
+                (xhr.responseText.indexOf("This method requires authentication") !== -1));
+    },
+
+    isDMManipulationNotAllowed:
+    function isDMManipulationNotAllowed(xhr) {
+        let res = $U.decodeJSON(xhr.responseText);
+
+        return res && res.errors && res.errors.some(function (error) {
+            return error && error.code === twitterAPI.ERROR_CODES.DOES_NOT_HAVE_DM_PRIVILEGE;
+        });
+    },
+
+    isTokenExpired:
+    function isTokenExpired(xhr) {
+        let res = $U.decodeJSON(xhr.responseText);
+
+        return res && res.error &&
+            (res.error.indexOf("Could not authenticate with OAuth") !== -1 ||
+             res.error.indexOf("expired") !== -1);
+    },
+
+    ensureReauthorizationNotRequired:
+    function ensureReauthorizationNotRequired(xhr) {
+        if ((twitterAPI.isDMManipulationNotAllowed(xhr) || twitterAPI.isTokenExpired(xhr)) &&
+            !share.reauthorizeRequisitionShowed) {
+            display.showPopup(M({
+                ja: "再認証が必要です",
+                en: "Reauthorization Required"
+            }), M({
+                ja: "以前に認証したトークンが無効ないし古くなってしまっています．再認証を行なって下さい．",
+                en: "Your access token is no longer valid. Please reauthorize this application."
+            }));
+            ext.exec("twitter-client-reauthorize");
+            share.reauthorizeRequisitionShowed = true;
+            return false;
+        } else {
+            return true;
         }
     }
 };
@@ -1014,6 +1096,7 @@ var twitterClient =
             this.setLastID    = arg.setLastID;
             this.lastIDHook   = arg.lastIDHook;
             this.beginCount   = arg.beginCount;
+            this.params       = arg.params;
         }
 
         Crawler.prototype = {
@@ -1035,6 +1118,15 @@ var twitterClient =
                 : this.lastKey ? util.setUnicharPref(this.lastKey, id) : this._lastID = id,
 
             get nameEscaped() $U.toEscapedString(this.name),
+
+            createParams: function () {
+                let params = {};
+                if (this.params)
+                    [[k, v] for ([k, v] in Iterator(this.params))].forEach(
+                        function ([k, v]) params[k] = v
+                    );
+                return params;
+            },
 
             stop:
             function stop() {
@@ -1059,7 +1151,7 @@ var twitterClient =
             function combineCache(aNew) {
                 var aOld = this.cache;
 
-                if (!aOld)
+                if (!aOld || (aOld && !aOld.length))
                     return aNew;
 
                 if (share.twitterImmediatelyAddedStatuses.length)
@@ -1121,7 +1213,7 @@ var twitterClient =
                             context.ok(xhr.responseText, xhr);
                         break;
                     default:
-                        if (typeof context.ng === "function")
+                        if (twitterAPI.ensureReauthorizationNotRequired(xhr))
                             context.ng(xhr.responseText, xhr);
                         break;
                     }
@@ -1134,7 +1226,7 @@ var twitterClient =
 
                 let self = this;
 
-                let params = {};
+                let params = this.createParams();
 
                 if (!this.cache)
                     params[this.countName] = this.beginCount;
@@ -1167,14 +1259,10 @@ var twitterClient =
                     },
                     ng: function (res, xhr) {
                         self.pending = false;
-
-                        if (isRetryable(xhr)) {
-                            log(LOG_LEVEL_DEBUG, self.name + " => Crawler#update: retry %s", new Date());
-                            self.update(after, noRepeat, fromTimer);
-                        } else {
-                            log(LOG_LEVEL_DEBUG,
-                                self.name + " => Crawler#update: retry (noRepeat: %s, fromTimer: %s) %s",
-                                noRepeat, fromTimer, new Date());
+                        log(LOG_LEVEL_DEBUG,
+                            self.name + " => Crawler#update: retry (noRepeat: %s, fromTimer: %s) %s => %s",
+                            noRepeat, fromTimer, new Date(), xhr.responseText);
+                        if (self.interval > 0 || twitterAPI.isRetryable(xhr)) {
                             setTimeout(function () {
                                 self.update(after, noRepeat, fromTimer);
                             }, self.interval);
@@ -1188,7 +1276,7 @@ var twitterClient =
 
                 let self = this;
 
-                let params = {};
+                let params = this.createParams();
                 params[this.maxIDName] = status.id_str;
                 params[this.countName] = this.beginCount;
 
@@ -1211,7 +1299,7 @@ var twitterClient =
                     ng: function (res, xhr) {
                         self.pending = false;
 
-                        if (isRetryable(xhr)) {
+                        if (twitterAPI.isRetryable(xhr)) {
                             log(LOG_LEVEL_DEBUG, self.name + " => Crawler#updatePrevious: retry %s", new Date());
                             self.updatePrevious(status, after);
                         }
@@ -1261,10 +1349,10 @@ var twitterClient =
             signatureMethod : "HMAC-SHA1",
             consumerKey     : "q8bLrmPJJ54hv5VGSXUfvQ",
             consumerSecret  : "34Xtbtmqikl093nzaXg6ePay5EJJMu0cm3qervD4",
-            requestToken    : "http://twitter.com/oauth/request_token",
-            accessToken     : "http://twitter.com/oauth/access_token",
-            authorizeURL    : "http://twitter.com/oauth/authorize",
-            authHeader      : "http://twitter.com/"
+            requestToken    : "https://twitter.com/oauth/request_token",
+            accessToken     : "https://twitter.com/oauth/access_token",
+            authorizeURL    : "https://twitter.com/oauth/authorize",
+            authHeader      : "https://twitter.com/"
         };
 
         var gPrefKeys = {
@@ -1330,9 +1418,9 @@ var twitterClient =
                 let [user, listName] = name.split("/");
 
                 // list
-                let listAction = twitterAPI.get("lists/statuses", {}, {
-                    user : user,
-                    id   : listName
+                let listAction = twitterAPI.get("lists/statuses", {
+                    owner_screen_name : user,
+                    slug              : listName
                 });
 
                 gLists[name] = new Crawler(
@@ -1345,7 +1433,10 @@ var twitterClient =
                         oauth      : gOAuth,
                         countName  : "per_page",
                         lastIDHook : $U.bind(Notifier.updateAllListButtons, Notifier),
-                        beginCount : gTimelineCountBeginning
+                        beginCount : gTimelineCountBeginning,
+                        params     : {
+                            include_rts: !!pOptions["list_include_rts"]
+                        }
                     }
                 );
             });
@@ -1455,7 +1546,7 @@ var twitterClient =
             {
                 action     : twitterAPI.get("direct_messages/sent").action,
                 name       : M({ en: "Sent DMs", ja: "Sent DMs" }),
-                interval   : 0,
+                interval   : pOptions["dm_update_interval"],
                 oauth      : gOAuth,
                 mapper     : function (statuses) statuses.map(function (status) (status.user = status.sender, status)),
                 beginCount : gTimelineCountEveryUpdates
@@ -1505,7 +1596,7 @@ var twitterClient =
              "tweet"],
             // ======================================== //
             [function (status) {
-                 if (status) reply(status.screen_name, status.id_str);
+                 if (status) reply(status);
              }, M({ja: "このつぶやき => 返信 : ", en: ""}) + "Send reply message",
              "reply"],
             // ======================================== //
@@ -1589,6 +1680,11 @@ var twitterClient =
              "show-mentions"],
             // ======================================== //
             [function (status) {
+                 if (status) self.showDMs();
+             }, M({ja: "自分宛の DM を一覧表示: ", en: ""}) + "Show DMs",
+             "show-dms"],
+            // ======================================== //
+            [function (status) {
                  if (status) self.tweetWithTitleAndURL();
              }, M({ja: "現在のページのタイトルと URL を使ってつぶやく : ", en: ""}) + "Tweet with the current web page URL",
              "tweet-current-page"],
@@ -1621,7 +1717,15 @@ var twitterClient =
             [function (status) {
                  switchTo();
              }, M({ja: "移動 (リスト, Home, Mentions, ...)", en: "Switch to (Lists, Home, Mentions, ...)"}),
-             "switch-to"]
+             "switch-to"],
+            [function (status) {
+                if (gStatuses.updater) {
+                    gStatuses.stop();
+                } else {
+                    gStatuses.update(0, false, false);
+                }
+             }, M({ja: "home timeline の自動読み込みきりかえ", en: "Toggle auto-update of home timeline"}),
+             "toggle-homeline-updating"]
         ];
 
         // }} ======================================================================= //
@@ -2397,12 +2501,6 @@ var twitterClient =
             }
         }
 
-        function isRetryable(xhr) {
-            return (xhr.status === 401)
-                && ((xhr.responseText.indexOf("Could not authenticate you") !== -1) ||
-                    (xhr.responseText.indexOf("This method requires authentication") !== -1));
-        }
-
         function getElapsedTimeString(aMillisec) {
             function format(num, str) {
                 return Math.floor(num) + " " + str;
@@ -2440,11 +2538,11 @@ var twitterClient =
                     gOAuth.tokens.oauth_token        = parts[0].split("=")[1];
                     gOAuth.tokens.oauth_token_secret = parts[1].split("=")[1];
 
-                    gBrowser.loadOneTab("http://twitter.com/oauth/authorize?oauth_token=" +
+                    gBrowser.loadOneTab("https://twitter.com/oauth/authorize?oauth_token=" +
                                         gOAuth.tokens.oauth_token,
                                         null, null, null, false);
                 },
-                ng: function (res) {
+                ng: function (res, xhr) {
                     display.notify("Failed to request token :: " + xhr.responseText);
                 }
             });
@@ -2468,7 +2566,10 @@ var twitterClient =
                     if (str === null)
                         return;
 
-                    getAccessToken(function () { showFollowersStatus(); });
+                    getAccessToken(function () {
+                        showFollowersStatus();
+                        setUserInfo();
+                    });
                 }
             );
         }
@@ -2484,7 +2585,7 @@ var twitterClient =
                     if (typeof next === "function")
                         next();
                 },
-                ng: function (res) {
+                ng: function (res, xhr) {
                     display.notify("Failed to get access token :: " + xhr.responseText);
                 }
             });
@@ -2634,9 +2735,16 @@ var twitterClient =
             display.echoStatusBar(M({ja: "コピーしました", en: "Copied"}) + " : " + aMsg, 2000);
         }
 
-        function reply(aUserID, aStatusID) {
-            let init = "@" + aUserID + " ";
-            tweet(init, aStatusID, init.length);
+        function reply(status) {
+            let users = Array
+                    .slice(status.text.match(/@[a-zA-Z0-9_]+/g) || [])
+                    .filter(function (userName)
+                            !share.userInfo ||
+                            "@" + share.userInfo.screen_name !== userName);
+            users.unshift("@" + status.screen_name);
+            users.push("");
+            let init = users.join(" ");
+            tweet(init, status.id_str, init.length);
         }
 
         function sendDM(userID, statusID) {
@@ -2679,18 +2787,47 @@ var twitterClient =
 
         function tweet(aInitialInput, aReplyID, aCursorEnd) {
             var limit = 140;
-
             gPrompt.close();
+
+            try {
+                if (pOptions.show_screen_name_on_tweet)
+                    var promptMessage = util.format(
+                        "tweet (%s):",
+                        share.userInfo.screen_name
+                    );
+            } catch ([]) {}
+
+            if (!promptMessage)
+                promptMessage = "tweet:";
+
             prompt.reader({
-                message      : "tweet:",
+                message      : promptMessage,
                 initialcount : 0,
                 initialinput : aInitialInput,
                 group        : "twitter_tweet",
                 keymap       : pOptions["tweet_keymap"],
+                completer    : completer.matcher.header(share.friendsCache || []),
                 cursorEnd    : aCursorEnd,
                 onChange     : function (arg) {
                     var current = arg.textbox.value;
-                    var length  = current.length;
+
+                    // take t.co shorten into account
+                    // https://dev.twitter.com/blog/next-steps-with-the-tco-link-wrapper
+                    var regex  = /(?:https?\:\/\/|www\.)[^\s]+/g;
+                    var noURL  = current.replace(regex, "");
+                    var URLs   = current.match(regex);
+                    var length = noURL.length;
+
+                    if (URLs) {
+                        URLs.forEach(function (url) {
+                            if (url.match("https://")){
+                                length += 21;
+                            } else {
+                                length += 20;
+                            }
+                        });
+                    }
+
                     var count   = limit - length;
                     var msg     = M({ja: ("残り " + count + " 文字"), en: count});
 
@@ -2777,12 +2914,10 @@ var twitterClient =
 
         function showListStatuses(aScreenName, aListName) {
             twitterAPI.request("lists/statuses", {
-                args: {
-                    user : aScreenName,
-                    id   : aListName
-                },
                 params: {
-                    per_page : gTimelineCountBeginning
+                    per_page          : gTimelineCountBeginning,
+                    owner_screen_name : aScreenName,
+                    slug              : aListName
                 },
                 ok: function (res, xhr) {
                     var statuses = $U.decodeJSON(xhr.responseText) || [];
@@ -2793,8 +2928,8 @@ var twitterClient =
                     );
                 },
                 ng: function (res, xhr) {
-                    display.echoStatusBar(M({ja: 'ステータスの取得に失敗しました。',
-                                             en: "Failed to get statuses"}), 2000);
+                    display.echoStatusBar(M({ja: 'ステータスの取得に失敗しました。 (自分のプライベートリストは取得できません。)',
+                                             en: "Failed to get statuses. (Your private list cannot be fetched with this method.)"}), 2000);
                 }
             });
         }
@@ -2811,8 +2946,8 @@ var twitterClient =
             else
             {
                 twitterAPI.request("lists/index", {
-                    args: {
-                        user : aScreenName
+                    params: {
+                        screen_name : aScreenName
                     },
                     ok: function (res) {
                             let result = $U.decodeJSON(res);
@@ -2964,7 +3099,7 @@ var twitterClient =
                     }
 
                     util.httpGet(
-                        "http://api.twitter.com/1/statuses/show/" + from + ".json",
+                        "https://api.twitter.com/1/statuses/show/" + from + ".json",
                         false,
                         function (xhr) {
                             if (xhr.status === 200) {
@@ -3054,7 +3189,8 @@ var twitterClient =
                     params: {
                         screen_name : target,
                         count       : gTimelineCountEveryUpdates,
-                        max_id      : opts.max_id
+                        max_id      : opts.max_id,
+                        include_rts : !!pOptions["user_include_rts"]
                     },
                     ok: function (res, xhr) {
                         var statuses = $U.decodeJSON(xhr.responseText) || [];
@@ -3169,6 +3305,12 @@ var twitterClient =
 
             // ignore black users
             var statuses = options.supressFilter ? aStatuses : aStatuses.filter(notBlack);
+
+            // apply filters
+            let (filters = pOptions.filters)
+                filters &&
+                filters.length &&
+                filters.forEach(function (f) statuses = statuses.filter(f));
 
             // ============================================================ //
 
@@ -3416,6 +3558,28 @@ var twitterClient =
             });
         }
 
+        function updateFriendsCache() {
+            share.friendsCache = [];
+            (function update(cursor){
+                twitterAPI.request('statuses/friends', {
+                    params: { cursor: cursor },
+                    ok: function (res, xhr) {
+                        res = $U.decodeJSON(res);
+                        (res.users || []).forEach(function(i) {
+                            share.friendsCache.push("@" + i.screen_name);
+                            share.friendsCache.push("D " + i.screen_name);
+                        });
+                        if (res.next_cursor_str !== "0") {
+                            update(res.next_cursor_str);
+                        } else {
+                            share.friendsCache.sort();
+                            persist.preserve(share.friendsCache, "yatck_friends_cache");
+                        }
+                    }
+                });
+            })(-1);
+        }
+
         /**
          * @public
          */
@@ -3500,7 +3664,7 @@ var twitterClient =
                 if (status)
                 {
                     gPrompt.forced = true;
-                    reply(status.user.screen_name, status.id_str);
+                    reply(status);
                 }
             },
 
@@ -3661,6 +3825,21 @@ var twitterClient =
 
             showUsersTimeline: function (ev, arg) {
                 showTargetStatus();
+            },
+
+            selectUserAndShowTimeline: function (ev, arg) {
+                const namePattern = /^@?(.*)$/;
+                prompt.reader({
+                    message: "Input screen name: ",
+                    collection: (share.friendsCache || []).map(
+                        function (s) (namePattern.exec(s), RegExp.$1)
+                    ),
+                    callback: function (name) {
+                        setTimeout(function () {
+                            showTargetStatus(name);
+                        }, 0);
+                    }
+                });
             },
 
             updateStatusbar: function () {
@@ -3844,7 +4023,9 @@ var twitterClient =
 
             setUserInfo       : setUserInfo,
             blackUsersManager : blackUsersManager,
-            switchTo          : switchTo
+            switchTo          : switchTo,
+
+            updateFriendsCache: updateFriendsCache
         };
 
         // ============================================================ //
@@ -3856,6 +4037,11 @@ var twitterClient =
 
         if (!share.userInfo)
             self.setUserInfo();
+
+        if (!share.friendsCache)
+            share.friendsCache = persist.restore("yatck_friends_cache") || null;
+        if (!share.friendsCache)
+            self.updateFriendsCache();
 
         if (pOptions["automatically_begin"])
         {
@@ -3953,6 +4139,14 @@ plugins.withProvides(function (provide) {
     provide("twitter-client-switch-to", twitterClient.switchTo,
             M({ja: 'リスト, Home, Mentioins, Favorites などを選択',
                en: "Select Lists, Home, Mentions, Favirites, ..."}));
+
+    provide("twitter-client-update-friends-cache", twitterClient.updateFriendsCache,
+            M({ja: 'Friends キャッシュを更新',
+               en: "Update friends cache"}));
+
+    provide("twitter-client-select-user-show-timeline", twitterClient.selectUserAndShowTimeline,
+            M({ja: '指定したユーザのタイムラインを表示',
+               en: "Select user and display timeline"}));
 }, PLUGIN_INFO);
 
 // }} ======================================================================= //
