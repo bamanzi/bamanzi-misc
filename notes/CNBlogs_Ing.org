@@ -2,17 +2,17 @@
 #+OPTIONS: ^:{} 
 #+INFOJS_OPT: view:info
 
-##+begin_src emacs-lisp
+#+begin_src emacs-lisp
 #  ;; &gt; -> > ## &lt; -> < ## &amp; -> & ## &#39; -> ' 
-#  (progn
-#    (let ((start (point)))
-#      (replace-string "&gt;" ">"  nil start (point-max))
-#      (replace-string "&lt;" "<"  nil start (point-max))
-#      (replace-string "&amp;" "&" nil start (point-max))
-#      (replace-string "&#39;" "'" nil start (point-max))
-#      (replace-string "&quot;" "\"" nil start (point-max))
-#      ))
-##+end_src
+ (progn
+   (let ((start (point)))
+      (replace-string "&gt;" ">"  nil start (point-max))
+      (replace-string "&lt;" "<"  nil start (point-max))
+      (replace-string "&amp;" "&" nil start (point-max))
+      (replace-string "&#39;" "'" nil start (point-max))
+      (replace-string "&quot;" "\"" nil start (point-max))
+      ))
+#+end_src
 #
 
 
@@ -2795,7 +2795,7 @@
 35. 除了你没有什么可以让我眷恋 除了悲伤没有什么可以值得忘却 除了宽容没有什么可以让你释怀 除了爱没有
     什么可以改变生命 你有没有看见手上那条单纯的命运线 你有没有听见自己被抛弃后的呼喊 你有没有感到也
     许永远只能视而不见 你有没有扔过一枚硬币选择正反面 [2011-12-13 08:33:28]
-36. 终于搞定了lisp代码高亮: 虽然没法在博客园的body标签里添加onload=&quot;prettyPrint()&quot;，但在任意
+36. 终于搞定了lisp代码高亮: 虽然没法在博客园的body标签里添加onload="prettyPrint()"，但在任意
     地方添加一句 window.setTimeout(prettyPrint, 2000) 就行了 [2011-12-13 09:29:04]
 37. 『中国孕妇冲港产子数目激增』香港医院管理局暂不打算调高医院收费以作阻吓，只呼吁孕妇不要冲急症室，以
     免对自身和胎儿造成危险。——到底是一国两制啊，首先关心的还是人的安全
@@ -2842,7 +2842,7 @@
     端，但似乎不如pyslices/pycrust): 『bpython的使用介绍 – 沙湖王』http://www.shahuwang.com/?p=213
     [2011-12-20 13:56:00]
 55. [python] bpython相对ipython的优势在于：代码高亮、更方便的补全和提示、代码块的自动缩进，还有一个很
-    酷的&quot;rewind&quot;功能 http://bpython-interpreter.org/ [2011-12-20 14:06:23]
+    酷的"rewind"功能 http://bpython-interpreter.org/ [2011-12-20 14:06:23]
 56. [python][emacs] PDEE里面居然搜集了6个用于python的major-modes, 自己还从python-mode派生了一个
     https://github.com/pdee/pdee/tree/master/python-modes [2011-12-20 14:42:38]
 57. [emacs] 陡然发现自己的indent-region老报错，通过二分法定位，发现问题在于develock.el对
@@ -2887,7 +2887,7 @@
     普通带瞄准镜子的来福枪太慢，task force rifle又看不清远处，前面打了三遍都是把boss误杀了
     [2011-12-29 07:56:47]
 73. [firefox] 嗯，Evernote Clearly效果不错，而且对本地文件也能工作 [2011-12-29 08:53:47]
-74. &quot;Can you explain why ++[[]][+[]]+[+[]] = 10 &quot;
+74. "Can you explain why ++[[]][+[]]+[+[]] = 10 "
     http://stackoverflow.com/questions/7202157/can-you-explain-why-10 [2011-12-29 13:15:36]
 75. staf service <name> delegate <machine> [TONAME <name>]
     http://staf.sourceforge.net/current/STAFUG.htm#HDRSERVICEREGCFG [2011-12-29 16:40:07]
@@ -2901,3 +2901,166 @@
 
 
 
+* 2012-01
+1. [emacs] 原来推荐的dict-zh字典http://is.gd/wqujDx 死活也连不上了，好在我发现了两个已经被Debian收录
+   的字典: dict-xdict, dict-stardic [2012-01-02 21:01:40]
+2. 试图将无觅的相关文章功能加到我在博客园的博客上，但在验证那一步死活通不过，不过相关文章已经显示出来
+   了，只是还不能进一步配置，目前只能推荐自己博客内的相关文章。 [2012-01-02 21:11:32]
+3. How to fix add-apt-repository doesn’t work behind a proxy server http://is.gd/j3CnqU 其实关键是
+   /etc/sudoers里面要添加一句: Defaults env_keep = “http_proxy https_proxy ftp_proxy” [2012-01-03
+   18:36:52]
+4. [todo][开发工具] LogExpert: GUI Alternative of Unix Tail Command For Windows
+   http://www.log-expert.de/ [2012-01-04 09:52:24]
+5. 使用了一下刚才说的LogExpert，因为是dotNet写的，比较慢，感觉还是之前一直在用的LogViewer好些——只不过
+   不是完全免费的，启动时有个logo窗口http://www.uvviewsoft.com/logviewer/ [2012-01-04 13:49:09]
+6. 这幅图有意思: 会飞的猪 With sufficient thrust, pigs fly just fine http://is.gd/EiTrVL 来自zenburn
+   色彩主题的主页 http://slinky.imukuppi.org/zenburnpage/ [2012-01-06 10:32:15]
+7. Send/Receive Large Files With Group & Speed Management Using Share http://is.gd/ha6xCD 这不就
+   跟QQmail传文件差不多嘛 [2012-01-07 08:41:25]
+8. [firefox][addons] Tab Sidebar有了一个支持firefox 4+的分支: Tab Sidebar Reloaded 不过我觉得侧边栏就
+   那么点高度，显示缩略图太奢侈了，还是pano好 http://is.gd/fkLGN3 [2012-01-07 08:48:12]
+9. [firefox][addons] 可惜showcase没有分组功能，其实showcase要是能跟TabGroup Manager配合一下，倒是个
+   firefox 3.x上的panorama http://is.gd/5Lk3nj [2012-01-07 08:50:19]
+10. [emacs] 黑客帝国 :-) https://bitbucket.org/dylanwen/elispport/src/18901bfc6c7e/zone-matrix.el
+    [2012-01-07 11:09:46]
+11. [emacs][addons] Tab Sidebar (Reloaded) 可以不显示为侧边栏，而是显示在上方或者下方，但跟showcase一
+    样，不能跟panorama配合起来，而且不能跟用快捷键操纵 [2012-01-07 17:04:55]
+12. [ubuntu] 如何干掉ubuntu 11.04开始的愚蠢难用的滚动条: sudo apt-get remove overlay-scrollbar
+    [2012-01-08 16:39:04]
+13. [ubuntu] 将窗口的关闭等按钮改回右边: 在gconf-editor中apps/metacity/general将button_layout一项改为
+    menu:maximize,minimize,close (冒号表示分隔左右) http://is.gd/wXK8bP [2012-01-08 16:43:52]
+14. 对一个Emacs粉丝而言，mintty比putty好太多了，因为有很多键组合都不被putty支持:
+    http://code.google.com/p/mintty/wiki/Keycodes [2012-01-10 12:14:30]
+15. [emacs] 在mintty下这些键是可用的(而普通term下则不行): C-%^&*()-+=:;'", C/M/S-f1, 而
+    C-[]{}\|/?和C-RET/BS这些键则因为含义不清，不推荐使用 [2012-01-10 15:54:05]
+16. [emacs][mintty] 续上: C/M/S-ins/del/home/end/pgup/pgdn, C/M/S-up/down/left/right也都可以，在
+    putty上这些键都有问题 [2012-01-10 16:00:57]
+17. mtputty也是一个多tab的putty管理工具，跟puttycm和mremote不同的是，它不需要dotnet [2012-01-11
+    09:37:34]
+18. [uemacs] 又开始玩jasspa, 它的宏语法有点怪，绑定M-s o到occur的方法是: 5 global-bind-key
+    "prefix" "A-s";global-bind-key occur "A-s o" [2012-01-11
+    18:04:53]
+19. [uemacs] jasspa还是一个轻量级的info阅读器，比pinfo还多了调字体的能力(X或者Windows版本)，哈
+    [2012-01-11 18:10:52]
+20. [工具软件] addictivetips在推荐一款统计目录大小的工具OverDisk http://is.gd/ghR878 试用了一下，觉得
+    目录傍边不显示个数字感觉不太直观，而且扫描过程中啥也不显示这种等的感觉有点不爽，还是推荐TreeSize
+    free或者开源的windirstat [2012-01-12 09:26:16]
+21. [工具软件] DualClip Translator可以调用Google或者Microsoft的翻译引擎翻译桌面程序中的一段文字
+    http://is.gd/BxmIkX ——不过是用Java写的，我对于Java写的桌面程序没兴趣 [2012-01-12 09:50:18]
+22. [emacs][todo] How to Make Emacs' Scratch Buffer Persistent Across Sessions
+    http://dorophone.blogspot.com/2011/11/how-to-make-emacs-scratch-buffer.html [2012-01-13
+    17:42:09]
+23. 今早费了两个小时来解决svn conflict :-) [2012-01-16 11:58:38]
+24. [emacs][todo] textmate.el的一个改进版: http://blog.liuw.name/1173 [2012-01-16 12:02:44]
+25. [emacs][todo] 得研究一下这个东西的实现，没怎么听说过compose-region这个函数: 『emacs 缩进提示线』
+    http://forum.ubuntu.com.cn/viewtopic.php?f=68&t=360430 [2012-01-16 12:04:10]
+26. 在科技领域，你的失败不是因为你激怒对手，而是因为你使客户不悦。
+    http://article.yeeyan.org/view/280713/246487 [2012-01-16 13:34:19]
+27. [chrome] 总算找到装一个可改变配色的扩展了: Change Colors 虽然不如firefox上的Color Toggle好用(这个
+    CC在复原时需要重新载入网页)，但聊胜于无啊
+    http://www.chromeextensions.org/appearance-functioning/change-colors/ [2012-01-16 16:44:24]
+28. [chrome] http://chromeextensions.org 这个网站不错，可以下载到.crx文件，以便离线安装，而且也没有要
+    求我升级chrome，而Google WebStore就很烦 https://chrome.google.com/webstore [2012-01-16
+    16:47:11]
+29. [emacs] 一个据说是从aquamacs偷过来的elisp宏: allow-line-as-region-for-function 可以方便地从
+    comment-region得到comment-region-or-line, 从kill-region得到kill-region-or-line
+    http://is.gd/9OZmAc [2012-01-16 16:49:59]
+30. [emacs][todo] babel.el (fork): interface to web translation services such as Babelfish,
+    FreeTranslation https://github.com/juergenhoetzel/babel [2012-01-16 17:12:49]
+31. [emacs] expand-region: increases the selected region by semantic units. 跟Xah Lee的
+    extend-selection比较象 https://github.com/magnars/expand-region.el [2012-01-16 17:36:38]
+32. 玩了一下Zero Install，不过我觉得这个东西反而把事情搞复杂了 Install Linux Applications Without
+    Root Privileges With Zero Install http://is.gd/KJ6zZa [2012-01-17 12:04:19]
+33. Turbocharge [PuTTY] with 12 Powerful Add-Ons – Software for Geeks #3 http://is.gd/Z7SjUo
+    [2012-01-17 13:32:14]
+34. [firefox][addons] 这个TableTools2扩展可以给网页上的表格即时排序、过滤、制作chart TableTools2:
+ Offers Numerous Functions For HTML Tables [Firefox]
+ http://www.makeuseof.com/dir/tabletools2-functions-for-html/ [2012-01-17 13:47:30]
+35. [python] bunch: A dot-accessible dictionary (a la JavaScript objects)
+    http://pypi.python.org/pypi/bunch/1.0.0 [2012-01-18 11:23:05]
+36. [python] 刚才找到的另一个实现，可惜只能用在python 3上: jpath Access nested dicts and lists using
+    JSON-like path notation. http://www.stxnext.pl/python-community/open-source/jpath [2012-01-18
+    11:26:05]
+37. [python][firefox] 借用ZoomQuiet的代码 http://is.gd/udTQiT ，改进了一下Scrapbook的index.html，引入
+    了ScrapIndexer的动态框显示source url，取消了favicon的显示 [2012-01-18 17:26:08]
+38. [工具软件] 受不了dexpot频繁地崩溃（以前挺稳定的，最近不知道跟什么软件冲突了），dm2的功能又太少了
+    些，到 http://alternativeto.net/software/dexpot 找了个开源的VirtuaWin用起来还不错，还有一些第三方
+    插件 http://virtuawin.sourceforge.net/modules.php [2012-01-18 17:56:02]
+39. [工具软件] 原本觉得VirtuaWin没有dexpot那样的窗口菜单，想将一个窗口挪到某个desktop只能用键盘，结果
+    发现其实它也有，只不过是用鼠标中键点击窗口标题栏才出来 [2012-01-19 09:33:47]
+40. 嗯，我不需要zero-install, 自己给NXclient, Double Commander目录添加个AppRun、AppInfo.xml和.DirIcon就
+    行了，然后用ROX-Filer来启动它们。这么安装的MIME-editor也可以被ROX-Filer认识（可从设置界面里调出来)
+    [2012-01-19 10:18:04]
+41. [工具软件] VirtuaWin的window list是个相当差的UI设计，不看文档完全搞不清楚是个什么东西，怎么使用。
+    其实不如设计一个dexpot那样“窗口管理”对话框，然后用户可以对列表里面的东西执行show, move here,
+    always show等操作 [2012-01-19 13:55:47]
+42. [emacs] 这位Nikolaj Schumacher写的emacs扩展都很有用: company-mode, doc-mode, full-ack,
+    guess-style, highlight-symbol, idle-require, split-root,
+    tempo-snippets... http://nschum.de/src/emacs/ [2012-01-19 16:49:06]
+43. 博客园又换favicon了，现在这个有点象北京奥运那个'京'字小人 :-) [2012-01-20 08:52:36]
+44. Emacs Hint #2 - Workspaces http://emacsrookie.com/2011/09/25/workspaces/ [2012-01-21 16:20:24]
+45. emacs -fu: sauron: keeping an eye on what's going on
+    http://emacs-fu.blogspot.com/2011/12/sauron-keeping-eye-on-whats-going-on.html [2012-01-21
+    16:22:22]
+46. workgroups for windows ( emacs layouts) | Open Sauce
+    http://splash-of-open-sauce.blogspot.com/2010/09/workgroups-for-windows-emacs-layouts.html
+    [2012-01-21 16:24:48]
+47. [emacs] M-!执行外部程序时，要想能通过tab键对命令不全，emacs-23已经可以了，对更早的版本则需要
+    shell-command.el via Xah Lee http://xahlee.org/emacs/emacs_unix.html [2012-01-26 19:09:10]
+48. [linux] 要是guake能结合terminator的分屏功能，或者terminator能结合guake的热键呼出功能，那就太爽了
+    [2012-01-28 18:05:06]
+49. 这个ubuntu虚拟机上自带的输入法是scim，我怎么用都觉得不爽，组词功能非常弱，候选字只有5个还没法调
+    整，但都是临时用用，也没去换，今天看到这个scim打算要被踢出debian了:
+    http://groups.google.com/group/debian-chinese/msg/993eac57624e45c7 [2012-01-29 14:38:05]
+50. 原来ROX-Filer这种文件管理器属于spatial风格（另外两种分别叫做orthodox和navigational），但我找不到
+    一个好的这种风格的windows文件管理器 :-(
+    http://en.wikipedia.org/wiki/Orthodox_File_Manager#Spatial_file_manager [2012-01-29 14:43:40]
+51. 8 Exciting Features of Linux Mint 12 "Lisa" | TechSource
+    http://www.junauza.com/2011/11/8-exciting-features-of-linux-mint-12.html [2012-01-30 13:14:27]
+52. [emacs][grep] 这个在推特上被推荐的ack-and-a-half，在我这里用不起来啊，一用就陷入死循环了
+    (windows xp + emacs 23.1) ，懒得管了，反正还有ack.el和full-ack.el
+    https://github.com/jhelwig/ack-and-a-half [2012-01-30 14:28:44]
+53. [emacs][orgmode] 原来org-mode里面的代码是可以高亮的! (setq org-src-fontify-natively t)
+    http://irreal.org/blog/?p=671 [2012-01-31 08:59:10]
+54. [python] wxpython的docs & demo包里面带的chm格式的帮助其实是针对wxwidgets的，面向c++，如果想要
+    一个面向python的帮助，可以找boa-constructor里面的wxpython.api.htb，用wxpython里面的helpviewer打开
+    （其实htb跟chm的内容是差不多的，里面也是hhc和hhk做目录和索引）
+    http://boa-constructor.cvs.sourceforge.net/viewvc/boa-constructor/boa/Docs/ [2012-01-31
+    14:17:18]
+55. [firefox] 可以将scrapbook仓库打包成zip，然后写一个bat用来查看: firefox
+    "jar:file:///%~dpf1!/tree/frame.html" 如果有hhc/hhk的话，还可以用wxpython提供的
+    helpviewer 来查看 [2012-01-31 14:34:58]
+56. [wxpython] 这里有一份面向python的chm:
+    http://code.google.com/p/char-docs/downloads/detail?name=wxpython-2.8.7.1-api.chm 跟wxpython网站
+    所说的new wxpydocs http://www.wxpython.org/docs/api/ 内容上差不多，只是页面风格上有点差异...
+    [2012-01-31 14:46:38]
+57. [wxpython] 续: 但这个chm描述方法时还是不够清晰，比如ComboCtrl.SetTextIndent描述成
+    SetTextIndent(*args, **kwargs)，而官网的new wxpydocs描述成 SetTextIndent(self, indent)
+    http://www.wxpython.org/docs/api/wx.combo.ComboCtrl-class.html [2012-01-31 14:49:50]
+58. [wxpython] 再续，这个CHM里面的html是用epydoc工具生成的 http://epydoc.sourceforge.net/ 而
+    epydoc-chm这个工具可以再加工成chm http://code.google.com/p/epydoc-chm/ [2012-01-31 15:13:19]
+59. [wxpython] 这里有一份sphinx风格的文档 http://xoomer.virgilio.it/infinity77/wxPython/APIMain.html
+    [2012-01-31 15:35:27]
+60. wxpython官方的想法也是切换到sphinx上来，这也是2.9.3 (代号Phoenix)的目标之一
+    http://wiki.wxpython.org/ProjectPhoenix/ProjectGoals 这里是snapshot:
+    http://xoomer.virgilio.it/infinity77/Phoenix/main.html [2012-01-31 15:46:02]
+
+* 2012-02
+1. [工具软件] alternativeto.net 这个网站真是不错，可以很方便地看看某个软件有没有更好的替代品，比如刚
+   才从 http://alternativeto.net/software/miniMiZE 看到miniMIZE的一个替代品ThumbWin，不过也不能选择
+   性地最小化 [2012-02-01 10:28:02]
+2. [wxpython] 原来pyslices已经提供了方法切换为默认单行输入/Ctrl+Enter多行输入的选项了，就在菜单
+   Options->Settings->Enable Shell Mode [2012-02-01 10:33:38]
+3. [dropbox] 『只要你使用最新版本Dropbox的相片匯入功能（目前版本是1.3.12），首次使用即時送你500MB空
+   間，然後每上載500MB就再送500MB，最高送4.5GB（即共5GB）』 http://infilmity.com/685.php [2012-02-03
+   12:01:55]
+4. [linux] sudo add-apt-repository ppa:freefilesync/ffs && sudo apt-get install freefilesync
+   http://www.webupd8.org/2012/02/compare-and-synchronize-folders-with.html [2012-02-04 17:09:51]
+5. [linux] marlin file manager: sudo add-apt-repository ppa:marlin-devs/marlin-daily && sudo
+   apt-get install marlin
+   http://maketecheasier.com/using-marlin-file-manager-as-nautilus-alternative/2012/02/02
+   [2012-02-04 17:10:44]
+6. [linux] Ubuntu One Indicator: Manage Ubuntu One Synchronization From System Tray $ sudo
+   add-apt-repository ppa:rye/ubuntuone-extras && sudo apt-get install ubuntuone-indicator
+   http://www.wmlcloud.com/linux/ubuntu-one-indicator-manage-ubuntu-one-synchronization-from-system-tray/
+   [2012-02-04 20:07:47]
