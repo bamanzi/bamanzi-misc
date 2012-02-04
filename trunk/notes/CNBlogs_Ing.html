@@ -1,13 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
                "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
 <html xmlns="http://www.w3.org/1999/xhtml"
 lang="en" xml:lang="en">
 <head>
 <title>巴蛮子的闪存</title>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2012-01-01 14:42:37 HKT"/>
+<meta name="generated" content="2012-02-04 20:28:03 HKT"/>
 <meta name="author" content="bamanzi"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -87,7 +87,15 @@ org_html_manager.setup();  // activate after the parameters are set
 
 <h1 class="title">巴蛮子的闪存</h1>
 
-
+<p>(progn
+(let ((start (point)))
+(replace-string "&amp;gt;" "&gt;"  nil start (point-max))
+(replace-string "&amp;lt;" "&lt;"  nil start (point-max))
+(replace-string "&amp;amp;" "&amp;" nil start (point-max))
+(replace-string "&amp;#39;" "'" nil start (point-max))
+(replace-string "&amp;quot;" "\"" nil start (point-max))
+))
+</p>
 
 
 <div id="table-of-contents">
@@ -108,6 +116,8 @@ org_html_manager.setup();  // activate after the parameters are set
 <li><a href="#sec-12">2011-10 </a></li>
 <li><a href="#sec-13">2011-11 </a></li>
 <li><a href="#sec-14">2011-12 </a></li>
+<li><a href="#sec-15">2012-01 </a></li>
+<li><a href="#sec-16">2012-02 </a></li>
 </ul>
 </div>
 </div>
@@ -5649,7 +5659,7 @@ DBUS) <a href="http://lists.freedes">http://lists.freedes</a> <span class="times
 许永远只能视而不见 你有没有扔过一枚硬币选择正反面 <span class="timestamp-wrapper"> <span class="timestamp">2011-12-13 08:33:28</span></span>
 </li>
 <li>
-终于搞定了lisp代码高亮: 虽然没法在博客园的body标签里添加onload=&amp;quot;prettyPrint()&amp;quot;，但在任意
+终于搞定了lisp代码高亮: 虽然没法在博客园的body标签里添加onload="prettyPrint()"，但在任意
 地方添加一句 window.setTimeout(prettyPrint, 2000) 就行了 <span class="timestamp-wrapper"> <span class="timestamp">2011-12-13 09:29:04</span></span>
 </li>
 <li>
@@ -5734,7 +5744,7 @@ OpenSearch <a href="https://addons.mozilla.org/zh-CN/thunderbird/addon/wat-webap
 </li>
 <li>
 [python] bpython相对ipython的优势在于：代码高亮、更方便的补全和提示、代码块的自动缩进，还有一个很
-酷的&amp;quot;rewind&amp;quot;功能 <a href="http://bpython-interpreter.org/">http://bpython-interpreter.org/</a> <span class="timestamp-wrapper"> <span class="timestamp">2011-12-20 14:06:23</span></span>
+酷的"rewind"功能 <a href="http://bpython-interpreter.org/">http://bpython-interpreter.org/</a> <span class="timestamp-wrapper"> <span class="timestamp">2011-12-20 14:06:23</span></span>
 </li>
 <li>
 [python][emacs] PDEE里面居然搜集了6个用于python的major-modes, 自己还从python-mode派生了一个
@@ -5817,7 +5827,7 @@ Contract Killer升到15级之后，难度陡然一下增加了，而且出现一
 [firefox] 嗯，Evernote Clearly效果不错，而且对本地文件也能工作 <span class="timestamp-wrapper"> <span class="timestamp">2011-12-29 08:53:47</span></span>
 </li>
 <li>
-&amp;quot;Can you explain why ++[[]][+[]]+[+[]] = 10 &amp;quot;
+"Can you explain why ++[[]][+[]]+[+[]] = 10 "
 <a href="http://stackoverflow.com/questions/7202157/can-you-explain-why-10">http://stackoverflow.com/questions/7202157/can-you-explain-why-10</a> <span class="timestamp-wrapper"> <span class="timestamp">2011-12-29 13:15:36</span></span>
 </li>
 <li>
@@ -5842,12 +5852,391 @@ staf service &lt;name&gt; delegate &lt;machine&gt; [TONAME &lt;name&gt;]
 </li>
 </ol>
 </div>
+
+</div>
+
+<div id="outline-container-15" class="outline-2">
+<h2 id="sec-15">2012-01 </h2>
+<div class="outline-text-2" id="text-15">
+
+<ol>
+<li>
+[emacs] 原来推荐的dict-zh字典<a href="http://is.gd/wqujDx">http://is.gd/wqujDx</a> 死活也连不上了，好在我发现了两个已经被Debian收录
+的字典: dict-xdict, dict-stardic <span class="timestamp-wrapper"> <span class="timestamp">2012-01-02 21:01:40</span></span>
+
+</li>
+<li>
+试图将无觅的相关文章功能加到我在博客园的博客上，但在验证那一步死活通不过，不过相关文章已经显示出来
+了，只是还不能进一步配置，目前只能推荐自己博客内的相关文章。 <span class="timestamp-wrapper"> <span class="timestamp">2012-01-02 21:11:32</span></span>
+
+</li>
+<li>
+How to fix add-apt-repository doesn’t work behind a proxy server <a href="http://is.gd/j3CnqU">http://is.gd/j3CnqU</a> 其实关键是
+/etc/sudoers里面要添加一句: Defaults env_keep = “http_proxy https_proxy ftp_proxy” [2012-01-03
+18:36:52]
+
+</li>
+<li>
+[todo][开发工具] LogExpert: GUI Alternative of Unix Tail Command For Windows
+<a href="http://www.log-expert.de/">http://www.log-expert.de/</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-04 09:52:24</span></span>
+
+</li>
+<li>
+使用了一下刚才说的LogExpert，因为是dotNet写的，比较慢，感觉还是之前一直在用的LogViewer好些——只不过
+不是完全免费的，启动时有个logo窗口<a href="http://www.uvviewsoft.com/logviewer/">http://www.uvviewsoft.com/logviewer/</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-04 13:49:09</span></span>
+
+</li>
+<li>
+这幅图有意思: 会飞的猪 With sufficient thrust, pigs fly just fine <a href="http://is.gd/EiTrVL">http://is.gd/EiTrVL</a> 来自zenburn
+色彩主题的主页 <a href="http://slinky.imukuppi.org/zenburnpage/">http://slinky.imukuppi.org/zenburnpage/</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-06 10:32:15</span></span>
+
+</li>
+<li>
+Send/Receive Large Files With Group &amp; Speed Management Using Share <a href="http://is.gd/ha6xCD">http://is.gd/ha6xCD</a> 这不就
+跟QQmail传文件差不多嘛 <span class="timestamp-wrapper"> <span class="timestamp">2012-01-07 08:41:25</span></span>
+
+</li>
+<li>
+[firefox][addons] Tab Sidebar有了一个支持firefox 4+的分支: Tab Sidebar Reloaded 不过我觉得侧边栏就
+那么点高度，显示缩略图太奢侈了，还是pano好 <a href="http://is.gd/fkLGN3">http://is.gd/fkLGN3</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-07 08:48:12</span></span>
+
+</li>
+<li>
+[firefox][addons] 可惜showcase没有分组功能，其实showcase要是能跟TabGroup Manager配合一下，倒是个
+firefox 3.x上的panorama <a href="http://is.gd/5Lk3nj">http://is.gd/5Lk3nj</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-07 08:50:19</span></span>
+
+</li>
+<li>
+[emacs] 黑客帝国 :-) <a href="https://bitbucket.org/dylanwen/elispport/src/18901bfc6c7e/zone-matrix.el">https://bitbucket.org/dylanwen/elispport/src/18901bfc6c7e/zone-matrix.el</a>
+<span class="timestamp-wrapper"> <span class="timestamp">2012-01-07 11:09:46</span></span><br/>
+
+</li>
+<li>
+[emacs][addons] Tab Sidebar (Reloaded) 可以不显示为侧边栏，而是显示在上方或者下方，但跟showcase一
+样，不能跟panorama配合起来，而且不能跟用快捷键操纵 <span class="timestamp-wrapper"> <span class="timestamp">2012-01-07 17:04:55</span></span>
+
+</li>
+<li>
+[ubuntu] 如何干掉ubuntu 11.04开始的愚蠢难用的滚动条: sudo apt-get remove overlay-scrollbar
+<span class="timestamp-wrapper"> <span class="timestamp">2012-01-08 16:39:04</span></span><br/>
+
+</li>
+<li>
+[ubuntu] 将窗口的关闭等按钮改回右边: 在gconf-editor中apps/metacity/general将button_layout一项改为
+menu:maximize,minimize,close (冒号表示分隔左右) <a href="http://is.gd/wXK8bP">http://is.gd/wXK8bP</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-08 16:43:52</span></span>
+
+</li>
+<li>
+对一个Emacs粉丝而言，mintty比putty好太多了，因为有很多键组合都不被putty支持:
+<a href="http://code.google.com/p/mintty/wiki/Keycodes">http://code.google.com/p/mintty/wiki/Keycodes</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-10 12:14:30</span></span>
+
+</li>
+<li>
+[emacs] 在mintty下这些键是可用的(而普通term下则不行): C-%^&amp;*()-+=:;'", C/M/S-f1, 而
+C-[]{}\|/?和C-RET/BS这些键则因为含义不清，不推荐使用 <span class="timestamp-wrapper"> <span class="timestamp">2012-01-10 15:54:05</span></span>
+
+</li>
+<li>
+[emacs][mintty] 续上: C/M/S-ins/del/home/end/pgup/pgdn, C/M/S-up/down/left/right也都可以，在
+putty上这些键都有问题 <span class="timestamp-wrapper"> <span class="timestamp">2012-01-10 16:00:57</span></span>
+
+</li>
+<li>
+mtputty也是一个多tab的putty管理工具，跟puttycm和mremote不同的是，它不需要dotnet [2012-01-11
+09:37:34]
+
+</li>
+<li>
+[uemacs] 又开始玩jasspa, 它的宏语法有点怪，绑定M-s o到occur的方法是: 5 global-bind-key
+"prefix" "A-s";global-bind-key occur "A-s o" [2012-01-11
+18:04:53]
+
+</li>
+<li>
+[uemacs] jasspa还是一个轻量级的info阅读器，比pinfo还多了调字体的能力(X或者Windows版本)，哈
+<span class="timestamp-wrapper"> <span class="timestamp">2012-01-11 18:10:52</span></span><br/>
+
+</li>
+<li>
+[工具软件] addictivetips在推荐一款统计目录大小的工具OverDisk <a href="http://is.gd/ghR878">http://is.gd/ghR878</a> 试用了一下，觉得
+目录傍边不显示个数字感觉不太直观，而且扫描过程中啥也不显示这种等的感觉有点不爽，还是推荐TreeSize
+free或者开源的windirstat <span class="timestamp-wrapper"> <span class="timestamp">2012-01-12 09:26:16</span></span>
+
+</li>
+<li>
+[工具软件] DualClip Translator可以调用Google或者Microsoft的翻译引擎翻译桌面程序中的一段文字
+<a href="http://is.gd/BxmIkX">http://is.gd/BxmIkX</a> ——不过是用Java写的，我对于Java写的桌面程序没兴趣 <span class="timestamp-wrapper"> <span class="timestamp">2012-01-12 09:50:18</span></span>
+
+</li>
+<li>
+[emacs][todo] How to Make Emacs' Scratch Buffer Persistent Across Sessions
+<a href="http://dorophone.blogspot.com/2011/11/how-to-make-emacs-scratch-buffer.html">http://dorophone.blogspot.com/2011/11/how-to-make-emacs-scratch-buffer.html</a> [2012-01-13
+17:42:09]
+
+</li>
+<li>
+今早费了两个小时来解决svn conflict :-) <span class="timestamp-wrapper"> <span class="timestamp">2012-01-16 11:58:38</span></span>
+
+</li>
+<li>
+[emacs][todo] textmate.el的一个改进版: <a href="http://blog.liuw.name/1173">http://blog.liuw.name/1173</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-16 12:02:44</span></span>
+
+</li>
+<li>
+[emacs][todo] 得研究一下这个东西的实现，没怎么听说过compose-region这个函数: 『emacs 缩进提示线』
+<a href="http://forum.ubuntu.com.cn/viewtopic.php?f=68&amp;t=360430">http://forum.ubuntu.com.cn/viewtopic.php?f=68&amp;t=360430</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-16 12:04:10</span></span>
+
+</li>
+<li>
+在科技领域，你的失败不是因为你激怒对手，而是因为你使客户不悦。
+<a href="http://article.yeeyan.org/view/280713/246487">http://article.yeeyan.org/view/280713/246487</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-16 13:34:19</span></span>
+
+</li>
+<li>
+[chrome] 总算找到装一个可改变配色的扩展了: Change Colors 虽然不如firefox上的Color Toggle好用(这个
+CC在复原时需要重新载入网页)，但聊胜于无啊
+<a href="http://www.chromeextensions.org/appearance-functioning/change-colors/">http://www.chromeextensions.org/appearance-functioning/change-colors/</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-16 16:44:24</span></span>
+
+</li>
+<li>
+[chrome] <a href="http://chromeextensions.org">http://chromeextensions.org</a> 这个网站不错，可以下载到.crx文件，以便离线安装，而且也没有要
+求我升级chrome，而Google WebStore就很烦 <a href="https://chrome.google.com/webstore">https://chrome.google.com/webstore</a> [2012-01-16
+16:47:11]
+
+</li>
+<li>
+[emacs] 一个据说是从aquamacs偷过来的elisp宏: allow-line-as-region-for-function 可以方便地从
+comment-region得到comment-region-or-line, 从kill-region得到kill-region-or-line
+<a href="http://is.gd/9OZmAc">http://is.gd/9OZmAc</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-16 16:49:59</span></span>
+
+</li>
+<li>
+[emacs][todo] babel.el (fork): interface to web translation services such as Babelfish,
+FreeTranslation <a href="https://github.com/juergenhoetzel/babel">https://github.com/juergenhoetzel/babel</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-16 17:12:49</span></span>
+
+</li>
+<li>
+[emacs] expand-region: increases the selected region by semantic units. 跟Xah Lee的
+extend-selection比较象 <a href="https://github.com/magnars/expand-region.el">https://github.com/magnars/expand-region.el</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-16 17:36:38</span></span>
+
+</li>
+<li>
+玩了一下Zero Install，不过我觉得这个东西反而把事情搞复杂了 Install Linux Applications Without
+Root Privileges With Zero Install <a href="http://is.gd/KJ6zZa">http://is.gd/KJ6zZa</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-17 12:04:19</span></span>
+
+</li>
+<li>
+Turbocharge [PuTTY] with 12 Powerful Add-Ons – Software for Geeks #3 <a href="http://is.gd/Z7SjUo">http://is.gd/Z7SjUo</a>
+<span class="timestamp-wrapper"> <span class="timestamp">2012-01-17 13:32:14</span></span><br/>
+
+</li>
+<li>
+[firefox][addons] 这个TableTools2扩展可以给网页上的表格即时排序、过滤、制作chart TableTools2:
+Offers Numerous Functions For HTML Tables [Firefox]
+<a href="http://www.makeuseof.com/dir/tabletools2-functions-for-html/">http://www.makeuseof.com/dir/tabletools2-functions-for-html/</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-17 13:47:30</span></span>
+
+</li>
+<li>
+[python] bunch: A dot-accessible dictionary (a la JavaScript objects)
+<a href="http://pypi.python.org/pypi/bunch/1.0.0">http://pypi.python.org/pypi/bunch/1.0.0</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-18 11:23:05</span></span>
+
+</li>
+<li>
+[python] 刚才找到的另一个实现，可惜只能用在python 3上: jpath Access nested dicts and lists using
+JSON-like path notation. <a href="http://www.stxnext.pl/python-community/open-source/jpath">http://www.stxnext.pl/python-community/open-source/jpath</a> [2012-01-18
+11:26:05]
+
+</li>
+<li>
+[python][firefox] 借用ZoomQuiet的代码 <a href="http://is.gd/udTQiT">http://is.gd/udTQiT</a> ，改进了一下Scrapbook的index.html，引入
+了ScrapIndexer的动态框显示source url，取消了favicon的显示 <span class="timestamp-wrapper"> <span class="timestamp">2012-01-18 17:26:08</span></span>
+
+</li>
+<li>
+[工具软件] 受不了dexpot频繁地崩溃（以前挺稳定的，最近不知道跟什么软件冲突了），dm2的功能又太少了
+些，到 <a href="http://alternativeto.net/software/dexpot">http://alternativeto.net/software/dexpot</a> 找了个开源的VirtuaWin用起来还不错，还有一些第三方
+插件 <a href="http://virtuawin.sourceforge.net/modules.php">http://virtuawin.sourceforge.net/modules.php</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-18 17:56:02</span></span>
+
+</li>
+<li>
+[工具软件] 原本觉得VirtuaWin没有dexpot那样的窗口菜单，想将一个窗口挪到某个desktop只能用键盘，结果
+发现其实它也有，只不过是用鼠标中键点击窗口标题栏才出来 <span class="timestamp-wrapper"> <span class="timestamp">2012-01-19 09:33:47</span></span>
+
+</li>
+<li>
+嗯，我不需要zero-install, 自己给NXclient, Double Commander目录添加个AppRun、AppInfo.xml和.DirIcon就
+行了，然后用ROX-Filer来启动它们。这么安装的MIME-editor也可以被ROX-Filer认识（可从设置界面里调出来)
+<span class="timestamp-wrapper"> <span class="timestamp">2012-01-19 10:18:04</span></span><br/>
+
+</li>
+<li>
+[工具软件] VirtuaWin的window list是个相当差的UI设计，不看文档完全搞不清楚是个什么东西，怎么使用。
+其实不如设计一个dexpot那样“窗口管理”对话框，然后用户可以对列表里面的东西执行show, move here,
+always show等操作 <span class="timestamp-wrapper"> <span class="timestamp">2012-01-19 13:55:47</span></span>
+
+</li>
+<li>
+[emacs] 这位Nikolaj Schumacher写的emacs扩展都很有用: company-mode, doc-mode, full-ack,
+guess-style, highlight-symbol, idle-require, split-root,
+tempo-snippets&hellip; <a href="http://nschum.de/src/emacs/">http://nschum.de/src/emacs/</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-19 16:49:06</span></span>
+
+</li>
+<li>
+博客园又换favicon了，现在这个有点象北京奥运那个'京'字小人 :-) <span class="timestamp-wrapper"> <span class="timestamp">2012-01-20 08:52:36</span></span>
+
+</li>
+<li>
+Emacs Hint #2 - Workspaces <a href="http://emacsrookie.com/2011/09/25/workspaces/">http://emacsrookie.com/2011/09/25/workspaces/</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-21 16:20:24</span></span>
+
+</li>
+<li>
+emacs -fu: sauron: keeping an eye on what's going on
+<a href="http://emacs-fu.blogspot.com/2011/12/sauron-keeping-eye-on-whats-going-on.html">http://emacs-fu.blogspot.com/2011/12/sauron-keeping-eye-on-whats-going-on.html</a> [2012-01-21
+16:22:22]
+
+</li>
+<li>
+workgroups for windows ( emacs layouts) | Open Sauce
+<a href="http://splash-of-open-sauce.blogspot.com/2010/09/workgroups-for-windows-emacs-layouts.html">http://splash-of-open-sauce.blogspot.com/2010/09/workgroups-for-windows-emacs-layouts.html</a>
+<span class="timestamp-wrapper"> <span class="timestamp">2012-01-21 16:24:48</span></span><br/>
+
+</li>
+<li>
+[emacs] M-!执行外部程序时，要想能通过tab键对命令不全，emacs-23已经可以了，对更早的版本则需要
+shell-command.el via Xah Lee <a href="http://xahlee.org/emacs/emacs_unix.html">http://xahlee.org/emacs/emacs_unix.html</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-26 19:09:10</span></span>
+
+</li>
+<li>
+[linux] 要是guake能结合terminator的分屏功能，或者terminator能结合guake的热键呼出功能，那就太爽了
+<span class="timestamp-wrapper"> <span class="timestamp">2012-01-28 18:05:06</span></span><br/>
+
+</li>
+<li>
+这个ubuntu虚拟机上自带的输入法是scim，我怎么用都觉得不爽，组词功能非常弱，候选字只有5个还没法调
+整，但都是临时用用，也没去换，今天看到这个scim打算要被踢出debian了:
+<a href="http://groups.google.com/group/debian-chinese/msg/993eac57624e45c7">http://groups.google.com/group/debian-chinese/msg/993eac57624e45c7</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-29 14:38:05</span></span>
+
+</li>
+<li>
+原来ROX-Filer这种文件管理器属于spatial风格（另外两种分别叫做orthodox和navigational），但我找不到
+一个好的这种风格的windows文件管理器 :-(
+<a href="http://en.wikipedia.org/wiki/Orthodox_File_Manager#Spatial_file_manager">http://en.wikipedia.org/wiki/Orthodox_File_Manager#Spatial_file_manager</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-29 14:43:40</span></span>
+
+</li>
+<li>
+8 Exciting Features of Linux Mint 12 "Lisa" | TechSource
+<a href="http://www.junauza.com/2011/11/8-exciting-features-of-linux-mint-12.html">http://www.junauza.com/2011/11/8-exciting-features-of-linux-mint-12.html</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-30 13:14:27</span></span>
+
+</li>
+<li>
+[emacs][grep] 这个在推特上被推荐的ack-and-a-half，在我这里用不起来啊，一用就陷入死循环了
+(windows xp + emacs 23.1) ，懒得管了，反正还有ack.el和full-ack.el
+<a href="https://github.com/jhelwig/ack-and-a-half">https://github.com/jhelwig/ack-and-a-half</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-30 14:28:44</span></span>
+
+</li>
+<li>
+[emacs][orgmode] 原来org-mode里面的代码是可以高亮的! (setq org-src-fontify-natively t)
+<a href="http://irreal.org/blog/?p=671">http://irreal.org/blog/?p=671</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-31 08:59:10</span></span>
+
+</li>
+<li>
+[python] wxpython的docs &amp; demo包里面带的chm格式的帮助其实是针对wxwidgets的，面向c++，如果想要
+一个面向python的帮助，可以找boa-constructor里面的wxpython.api.htb，用wxpython里面的helpviewer打开
+（其实htb跟chm的内容是差不多的，里面也是hhc和hhk做目录和索引）
+<a href="http://boa-constructor.cvs.sourceforge.net/viewvc/boa-constructor/boa/Docs/">http://boa-constructor.cvs.sourceforge.net/viewvc/boa-constructor/boa/Docs/</a> [2012-01-31
+14:17:18]
+
+</li>
+<li>
+[firefox] 可以将scrapbook仓库打包成zip，然后写一个bat用来查看: firefox
+"jar:<a href="//%~dpf1!/tree/frame.html"">file:///%~dpf1!/tree/frame.html"</a> 如果有hhc/hhk的话，还可以用wxpython提供的
+helpviewer 来查看 <span class="timestamp-wrapper"> <span class="timestamp">2012-01-31 14:34:58</span></span>
+
+</li>
+<li>
+[wxpython] 这里有一份面向python的chm:
+<a href="http://code.google.com/p/char-docs/downloads/detail?name=wxpython-2.8.7.1-api.chm">http://code.google.com/p/char-docs/downloads/detail?name=wxpython-2.8.7.1-api.chm</a> 跟wxpython网站
+所说的new wxpydocs <a href="http://www.wxpython.org/docs/api/">http://www.wxpython.org/docs/api/</a> 内容上差不多，只是页面风格上有点差异&hellip;
+<span class="timestamp-wrapper"> <span class="timestamp">2012-01-31 14:46:38</span></span><br/>
+
+</li>
+<li>
+[wxpython] 续: 但这个chm描述方法时还是不够清晰，比如ComboCtrl.SetTextIndent描述成
+SetTextIndent(*args, **kwargs)，而官网的new wxpydocs描述成 SetTextIndent(self, indent)
+<a href="http://www.wxpython.org/docs/api/wx.combo.ComboCtrl-class.html">http://www.wxpython.org/docs/api/wx.combo.ComboCtrl-class.html</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-31 14:49:50</span></span>
+
+</li>
+<li>
+[wxpython] 再续，这个CHM里面的html是用epydoc工具生成的 <a href="http://epydoc.sourceforge.net/">http://epydoc.sourceforge.net/</a> 而
+epydoc-chm这个工具可以再加工成chm <a href="http://code.google.com/p/epydoc-chm/">http://code.google.com/p/epydoc-chm/</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-31 15:13:19</span></span>
+
+</li>
+<li>
+[wxpython] 这里有一份sphinx风格的文档 <a href="http://xoomer.virgilio.it/infinity77/wxPython/APIMain.html">http://xoomer.virgilio.it/infinity77/wxPython/APIMain.html</a>
+<span class="timestamp-wrapper"> <span class="timestamp">2012-01-31 15:35:27</span></span><br/>
+
+</li>
+<li>
+wxpython官方的想法也是切换到sphinx上来，这也是2.9.3 (代号Phoenix)的目标之一
+<a href="http://wiki.wxpython.org/ProjectPhoenix/ProjectGoals">http://wiki.wxpython.org/ProjectPhoenix/ProjectGoals</a> 这里是snapshot:
+<a href="http://xoomer.virgilio.it/infinity77/Phoenix/main.html">http://xoomer.virgilio.it/infinity77/Phoenix/main.html</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-01-31 15:46:02</span></span>
+
+
+</li>
+</ol>
+</div>
+
+</div>
+
+<div id="outline-container-16" class="outline-2">
+<h2 id="sec-16">2012-02 </h2>
+<div class="outline-text-2" id="text-16">
+
+<ol>
+<li>
+[工具软件] alternativeto.net 这个网站真是不错，可以很方便地看看某个软件有没有更好的替代品，比如刚
+才从 <a href="http://alternativeto.net/software/miniMiZE">http://alternativeto.net/software/miniMiZE</a> 看到miniMIZE的一个替代品ThumbWin，不过也不能选择
+性地最小化 <span class="timestamp-wrapper"> <span class="timestamp">2012-02-01 10:28:02</span></span>
+
+</li>
+<li>
+[wxpython] 原来pyslices已经提供了方法切换为默认单行输入/Ctrl+Enter多行输入的选项了，就在菜单
+Options-&gt;Settings-&gt;Enable Shell Mode <span class="timestamp-wrapper"> <span class="timestamp">2012-02-01 10:33:38</span></span>
+
+</li>
+<li>
+[dropbox] 『只要你使用最新版本Dropbox的相片匯入功能（目前版本是1.3.12），首次使用即時送你500MB空
+間，然後每上載500MB就再送500MB，最高送4.5GB（即共5GB）』 <a href="http://infilmity.com/685.php">http://infilmity.com/685.php</a> [2012-02-03
+12:01:55]
+
+</li>
+<li>
+[linux] sudo add-apt-repository ppa:freefilesync/ffs &amp;&amp; sudo apt-get install freefilesync
+<a href="http://www.webupd8.org/2012/02/compare-and-synchronize-folders-with.html">http://www.webupd8.org/2012/02/compare-and-synchronize-folders-with.html</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-02-04 17:09:51</span></span>
+
+</li>
+<li>
+[linux] marlin file manager: sudo add-apt-repository ppa:marlin-devs/marlin-daily &amp;&amp; sudo
+apt-get install marlin
+<a href="http://maketecheasier.com/using-marlin-file-manager-as-nautilus-alternative/2012/02/02">http://maketecheasier.com/using-marlin-file-manager-as-nautilus-alternative/2012/02/02</a>
+<span class="timestamp-wrapper"> <span class="timestamp">2012-02-04 17:10:44</span></span><br/>
+
+</li>
+<li>
+[linux] Ubuntu One Indicator: Manage Ubuntu One Synchronization From System Tray $ sudo
+add-apt-repository ppa:rye/ubuntuone-extras &amp;&amp; sudo apt-get install ubuntuone-indicator
+<a href="http://www.wmlcloud.com/linux/ubuntu-one-indicator-manage-ubuntu-one-synchronization-from-system-tray/">http://www.wmlcloud.com/linux/ubuntu-one-indicator-manage-ubuntu-one-synchronization-from-system-tray/</a>
+<span class="timestamp-wrapper"> <span class="timestamp">2012-02-04 20:07:47</span></span><br/>
+
+</li>
+</ol>
+</div>
 </div>
 <div id="postamble">
 <p class="author"> Author: bamanzi
 <a href="mailto:bamanzi@bamanzi-H24Z-X">&lt;bamanzi@bamanzi-H24Z-X&gt;</a>
 </p>
-<p class="date"> Date: 2012-01-01 14:42:37 HKT</p>
+<p class="date"> Date: 2012-02-04 20:28:03 HKT</p>
 <p class="creator">HTML generated by org-mode 6.33x in emacs 23</p>
 </div>
 </div>
