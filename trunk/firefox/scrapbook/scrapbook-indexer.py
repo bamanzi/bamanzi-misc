@@ -107,6 +107,11 @@ def scrapbook_to_html(sbdata, output):
  .show { }
  .info, .info img { border:solid 1px #bbbbaa }
  .icon { width:16px; height:16px; border:none; padding-right:5px; vertical-align:middle }
+
+li { white-space: nowrap; }
+a.marked   { font-weight: bold; }
+a.combine  { color: blue; }
+a.bookmark { color: limegreen; }
 </style>
 	<script type="text/javascript" language="JavaScript">
 <!--
@@ -163,11 +168,11 @@ attach(window, 'load', function() {
 """
     HTML_TMPL_END_FOLDER   = "</ul>\n"
     HTML_TMPL_ITEM         = """<li class="depth2"><a href="data/%(id)s/index.html" target="main" class="">
-<img src="./tree/treenode.png" width="16" height="16" alt="">%(title)s</a>
+<img src="./tree/treeitem.png" width="16" height="16" alt="">%(title)s</a>
   <div class="hide">
     <table class="info">
-      <tr><td>Folder:</td><td><a href="data/%(id)s">data/%(id)s</a></td></tr>
-      <tr><td>Source:</td><td><a href=%(source)s">%(source)s</a></td></tr>
+      <tr><td>Folder:</td><td><a href="data/%(id)s" target="main">data/%(id)s</a></td></tr>
+      <tr><td>Source:</td><td><a href=%(source)s"   target="main">%(source)s</a></td></tr>
     </table>
   </div
 </li>
@@ -186,7 +191,7 @@ attach(window, 'load', function() {
                 sys.stderr.write("ERROR: itemdata is null. id=%s\n" % itemid)
             else:
                 try:
-                    output.write(HTML_TMPL_BEGIN_FOLDER % itemdata)
+                    output.write((HTML_TMPL_BEGIN_FOLDER % itemdata).encode('utf-8'))
                 except:
                     result="error in folder %s\n" % itemid
                     for key in itemdata.keys():
@@ -199,10 +204,10 @@ attach(window, 'load', function() {
                 else:
                     for item in seq:
                         item_to_html(item)
-                    output.write(HTML_TMPL_END_FOLDER % itemdata)
+                    output.write((HTML_TMPL_END_FOLDER % itemdata).encode('utf-8'))
         else:  #site, bookmark, marked,
             try:
-                output.write(HTML_TMPL_ITEM % itemdata).encode('UTF-8')
+                output.write((HTML_TMPL_ITEM % itemdata).encode('UTF-8'))
             except UnicodeDecodeError as ex:
                 sys.stderr.write("error in item %s:\n" % itemid)
                 sys.stderr.write("  %s\n" % ex)
