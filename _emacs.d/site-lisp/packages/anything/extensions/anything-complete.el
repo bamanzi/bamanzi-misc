@@ -118,17 +118,6 @@
 (require 'thingatpt)
 (require 'anything-obsolete)
 
-;; version check
-(let ((version "1.263"))
-  (when (and (string= "1." (substring version 0 2))
-             (string-match "1\.\\([0-9]+\\)" anything-version)
-             (< (string-to-number (match-string 1 anything-version))
-                (string-to-number (substring version 2))))
-    (error "Please update anything.el!!
-
-http://www.emacswiki.org/cgi-bin/wiki/download/anything.el
-
-or  M-x install-elisp-from-emacswiki anything.el")))
 
 ;; (@* "overlay")
 (when (require 'anything-show-completion nil t)
@@ -585,7 +574,7 @@ used by `anything-lisp-complete-symbol-set-timer' and `anything-apropos'"
       (anything-old-completing-read prompt collection predicate require-match initial hist default inherit-input-method)
     ;; support only collection list.
     (setq hist (or (car-safe hist) hist))
-    (let* (anything-input-idle-delay
+    (let* ((anything-input-idle-delay 0.1)
            (result (or (anything-noresume (acr-sources
                                            prompt
                                            collection
