@@ -1,5 +1,5 @@
 ;;;; anything-menu.el --- anything.el candidate selection outside Emacs 
-;; $Id: anything-menu.el,v 1.6 2010/04/01 12:10:35 rubikitch Exp $
+;; $Id: anything-menu.el,v 1.6 2010-04-01 12:10:35 rubikitch Exp $
 
 ;; Copyright (C) 2010  rubikitch
 
@@ -75,7 +75,7 @@
 ;;; History:
 
 ;; $Log: anything-menu.el,v $
-;; Revision 1.6  2010/04/01 12:10:35  rubikitch
+;; Revision 1.6  2010-04-01 12:10:35  rubikitch
 ;; * document
 ;; * `anything-menu': ANY-KEYMAP argument
 ;;
@@ -97,7 +97,7 @@
 
 ;;; Code:
 
-(defvar anything-menu-version "$Id: anything-menu.el,v 1.6 2010/04/01 12:10:35 rubikitch Exp $")
+(defvar anything-menu-version "$Id: anything-menu.el,v 1.6 2010-04-01 12:10:35 rubikitch Exp $")
 (require 'anything)
 (defgroup anything-menu nil
   "anything-menu"
@@ -120,7 +120,7 @@
                                 activate
                              end")))
 (defun am/write-result (line)
-  (write-region (or line "") nil am/tmp-file))
+  (write-region (or line "") nil am/tmp-file nil 'silent))
 
 (defun anything-menu (&optional any-sources any-input any-prompt any-resume any-preselect any-buffer any-keymap)
   "Call `anything' outside Emacs.
@@ -130,7 +130,8 @@ Pop up anything frame and close it after session."
   (am/set-frame)
   (unwind-protect
       (let ((anything-samewindow t)
-            (anything-display-function 'anything-default-display-buffer))
+            (anything-display-function 'anything-default-display-buffer)
+            (anything-after-action-hook (lambda () (am/write-result (anything-get-selection)))))
         (anything any-sources any-input any-prompt any-resume any-preselect any-buffer any-keymap))
     (am/close-frame)))
 
@@ -163,5 +164,5 @@ The anything-menu script calls this function and print selection to stdout."
 ;; (find-sh0 "cat /tmp/.am-tmp-file")
 
 ;; How to save (DO NOT REMOVE!!)
-;; (emacswiki-post "anything-menu.el")
+;; (progn (magit-push) (emacswiki-post "anything-menu.el"))
 ;;; anything-menu.el ends here
