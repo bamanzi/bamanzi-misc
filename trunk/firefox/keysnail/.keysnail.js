@@ -104,7 +104,54 @@ ext.add("is.gd", function () {
         display.echoStatusBar("is.gd service failed: " + result.statusText, 3000);
 }, "Shorten current page's URL with http://is.gd service");
 
-//TODO: goo.gl
+// goo.gl
+ext.add("goo.gl", function () {
+    let endpoint = "https://www.googleapis.com/urlshortener/v1/url";
+    let params = { "longUrl": window._content.document.location.href };
+    let result = util.httpPostJSON(endpoint, params, function (xhr) {
+        var ret = JSON.parse(xhr.responseText);
+        display.echoStatusBar("Short URL copied into clipboard: " + ret.id, 3000);
+    });
+}, "Shorten URL with http://goo.gl service");
+ 
+// goo.gl only accepts content-type as 'application/json',
+// but keysnail's httpGet/httpPost doesn't support it
+util.httpPostJSON= function (url, params, callback) {
+            let xhr = new XMLHttpRequest();
+ 
+            switch (typeof params)
+            {
+            case "string":
+                // nothing
+                break;
+            case "object":
+                params = JSON.stringify(params)
+                break;
+            default:
+                params = "";
+                break;
+            }
+ 
+            let async = typeof callback === "function";
+ 
+            if (async)
+            {
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4)
+                        callback(xhr);
+                };
+            }
+ 
+            xhr.open("POST", url, async);
+ 
+            xhr.setRequestHeader("Content-type", "application/json");
+            xhr.setRequestHeader("Content-length", params.length);
+            xhr.setRequestHeader("Connection", "close");
+ 
+            xhr.send(params);
+ 
+            return xhr;
+}
 
 ext.add("bookmark-on-delicious", function(ev, arg) {
     var f='http://www.delicious.com/save?url='+encodeURIComponent(content.location.href)+
@@ -207,7 +254,6 @@ ext.add("paste-to-tab-and-go", function() {
 }, "Paste the URL or keyword from clipboard to a new tab and Go");
 
 
-
 // selection
 ext.add("search-selection", function() {
     if(!getBrowserSelection()) return;
@@ -283,7 +329,10 @@ function google_translate (whatToTranslate, lang, callback) {
      }
     
     var httpRequest = null;
-
+    
+    //e.g http://translate.google.com/m?hl=zh-CN&sl=auto&tl=en&ie=UTF-8&prev=_m&q=dictionary
+    // var fullUrl = "http://translate.google.com/m?hl=" + lang + "&sl=auto&tl=" + lang + "&ie=UTF-8" +
+    //    "&q=" + whatToTranslate;
     var fullUrl = "http://translate.google.hu/translate_t?text=" + whatToTranslate +
         "&hl=" + lang + "&langpair=auto|" + lang + "&tbb=1" ;
 
@@ -295,6 +344,7 @@ function google_translate (whatToTranslate, lang, callback) {
 
     function infoReceived() {  // if there is response from Google then write out translation
         var output = httpRequest.responseText;
+        // alert(output)
         if (output.length) {
             // Build the output string from Google Page
             output = output.replace(/&quot;/gi,'"');
@@ -312,18 +362,19 @@ function google_translate (whatToTranslate, lang, callback) {
             else {
                 var tempResz = fieldArray[1].split('<span id=result_box class="long_text">');
             }
+            //alert(tempResz[1]);
             var kimenet = tempResz[1].split('</span></div>');
             if (callback) {
                 callback(kimenet[0]);
             } else {
-                display.echoStatusBar("Total:" + value.length + " Selected:" + selcount, 3000);               
+                display.echoStatusBar(kimenet[0], 5000);               
             }
         }
     }
     
     httpRequest = new XMLHttpRequest();
     httpRequest.open("GET", fullUrl, true);
-    httpRequest.onload = callback;
+    httpRequest.onload = infoReceived;
     httpRequest.send(null);
 }
 
@@ -338,22 +389,45 @@ function inline_translate_selection(lang) {
     google_translate(content.getSelection(), lang, callback);
 }
 
-ext.add("inline-translate-selection", function() {
+ext.add("google-translate-selection-inline", function() {
     inline_translate_selection("en");
 }, "Translate the selection and replace it with result.");
 
-ext.add("inline-translate-selection-cn", function() {
+ext.add("google-translate-selection-inline-to-cn", function() {
     inline_translate_selection("zh-CN");
 }, "Translate the selection and replace it with result.");
 
-ext.add("translate-selection", function() {
+ext.add("google-translate-selection", function() {
     var selection = content.getSelection();
     var callback = function(result) {
-        display.echoStatusBar(selection + ": " + result, 5000)
+        //alert(result);
+        // <span title="Emacs粉丝应该很喜欢这个插件" onmouseover="this.style.backgroundColor='#ebeff9'" onmouseout="this.style.backgroundColor='#fff'">Emacs fans should like this plug-in</span>
+        var ret = result.split(">");
+        result = ret[1].split("<");
+        display.echoStatusBar(selection + ": " + result[0], 5000)
     }
     google_translate(selection, "en", callback);
-}, "Translate the selection and show result in status bar.");
+}, "Translate the selection to English and show result in status bar.");
 
+ext.add("google-translate-selection-to-cn", function() {
+    var selection = content.getSelection();
+    var callback = function(result) {
+        //alert(result);
+        // <span title="Emacs粉丝应该很喜欢这个插件" onmouseover="this.style.backgroundColor='#ebeff9'" onmouseout="this.style.backgroundColor='#fff'">Emacs fans should like this plug-in</span>
+        var ret = result.split(">");
+        result = ret[1].split("<");
+        display.echoStatusBar(selection + ": " + result[0], 5000)
+    }
+    google_translate(selection, "zh-CN", callback);
+}, "Translate the selection to Chinese and show result in status bar.");
+
+ext.add("wiktionary-lookup-selection", function() {
+    if (!getBrowserSelection()) {
+        display.echoStatusBar("Wiktionary: You must selection something.", 2000);
+        return;
+    }
+    gd12.select.lookupSelected();
+}, 'Show translation for selection (extension: Wiktionary & Google Translate).');
 //}}%PRESERVE%
 // ========================================================================= //
 
@@ -457,6 +531,10 @@ hook.addToHook('Unload', function () {
 // ============================= Key bindings ============================== //
 
 key.setGlobalKey('C-M-r', function (ev) {
+    userscript.reload();
+}, 'Reload the initialization file', true);
+
+key.setGlobalKey(['C-c', 'C-r'], function (ev) {
     userscript.reload();
 }, 'Reload the initialization file', true);
 
@@ -1054,33 +1132,23 @@ key.setViewKey(["C-x", 'b'], function (ev, arg) {
     ext.exec("tanything", arg);
 }, "view all tabs", true);
 
-key.setGlobalKey(['C-x', 'p'], function (ev, arg) {
+key.setGlobalKey(['C-<f11>', 'C-<f11>'], function (ev, arg) {
     splitpannel.toggle(window._content.document.location, true, 'right');
 }, 'Open Split Panel and load current URL in it .');
 
-key.setGlobalKey(['C-<f9>', 'i'], function (ev, arg) {
+key.setGlobalKey(['C-<f11>', 'i'], function (ev, arg) {
     splitpannel.toggle('http://space.cnblogs.com/mi/', true, 'right');
 }, 'Open Split Panel and load http://space.cnblogs.com/mi/ in it .');
 
-key.setGlobalKey(['C-<f9>', 't'], function(ev, arg) {
-    var sel = getBrowserSelection();
-    if (sel) {
-        splitpannel.toggle("http://translate.google.com/m?hl=zh-CN&sl=auto&tl=en&ie=UTF-8&q=" + encodeURIComponent(sel), true, 'right');
-    }
-}, 'Translate selection to English and show result in Split Panel.');
+key.setGlobalKey(['C-<f11>', 'g'], function (ev, arg) {
+    splitpannel.toggle('https://www.google.com/reader/i/#stream/user%2F02753487812100788291%2Fstate%2Fcom.google%2Fread', true, 'right');
+}, 'Open Split Panel and load Google Reader in it .');
 
-key.setGlobalKey(['C-<f9>', 'T'], function(ev, arg) {
-    var sel = getBrowserSelection();
-    if (sel) {
-        splitpannel.toggle("http://translate.google.com/m?hl=zh-CN&sl=auto&tl=zh-CN&ie=UTF-8&q=" + encodeURIComponent(sel), true, 'right');
-    }
-}, 'Translate selection to English and show result in Split Panel.');
-
-key.setGlobalKey(['C-<f9>', 'C-t'], function (ev, arg) {
+key.setGlobalKey(['C-<f11>', 't'], function (ev, arg) {
     splitpannel.toggle("http://translate.google.com/m?hl=zh-CN&sl=auto&tl=en&ie=UTF-8", true, 'right');
 }, 'Open Split Panel and load Google Translate (any->en) in it .');
 
-key.setGlobalKey(['C-<f9>', 'C-T'], function (ev, arg) {
+key.setGlobalKey(['C-<f11>', 'T'], function (ev, arg) {
     splitpannel.toggle("http://translate.google.com/m?hl=zh-CN&sl=auto&tl=zh-CN&ie=UTF-8", true, 'right');
 }, 'Open Split Panel and load Google Translate (any->zh-CN) in it .');
 
@@ -1089,35 +1157,29 @@ key.setGlobalKey(['C-<f11>', 'C-<f11>'], function (ev, arg) {
     toggleSidebar("", false);
 }, 'close sidebar');
  
-key.setGlobalKey(['C-<f11>', 'r'], function (ev, arg) {
+key.setGlobalKey(['C-<f11>', 'C-r'], function (ev, arg) {
     toggleSidebar("RIL_sidebarlist", true);
 }, 'Show ReadItLater sidebar. (readitlater extension)');
  
-key.setGlobalKey(['C-<f11>', '['], function (ev, arg) {
+key.setGlobalKey(['C-<f11>', 'C-2'], function (ev, arg) {
     toggleSidebar("viewSidebar_save2read");
 }, 'Show Save-To-Read sidebar. (save2read extension)');
 
+key.setGlobalKey(['C-<f11>', 'C-s'], function (ev, arg) {
+    toggleSidebar("viewScrapBookSidebar");
+}, 'Toggle Scrapbook sidebar (extension Scrapbook or Scrapbook Plus)');
+
+key.setGlobalKey(['C-<f11>', 'C-p'], function(ev, arg) {
+    toggleSidebar('viewPanoramaSidebar');
+}, 'Toggle Pano side bar (extension Pano).');
+
 key.setViewKey(['C-c', 'C-a'], function (ev, arg) {
-    var pattern = /(.*?)([0]*)([0-9]+)([^0-9]*)$/;
-    var url = content.location.href;
-    var digit = url.match(pattern);
-    if (digit[1] && digit[3]) {
-        let len = digit[3].length;
-        let next = +digit[3] + (arg ? arg : 1);
-        content.location.href = digit[1] + (digit[2] || "").slice(next.toString().length - len) + next + (digit[4] || "");
-    }
-}, 'Increment last digit in the URL');
+    ext.exec('increase-digit-in-url', arg, ev);
+}, 'Increase last digit in the URL (go to next page)');
 
 key.setViewKey(['C-c', 'C-d'], function (ev, arg) {
-    var pattern = /(.*?)([0]*)([0-9]+)([^0-9]*)$/;
-    var url = content.location.href;
-    var digit = url.match(pattern);
-    if (digit[1] && digit[3]) {
-        let len = digit[3].length;
-        let next = +digit[3] - (arg ? arg : 1);
-        content.location.href = digit[1] + (digit[2] || "").slice(next.toString().length - len) + next + (digit[4] || "");
-    }
-}, 'Decrement last digit in the URL');
+    ext.exec('decrease-digit-in-url', arg, ev);
+}, 'Decrease last digit in the URL (go to prev page)');
 
 key.setEditKey(["C-x", '8', "'"], function(ev, arg) {
     inputChars(ev, "「");
@@ -1143,11 +1205,11 @@ key.setEditKey(["C-x", '8', '-'], function(ev, arg) {
     inputChars(ev, "…");
 }, "Input …");
 
-key.setGlobalKey(["<C-f10>", 'p'], function(ev, arg) {
+key.setGlobalKey(["C-<f10>", 'p'], function(ev, arg) {
     toggleproxy.toggleProxy();
 }, "Toggle proxy.");
 
-key.setGlobalKey(["<C-f10>", 'c'], function(ev, arg) {
+key.setGlobalKey(["C-<f10>", 'c'], function(ev, arg) {
     addon9408.ctmain.btDoToggle();
 }, "Toggle color.");
 
@@ -1183,14 +1245,6 @@ key.setGlobalKey(['C-<f10>', 'D'], function (ev, arg) {
 }, 'Toggle \'double-click-to-translate\' of Wiktionary & Google Translate extension.');
 
 
-key.setViewKey(['C-c', 'C-a'], function(ev, arg) {
-    ext.exec("increase-digit-in-url", arg);
-}, "Increase last digit in URL.");
-
-key.setViewKey(['C-c', 'C-d'], function(ev, arg) {
-    ext.exec("decrease-digit-in-url", arg);
-}, "Decrease last digit in URL.");
-
 key.setViewKey('M-=', function(ev, arg) {
     ext.exec("count-region", arg, ev);
 }, "Count selected or all chars in current editbox.");
@@ -1202,3 +1256,25 @@ key.setGlobalKey(['<f5>', 't'], function (ev, arg) {
 key.setGlobalKey(['<f5>', 'T'], function (ev, arg) {
     gPano.pane.toggleOpen();
 }, 'select tab (pano extension)');
+    
+    
+key.setGlobalKey(['<f5>', 'b'], function(ev, arg) {
+    ext.exec('bmany-list-all-bookmarks', arg, ev);
+}, 'bmany - List all bookmarks.');
+
+key.setGlobalKey(['<f5>', 'B'], function(ev, arg) {
+    ext.exec('bmany-list-toolbar-bookmarks', arg, ev);
+}, 'bmany - List toolbar bookmarks.');
+
+key.setGlobalKey(['C-<f11>', 'm'], function(ev, arg) {
+    SplitBrowser._browsers.forEach(function(aBrowser) {
+        if (!aBrowser.contentCollapsed)
+            aBrowser.collapse();
+        else
+            aBrowser.expand(true);
+    });
+}, "Expand/collapse subbrowsers (SplitBrowser addon)");
+
+key.setGlobalKey(['<f9>', 'w'], function(ev, arg) {
+    ext.exec('wiktionary-lookup-selection', arg, ev);
+}, "Translation selection with Wiktionary & Google Translate.");
