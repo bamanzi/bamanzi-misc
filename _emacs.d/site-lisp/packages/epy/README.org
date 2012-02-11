@@ -1,16 +1,112 @@
 Based on Gabriele Lanaro's Emacs-for-Python
 https://github.com/gabrielelanaro/emacs-for-python
 
+* Difference with emacs-for-python
 with the following changes
- * disable ropemacs by default
- * autoload ropemacs when .ropeproject dir found
- * 
- * add an easy-to-use menu, you can invoke most stuff here
+  * disable ropemacs by default
+  * autoload ropemacs when .ropeproject dir found 
+  * add an easy-to-use menu, you can invoke most stuff here
    - toggle auto-complete sources
    - invoke syntax checking with pylint/pep8/pyflakes/pychecker 
    - turn on/off flymaker, and switch flymaker between pylint/pep8/pyflakes/pychecker
 
- * add some third-party tools: pylookup gpycomplete
+  * add some third-party tools: pylookup gpycomplete
+  * removed Gabriele Lanaro's personal preferences (epy-bindings, epy-editing) 
 
+* References
+** General
+   - [[http://www.emacswiki.org/emacs/PythonProgrammingInEmacs][EmacsWiki: Python Programming In Emacs]]
+   - [[http://pedrokroger.net/2010/07/configuring-emacs-as-a-python-ide-2/][Configuring Emacs as a Python IDE | Pedro Kroger]]
+     - python-mode
+     - ipython 
+     - anything-ipython for completion
+     - lambda-mode
+     - pylookup
+     - autopair
+     - pep8 & pylint
+     - ipdb
+     - yasnippet
+   - [[http://coder.cl/2010/09/emacs-as-python-ide/][emacs as python ide — coder . cl]]
+     - python-mode
+     - pycomplete
+     - pychecker
+   - [[http://blog.cou929.nu/setting-up-python-environment-on-emacs][Setting Up Python Environment on Emacs - Bad Timing]]
+   - [[http://hide1713.wordpress.com/2009/01/30/setup-perfect-python-environment-in-emacs/][Setup Perfect Python Environment In Emacs « The website of Lei Chen]]
+   - [[http://www.saltycrane.com/blog/2010/05/my-emacs-python-environment/][My Emacs Python environment « SaltyCrane Blog]]
+     - python-mode
+     - ropemacs
+     - auto-complete
+     - yasnippet
+     - flymake with pyflakes & pep8
+     - django (nxhtml's djando-html-mumamo-mode)
+   - [[http://www.enigmacurry.com/2008/05/09/emacs-as-a-powerful-python-ide/][Emacs as a powerful Python IDE]]
+   - [[http://www.cnblogs.com/coderzh/archive/2009/12/26/emacspythonide.html][Emacs中打造强大的Python IDE - CoderZh - 博客园]]
+     - yasnippet
+     - autocomplete
+     - rope & ropemacs
+     - pycomplete
+     - pdb
+     - debugging GAE application
+     - 
+     
+** important resources
+*** major modes
+   - [[https://launchpad.net/python-mode][python-mode in Launchpad]] (python-mode.el)
+   - [[http://www.loveshack.ukfsn.org/emacs/NEWS.python][http://www.loveshack.ukfsn.org/emacs/NEWS.python]]
+   - [[https://github.com/fgallina/python.el][fgallina/python.el - GitHub (a new python mode for emacs)]]
 
- * removed Gabriele Lanaro's personal preferences (epy-bindings, epy-editing) 
+*** suite
+   - [[https://github.com/gabrielelanaro/emacs-for-python][gabrielelanaro/emacs-for-python - GitHub]]
+   - [[https://github.com/pdee/pdee][Python Development Emacs Environment - PDEE]]
+   - [[https://github.com/haplo/empetado][haplo/empetado - GitHub]]  (EMacs Python Enhanced Tight Ass DOmination)
+   - 
+** checkers
+   - [[https://github.com/akaihola/flymake-python][akaihola/flymake-python - GitHub]] 
+   - [ ] [[http://people.cs.uct.ac.za/~ksmith/2011/better-python-flymake-integration-in-emacs.html][Better Python Flymake Integration in Emacs — Keegan Carruthers-Smith]]
+   - [[http://plope.com/Members/chrism/flymake-mode][plope - Flymake Mode for Emacs / Python]]
+   - [[http://amix.dk/blog/post/19361][amix.dk: Static checking Python code]]
+
+** code completion
+   - [[http://www.cnblogs.com/bamanzi/archive/2011/05/06/emacs-code-completion-for-python-methods.html][emacs: Python代码补全的各种方法介绍以及对比 - 巴蛮子 - 博客园]]
+     (Emacs居然有五种Python代码的补全方案: py-complete, pycomplete,
+     ropemacs+auto-complete, anything+ipython, pysmell。本帖将逐一介绍
+     并进行比较)
+   - [[http://wiki.python.org/moin/EmacsPythonCompletion][EmacsPythonCompletion - PythonInfo Wiki]] (py-complete)
+   - [[http://mmmyddd.freeshell.net/blog.cgi/Computer/Python/integratepycompleteintoac][Auto Complete by Pycomplete]]
+   - [[http://www.rwdev.eu/articles/emacspyeng][Emacs Python completion]] (pymacs)
+   - [[http://timchen119.blogspot.com/2007/02/bash-like-tab-completion-in-emacs.html][Bash-like Tab Completion in Emacs python-mode]]
+   - [[http://feedproxy.google.com/~r/GotEmacs/~3/LA2RP_y1IAk/getting-python-mode-completion-to-work.html][Got Emacs?: Getting python-mode completion to work in Emacs]]
+   - [[http://chrispoole.com/project/ac-python/][Simple Python Completion Source for Auto-Complete | chrispoole.com]]
+   - [[http://groups.google.com/group/comp.lang.python/msg/048168c675ff0c68?pli=1][writing Python in Emacs - comp.lang.python | Google 网上论坛]] (pycomplete)
+   - [[https://github.com/fgallina/gpycomplete][fgallina/gpycomplete - GitHub]]
+
+** documentation
+   - [[http://stackoverflow.com/questions/1054903/how-do-you-get-python-documentation-in-texinfo-info-format][emacs - How do you get Python documentation in Texinfo Info format? - Stack Overflow]]
+   - [[http://furius.ca/haddoc/][haddoc: Browse HTML Python Documentation From Emacs]]
+   - [[http://taesoo.org/Opensource/Pylookup][Pylookup - Taesoo Kim]]
+   - [[http://regding.is-programmer.com/posts/31668.html][Linux查看本地Python文档 - Regding - 7hink different]]
+   - [ ] [[https://bitbucket.org/jonwaltman/pydoc-info/][jonwaltman / pydoc-info / overview — Bitbucket]]
+   - 
+** project
+   - [[http://pygabriel.blogspot.com/2011/04/using-eproject-to-manage-your-python.html][using-eproject-to-manage-your-python]]
+   - [[http://pygabriel.blogspot.com/2011/04/using-eproject-to-manage-your-python.html][Riding Python: Using Eproject to Manage your Python Projects in Emacs]]
+   - [[http://www.reddit.com/r/emacs/comments/e28ai/simple_tip_for_browsing_python_using_emacs/][Simple tip for browsing python using emacs : emacs]] (pycscope)
+
+** Run & Debug
+   - [[http://twistedmatrix.com/documents/current/core/howto/debug-with-emacs.html][Twisted Documentation: Debugging Python(Twisted) with Emacs]]
+   - [[http://stackoverflow.com/questions/283294/django-debugging-with-emacs][python - Django debugging with Emacs - Stack Overflow]]
+   - [[http://jesselegg.com/archives/2010/03/14/emacs-python-programmers-2-virtualenv-ipython-daemon-mode/][Emacs for Python Programmers #2: Virtualenv, IPython & Daemon Mode | JesseLegg.com]]
+   - [[http://plone.org/documentation/kb/using-pdb][Debugging with pdb (the python debugger) — Plone CMS: Open Source Content Management]]
+
+*** ipython
+    - [[https://bugs.launchpad.net/ipython/%2Bbug/290228][Bug #290228 in IPython: “workaround for IPython Emacs WinXP”]]
+    - [[http://www.eggheadcafe.com/software/aspnet/36236788/pyflakes-and-ipython-does-not-work-for-emacs-on-windows.aspx][Pyflakes and IPython does not work for Emacs on Windows? in Python]]
+
+** misc
+   - [[http://www.cnblogs.com/rockcode/archive/2011/08/20/2147404.html][Pymacs : 用 Python 来扩展 Elisp/Emacs - Rock & Code - 博客园]]
+   - [[http://page.sourceforge.net/python-mode-extensions.html][Python-mode Extensions]]
+   - [[https://metalinguist.wordpress.com/2010/02/14/emacs-develock-customization-for-python/][emacs develock customization for Python]]
+   - [[http://code.google.com/p/pysmell/][pysmell - Autocomplete helper for Python - Google Project Hosting]]
+   - [[http://www.johndcook.com/blog/2012/02/09/python-org-mode/][Running Python and R inside Emacs — The Endeavour]] (org-mode)
+   - [[http://www.yesokay.tk/pymacs.html][Pymacs]] 
+
