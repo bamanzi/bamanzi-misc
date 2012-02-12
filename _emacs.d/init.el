@@ -1,6 +1,4 @@
 ;;{{{ packages, load-path and related
-(add-to-list 'load-path "~/.emacs.d/lisp/")
-;;(add-to-list 'load-path "~/.emacs.d/mylisp/")
 
 ;; (loop for f in (directory-files "~/.emacs.d/init.d" nil ".*.el")
 ;;       by (message "loading %s" f))
@@ -19,6 +17,9 @@
 (when (file-exists-p "~/.emacs.d/site-lisp/site-start.el")
   (load "~/.emacs.d/site-lisp/site-start.el"))
 
+
+(add-to-list 'load-path "~/.emacs.d/lisp/")
+;;(add-to-list 'load-path "~/.emacs.d/mylisp/")
 
 ;; leave customization & os/distro/installation-specific settings to another file
 ;; (customizations, paths, theme)
