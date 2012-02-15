@@ -33,6 +33,7 @@
                   (concat eepy-install-dir "extensions/auto-complete/dict/"))
      ))
 
+(require 'auto-complete)
 ;;*** Emacs's built-in completion python.el
 ;;advantages:
 ;;      + no other libraries needed
@@ -51,11 +52,19 @@
       nil) ;;otherwise, return nil
     ))
 
-(ac-define-source python
+(ac-define-source python-builtin
   '( (candidates . (python-symbol-completions-maybe ac-prefix))
      (symbol . "py")
      (prefix . "[ \t\n['\",()]\\([^\t\n['\",()]+\\)\\=") ))
 
+(defun ac-enable-python-builtin-source (&optional on)
+  (interactive)
+  (let ((turn-on (or on
+                     (not (memq ac-source-python-builtin ac-sources)))))
+    (if turn-on
+        (add-to-list 'ac-sources 'ac-source-python-builtin)
+      (setq ac-sources (remq ac-source-python-builtin ac-sources)))))
+      
 ;;*** pycompletemine from PDEE (https://github.com/pdee/pdee/ )
 ;; You need `pycompletemine.{el,py}' from PDEE and pymacs
 ;;advantages:
@@ -65,13 +74,20 @@
 ;;disadvantages:
 ;;   - `pymacs' needed
 
-;;(ac-define-source pycomplete
-(setq ac-source-pycompletemine
+(ac-define-source pycomplete
   '((depends pycompletemine)  ;;FIXME: ok?
     (prefix .  "[ \t\n['\",()]\\([^\t\n['\",()]+\\)\\=")
-    (candidates . (pycomplete-get-all-completions ac-prefix))
+    (candidates . (pycomplete-get-all-completions-for-ac ac-prefix))
     (symbol . "pyc")
     (document . py-complete-help)))
+
+(defun ac-enable-pycompletemine (&optional on)
+  (interactive)
+  (let ((turn-on (or on
+                     (not (memq ac-source-pycompletemine ac-sources)))))
+    (if turn-on
+        (add-to-list 'ac-sources 'ac-source-pycompletemine)
+      (setq ac-sources (remq ac-source-pycompletemine ac-sources)))))
 
 
 ;;** ropemacs: (code completion (and other features) for project
@@ -91,12 +107,13 @@
       )))
 
 (defun epy-get-all-snips ()
-  (require 'yasnippet) ;; FIXME: find a way to conditionally load it
-  (let (candidates)
-    (maphash
-     (lambda (kk vv) (push (epy-snips-from-table vv) candidates)) yas/tables)
-    (apply 'append candidates))
-  )
+  (require 'yasnippet nil t) ;; FIXME: find a way to conditionally load it
+  (if (featurep 'yasnippet)
+      (let (candidates)
+        (maphash
+         (lambda (kk vv) (push (epy-snips-from-table vv) candidates)) yas/tables)
+        (apply 'append candidates))
+    ))
 
 (eval-after-load "auto-complete"
   `(setq ac-ignores (concatenate 'list ac-ignores (epy-get-all-snips)))
