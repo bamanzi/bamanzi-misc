@@ -1,6 +1,10 @@
 #+TITLE: 巴蛮子的闪存
 #+OPTIONS: ^:{} 
-#+INFOJS_OPT: view:info
+#+INFOJS_OPT: view:toc
+
+#+BEGIN_HTML
+<!--
+#+END_HTML
 
 #+begin_src emacs-lisp
 #  ;; &gt; -> > ## &lt; -> < ## &amp; -> & ## &#39; -> ' 
@@ -13,7 +17,10 @@
       (replace-string "&quot;" "\"" nil start (point-max))
       ))
 #+end_src
-#
+
+#+BEGIN_HTML
+--!>
+#+END_HTML
 
 
 * 2010-11
@@ -3064,3 +3071,235 @@
    add-apt-repository ppa:rye/ubuntuone-extras && sudo apt-get install ubuntuone-indicator
    http://www.wmlcloud.com/linux/ubuntu-one-indicator-manage-ubuntu-one-synchronization-from-system-tray/
    [2012-02-04 20:07:47]
+7. [linux] 前面那个marlin仓库不支持natty，只支持natty之后的版本(11.10及以后) [2012-02-05 14:11:16]
+8. [工具软件] 这个QTranslator小工具不错，可以将选中文字通过Google Translator, Yahoo BabelFish等服务进
+   行翻译、朗读 [2012-02-07 09:41:04]
+9. 刚用Firefox自带的开发工具解决了一个小问题: portablefreeware.com 通过meta refresh前转到
+   qtranslator网站，但 appspot.com 被墙，通过这个工具看到了目的地址 [2012-02-07 10:53:10]
+10. 简单的软件部署，不妨直接调用ssh，而fabric这个python库/工具应该有些帮助 http://www.fabfile.org/
+    [2012-02-07 11:39:17]
+11. Just found this: #vim emulation for Total Commander !  http://sf.net/p/viatc open souce and
+    written in #autohotkey [2012-02-07 11:46:42]
+12. 这份Git简易指南 http://rogerdudler.github.com/git-guide/index.zh.html 中将缓存区表述为index
+    tree，总让人感到迷惑，pro git里说这叫stagine area，还是后面这个说法比较直观 [2012-02-07
+    15:39:18]
+13. 『运行了 git add 之后又作了修订的文件，需要重新运行 git add 把最新版本重新暂存起来』 [2012-02-07
+    16:30:47]
+14. [emacs] TNND, semantic-tag-folding 在Emacs 24里面的semantic 下又不能用了，因为后者修改了
+    semantic-add-minor-mode的接口 [2012-02-07 17:03:03]
+15. [emacs] 不知不觉间，cedet-1.0.1已经发布了，从1.0到1.0.1用了近一年半——当然，更别说之前的beta版，从
+    beta1到最后1.0发布，用了差不多7年 [2012-02-07 17:17:31]
+16. 看见cedet-1.0.1里面添加了对sxemacs的支持，以为这是个新fork，刚才翻到它的News页面才发现，它在04年
+    就有了 [2012-02-08 09:03:38]
+17. sxemacs的screenshots里面没一个是关于编辑代码的，都是irc, term, calender以及游戏什么的，只有那个
+    LiveJournal跟“编辑器”两字有点关系 http://www.sxemacs.org/screenshots.html [2012-02-08
+    09:10:27]
+18. python脚本转可执行程序的工具有: py2exe; py2app; PyInstaller; cx_Freeze; bbFreeze; 试用了前面4个，
+    目前觉得cxfreeze比较适合简单脚本，因为生成的是单个文件（除了需要python27.dll之外)，而py2exe和
+    py2app会拷贝一堆文件（包括一个library.zip），还需要编写setup.py [2012-02-08 18:08:14]
+19. [todo] keysnail: <f5> b/B, goo.glx, C-x m [2012-02-08 18:11:00]
+20. [emacs] eshell里面调用命令行编译、搜索的话，可以打开compilation-shell-minor-mode，这样可以很容易
+    跳转到相应文件(以及对应行). compilation-minor-mode也行——我看了elisp代码，这两者除了hook不一样，没
+    有什么区别（而且两者的hook实际上都没定义(不存在)) [2012-02-09 13:55:20]
+21. [emacs] eshell里面如果想调用外部grep程序（缺省是转给elisp函数grep或者eshell/grep）的话，得在前面
+    加星号 (见eshell-explicit-command-char变量设置) [2012-02-09 13:57:53]
+22. [far] 仔细看了一下FAR的帮助（不能查找文字实在是不爽，只得拷出来查找），原来可以传入另一面板的路径、
+    文件，不过跟totalcmd不同，不是新的特殊符号，而是两个修饰符!#和!^，分别表示这之后的就采用另一面板
+    (或当前面板）的值，比如!#!\!.!表示另一面板下的当前文件，!#!\!^!.!表示另一面板下跟当前面板选中项同
+    名的文件 [2012-02-10 12:05:31]
+23. [far] 这个Visual Compare可以用来做目录、文件的比较
+    http://code.google.com/p/far-plugins/wiki/VisualCompare 想直接在面板中启动单个文件比较的话，可以
+    在User menu里面配一个vc: !.! !#!\!.!  注意!.!本身只包含文件名，不包含路径，得加!\ [2012-02-10
+    12:08:44]
+24. [far] Visual Compare还支持svn的比较: "vc:svn: ."将当前目录与svn base相比较，不过还不知
+    道怎么比较单个文件 [2012-02-10 12:11:12]
+25. [emacs] [orgmode] Can I use the editing features of org-mode in other modes?
+    http://orgmode.org/worg/org-faq.html#use-editing-features-in-other-modes orgtbl-mode,
+    orgstruct-mode, org-footnote-action & org-cycle [2012-02-10 15:12:00]
+26. [far] 读读帮助还是有用嘀，刚又学了两个快捷键: 1)Alt-Ins开始选中屏幕上的文字，移动光标到开始位置，
+    按Shift移动光标选择，回车拷贝；2)对于菜单和列表，按Ctrl-Alt-F进入过滤方式（可惜对文件列表不管
+    用:-( ） [2012-02-13 09:41:28]
+27. [far] 用了二分定位法，发现FAR不能用右键选择文件的问题是MacroLib插件引起的，在改插件的Options里面
+    取消process mouse就可以了 [2012-02-13 11:12:21]
+28. [far] 一直觉得FAR欠缺一个动态过滤功能，它有一个Filter设置(Commands->File panel filter C-I)，但
+    每次进去设置太繁琐了，没法用来即时找文件。今天发现MacroLib里面包含了一个FastFilter宏，装上之后按
+    住右Alt再按字母键就是即时(增量式)过滤，按两下右Alt就清除，右Alt-/可以直接输入，其实实现上是调用了
+    Ctrl-I那个对话框的功能 http://code.google.com/p/far-macro-library/wiki/Shell_FastFilter
+    [2012-02-13 15:33:34]
+29. 突然在别人的代码库里面发现自己当年写的一个小脚本devhelp2chm
+    http://htmlhelp.googlecode.com/svn/trunk/misc/devhelp2chm.sh [2012-02-14 09:18:01]
+30. [emacs][python] loveshack这个版本的python.el包含了python-compilation-regexp-alist 设置，可用在
+    compile/shell中, 且支持路径中带空格 http://www.loveshack.ukfsn.org/emacs/python.el [2012-02-14
+    12:06:14]
+31. [emacs][python] compile-mode error navigation through the python stack trace of a unittest
+    failure http://is.gd/50CMDs [2012-02-14 15:56:01]
+32. [emacs][python] Emacs: Compilation mode and error navigation - IDEIntegration - SCons Wiki
+    http://www.scons.org/wiki/IDEIntegration#Compilation_mode_and_error_navigation [2012-02-14
+    17:48:13]
+33. [emacs] TNND, 新版anything-config.el把缺省触发键从<f5> a改成C-x c了，刚才我说怎么都不能激活
+    anything了 [2012-02-15 10:56:20]
+34. [firefox][addons] panolink 跟pano不兼容啊，都使用chrome://pano/ 目录空间，打架了，手工改改吧
+    [2012-02-17 08:38:33]
+35. 深圳FM 105.7 每天中午13:00 锵锵三人行 [2012-02-17 13:59:15]
+36. [firefox][hacking] TGM不支持AppTabs, 又切回pano了, 但有点想念TGM的hibernate功能, 在AMO网站上找了
+    一圈没找到替代品（snap ponorama本来还凑合，但我不想存入书签（不想被同步）），最后修改了一下
+    tabundle（从全部存改为只存当前group的内容），但没有全部恢复的办法——或者修改一下TMT? [2012-02-17
+    13:59:25]
+37. 这个spacefm是从pcmanfm分支出来的一个文件管理器，最多4个面板，多标签页，用来移动、拷贝文件还挺方
+    便，最大的问题是界面的拼凑感比较强，功能有点乱 http://spacefm.sourceforge.net/ [2012-02-18
+    11:31:14]
+38. 一直认为gedit的定位是个普通文本编辑器，代码编辑、程序功能比较弱，结果昨天在youtube上看到gedit as
+    python ide的视频，然后又在google code上搜了一下，发现这家伙的插件比geany多多了
+    http://code.google.com/hosting/search?q=label:gedit [2012-02-20 18:13:25]
+39. [firefox][addons] 用proxy selector替代了toggle proxy，因为前者支持多个proxy之间切换，而后者只支持
+    两个 [2012-02-21 09:35:19]
+40. 13911463436 朱先生 苏州街 西屋国际C座1102 [2012-02-21 21:11:48]
+41. What IDE to use for Python? - Stack Overflow -
+    http://stackoverflow.com/questions/81584/what-ide-to-use-for-python 从功能支持的全面程度来说，也
+    就Emacs, PyDev, NetBeans, Komodo, Vim这几个选择，不考虑跨平台的话还有ScriptDev和PTVS [2012-02-21
+    22:25:55]
+42. [firefox] 『GreaseMonkey 脚本：Markdown textarea，此脚本会在文本域的左下角新增一个 Markdown 按
+    钮，输入各种包含 Markdown 的文字之后，点击它就可以把代码转化为为 HTML 』
+    http://userscripts.org/scripts/show/91369 [2012-02-23 09:03:46]
+43. ReText is a simple but powerful text editor for Markdown and reStructuredText. (written in
+    python + qt) http://sourceforge.net/p/retext/home/ReText/ [2012-02-23 09:16:53]
+44. [g_f_w] google plus还可以直接上了 [2012-02-24 08:45:04]
+45. sugarsync: Sync doesn't work in folders below an NTFS junction http://is.gd/dULptz
+    [2012-02-25 22:58:48]
+46. A simple plugin system for Python applications http://yapsy.sourceforge.net/ [2012-02-25
+    23:57:40]
+47. Linux下创建wifi热点太简单啦，XP下我弄了一小时没搞定，LinuxMint下一分钟就搞定了: Create a wifi
+    hotspot using my desktop - Ask Ubuntu http://is.gd/AJkKnD [2012-02-26 21:16:17]
+48. 屌丝：一个字头的诞生_评论频道_凤凰网 - http://news.ifeng.com/opinion/special/diaosi/ [2012-02-27
+    23:44:58]
+49. 今天才知道“碉堡了”是“屌爆了”的意思 [2012-02-28 10:09:55]
+50. python v.s. java http://almaer.com/blog/uploads/dynamicstatic.png [2012-02-28 22:36:31]
+51. cygwin setup.exe command line arguments http://cygwin.com/faq/faq.setup.html#faq.setup.cli
+    [2012-02-29 20:32:08]
+
+* 2012-03
+1. [notepad++] 看了一下nppexec的源代码，实在没明白filter/highlight为啥不工作，找到它在sf.net的论坛，
+   搜到一个例子，一对比，才发现它这个匹配模式里面*是shell glob那种，我一直按照正则表达式写成.*了——抓
+   狂！ http://is.gd/AVE1Tz [2012-03-02 09:47:09]
+2. [notepad++] 续：终于grep/ack, epylint这些都可以在它的console窗口里面很爽地用起来了 [2012-03-02
+   09:48:39]
+3. [python] 原来缺省的interactive shell也支持tab键补全，不过得利用readline的能力: >>>
+   import rlcompleter, readline >>> readline.parse_and_bind('tab: complete')
+   [2012-03-02 11:12:29]
+4. 哈哈，firefox大战chrome
+   http://www.howtogeek.com/107154/firefox-versus-chrome-fight-humorous-image/ [2012-03-02
+   12:04:29]
+5. 史上最全最强大最WS的爆笑漫画 每日连载20幅
+   http://bbs.c114.net/viewthread.php?tid=541115&extra=page%3D2&page=1 [2012-03-02
+   13:09:19]
+6. ipython里不仅仅可以通过!ls来调用外部命令ls，还可以这样files = !ls，于是外部命令ls的输出就转换到了
+   files这个变量里面了，它的类型是IPython.utils.text.SList [2012-03-02 17:29:46]
+7. ipython也是一个unix shell: In [1]: user = 'jmjones' In [2]: process = 'bash' In [3]: !ps aux |
+   grep $user | grep $process [2012-03-02 17:35:00]
+8. ipython与外部命令的深度结合: for i in range(10): \n !date > ${i}.txt [2012-03-02 17:37:39]
+9. [todo][android] Google电子市场 Vending.apk http://www.mediafire.com/?rest29bka7mm0ck [2012-03-05
+   13:56:58]
+10. 出差期间手机收到了更新通知，说是系统升级到了Android 2.3.5, HTC Sense 3.0，昨天回来后做了升级，结
+    果发现手机启动后剩余内存只有60M了，开几个程序后切回桌面就发现桌面又要被重新载入，今天换用了Go桌
+    面，可用内存多了80M左右 [2012-03-05 15:36:15]
+11. [android] 续：这次升级倒也有个好处，好像Google Service Framework被加进来了，这样我可以添加Google
+    账号了，目前Google Currents已经可以使用，但谷歌电子市场还没找到apk包装上 [2012-03-05 15:38:04]
+12. 昨天同学来深看铺位，在东门逛了一天，晚上见我第一句就是“深圳怎么美女这么少啊” [2012-03-07
+    08:51:48]
+13. [emacs] 无意中发现一个有用的小东西: M-x cua-toggle-global-mark (C-S-SPC) 设置之后不仅本buffer内拷
+    贝/输入文字，都会跑到这个位置去，其它buffer内拷贝/输入文字，也会 (但不是所有按键都会被该buffer处
+    理) [2012-03-07 09:40:40]
+14. [emacs][org-mode] in-buffer settings: http://orgmode.org/manual/In_002dbuffer-settings.html
+    export options: http://orgmode.org/manual/Export-options.html [2012-03-07 10:45:41]
+15. [工具软件] minipad2装了词典文件到dict目录后始终在设置里面不出现，也就没法使用，最后手工修改了
+    minipad2.ini 设置SelDictList=mediumdict.dic,Oxford.dic AllDictList=mediumdict.dic,Oxford.dic 再重
+    启程序就可以用了 [2012-03-07 15:19:51]
+16. [工具软件] 将stardict字典转为minipad2可用的: 『字典档快速制作实例』
+    http://www.nebulasoft.cn/bbs/index.php?mods=topicdisplay&forumid=6&postid=40 [2012-03-07
+    15:52:04]
+17. [工具软件][firefox] 这个firemin小工具可以帮助firefox降低内存泄露，支持firefox, palemoon,
+    seamonkey, thunderbird，限windows http://www.rizonesoft.com/2011/firemin/ [2012-03-07 17:44:42]
+18. [emacs] cua global mark 的文档 http://www.cua.dk/cua.html [2012-03-07 17:56:57]
+19. [工具软件] 续: 以前别人推荐了一款VSuite Ramdisk，但其免费版本不支持休眠，但我休眠用得多啊，一般都
+    是一两周才重启一次。其它ramdisk大都不支持3G以上内存 [2012-03-09 08:51:32]
+20. [工具软件] 总算碰到一个支持休眠的免费ramdisk软件，可以将3G以上的内存用起来（我的电脑还在用XP）
+    『Buffalo Ramdisk – 瞬间提升电脑速度！用内存虚拟成硬盘，体验真正飞一般的高速高性能！！ 』
+    http://www.iplaysoft.com/buffalo-ramdisk.html [2012-03-09 08:52:05]
+21. [todo] Picasa 3.9 图片浏览器提取版 http://www.iplaysoft.com/buffalo-ramdisk.html [2012-03-09
+    08:53:05]
+22. [todo][fileman] xplorer&#178; 2.1.0.0 32-64-bit Multilingual - PortableAppZ
+    http://feedproxy.google.com/~r/blogspot/Tmnu/~3/Tg1G-mnbqwg/xplorer-2100-32-64-bit-multilingual.html
+    [2012-03-09 08:54:23]
+23. - "在看 stl 源码分析，不理解为什么需要有 trats。有没有朋友能不能详解解释一下， 或者提供一个
+    需要使用它的场景？谢谢" - "general一点的说，Traits实现了类型系统递归推导的一个出口。
+    " #OMG http://groups.google.com/group/pongba/browse_thread/thread/b46688ca181349dd
+    [2012-03-12 08:52:02]
+24. matplotlib诞生之初就是为了能在python里面完成matlib那样的制图的，这下我不用返回十年前去重拾matlib
+    了 [2012-03-12 18:06:29]
+25. matplotlib一个简单的例子: pylab_examples example code: simple_plot.py
+    http://matplotlib.sourceforge.net/examples/pylab_examples/simple_plot.html [2012-03-12
+    18:06:46]
+26. [漫画] #眼中体 一个软件编程人员在其它人眼中是什么样的
+    http://wkee.net/qee/wordpress/wp-content/uploads/2012/03/computing-programming-560x380.jpg
+    [2012-03-15 09:22:02]
+27. [漫画] Browser Wars – The Transportation Edition [Classic Funny Image]
+    http://www.howtogeek.com/108551/browser-wars-the-transportation-edition-classic-funny-image/
+    [2012-03-15 09:22:33]
+28. [linux] 打开一个文件以后，系统就以inode号码来识别这个文件，不再考虑文件名...(这一点)使得软件更新
+    变得简单，可以在不关闭软件的情况下进行更新，不需要重启。因为系统通过inode号码，识别运行中的文件，
+    不通过文件名。更新的时候，新版文件以同样的文件名，生成一个新的inode，不会影响到运行中的文件。等到
+    下一次运行这个软件的时候，文件名就自动指向新版文件，旧版文件的inode则被回收。 《理解inode》 阮一
+    峰的网络日志 http://www.ruanyifeng.com/blog/2011/12/inode.html [2012-03-15 15:47:15]
+29. [g_f_w][adnroid] Verizon Opera Mini是款美国Verizon电信定制的Opera Mini浏览器，小巧迷你，使用它可
+    以不用通过代理也能浏览facebook、twitter、youtube等被封网站。v6.5.2
+    http://www.ctdisk.com/file/5291471 [2012-03-16 11:24:38]
+30. [chrome] 找个一个跟firefox里colt扩展在功能上相近的扩展: create link
+    https://chrome.google.com/webstore/detail/gcmghdmnkfdbncmnmlkkglmnnhagajbm [2012-03-19
+    08:57:26]
+31. [emacs] cedet发了1.1的beta2版本了 http://sourceforge.net/projects/cedet/files/cedet/ [2012-03-20
+    17:14:28]
+32. [emacs] 测了一下emacs + cedet + ecb的版本配合问题，结论是如果用ecb-snap + 最新的cedet-1.1b2的话,
+    emacs 23/24都没问题；而ecb跟内置的cedet就存在问题 [2012-03-21 09:20:14]
+33. [emacs] ecb-snap + emacs 24.0.92.1的内置cedet: ecb的界面能出来，但method窗口不能列出函数/符号列
+    表；用Development菜单里面的强制reparse的话，会报告“Attempt to modify read-only object”
+    [2012-03-21 09:23:10]
+34. [emacs] 而ecb-2.40完全不支持内置的cedet，首先检测cedet版本这一处就过不去 [2012-03-21 09:24:17]
+35. [emacs] 对了，虽说"ecb-snap + 最新的cedet-1.1b2的话, emacs 23/24都没问题"，但还是需要修
+    改一下ecb-cedet-wrapper.el里面的ecb-cedet-required-version-max参数，否则ecb会认为不兼容而拒绝启动
+    [2012-03-21 09:26:00]
+36. [emacs][tips] (add-hook 'before-save-hook 'time-stamp) Add "Time-stamp:
+    <>" anywhere in the first few lines of the buffer, and when you save it, the <>
+    will automatically be replaced by the current timestamp. [2012-03-21 13:25:05]
+37. 深圳年度个人所得税自行申报将于3月31日截止。据悉，*您已被列入税务机关掌握的应报人员名单中*，请抓紧
+    时间完成申报。——中间这句的用词怎么感觉那么别扭 [2012-03-22 10:12:15]
+38. [python] lxml应该是python里功能最强的xml parser，支持ElemenTree风格的API，支持xpath，支持不严谨的
+    html，还支持css selector哦 http://lxml.de/ [2012-03-22 10:43:12]
+39. 原来要让google code的svn浏览页面正确显示html，得用svn propset 设置mime-type: How can I make SVN
+    serve HTML and images with the correct Content-Type?  http://goo.gl/FRVLF [2012-03-22 11:29:08]
+40. 建议您优先选取网络申报方式，网址http://dzswj.szds.gov.cn/dzswj/index.jsp?12w c)申报完成后发现信息
+    填写有误的，可以登录再次申报，申报记录会更新为最后一次填写的信息.  d)如提交申报时系统提示“利息、
+    股息、红利”一栏税额不应高于应纳税所得额的20%，则请将该栏“应纳税额”和“已扣缴税额”列金额同时调
+    减0.01元。e)网络申报出现问题败的，请将IE选项安全级别设为低、将税务局网址设为信任站点，或把申报表
+    发送回家用公司以外的网络申报，不同时间段多尝试几次。如果问题仍得不到解决，请改选邮寄申报方式或者
+    工作时间联系税务局咨询热线12366转2. [2012-03-22 18:18:11]
+41. 建议您优先选取网络申报方式，网址http://dzswj.szds.gov.cn/dzswj/index.jsp?12w [2012-03-22
+    18:18:51]
+42. 啊，"美国大杏仁”其实是桃仁，又欺骗中国消费者 http://songshuhui.net/archives/65474
+    [2012-03-23 14:50:24]
+43. [emacs][tips] eshell 提供了两个模拟设备/dev/clip和/dev/kill，可以将一些命令的输出放到剪贴板去（不
+    过反过来不行，eshell不支持input redirection） [2012-03-23 17:02:43]
+44. [emacs] 刚才说的/dev/clip这些，也可以扩展其它的“设备"，参见eshell-virtual-targets，每个
+    target其实都是elisp函数 [2012-03-23 17:28:09]
+45. 终于可以在Thunderbird里面连上Exchange来编辑、同步日历了 Exchange 2007/2010 Kalender en Taken
+    Provider http://is.gd/o4CUkB 它的前身Provider for Microsoft Exchange在我这里不好使，配完了看不到
+    日程项 [2012-03-23 17:47:29]
+46. pyscripter这个ide挺不错啊，麻雀虽小五脏俱全，有project支持、代码补全、调试、interactive
+    interpreter，还有单元测试向导，唯一的小缺点是不支持代码折叠，另外简体中文的翻译是基于繁体的，很多
+    术语比较别扭 http://code.google.com/p/pyscripter/ [2012-03-24 10:37:48]
+47. [orgmode][tips] How can I get a vertical bar "|" inside a table field?  abc\vert{}def
+    http://orgmode.org/worg/org-faq.html#table-fields-with-vertical-bar [2012-03-24 13:22:10]
+48. [orgmode][tips] Q: Can I use the editing features of org-mode in other modes?  A: orgtbl-mode,
+    orgstruct-mode & org-footnote-action
+    http://orgmode.org/worg/org-faq.html#use-editing-features-in-other-modes [2012-03-24 13:26:34]
+49. [orgmode][tips] org-table-comment.el allows you to create org-tables in languages that do not
+    have block comments.  https://github.com/emacsmirror/org-table-comment [2012-03-24 13:28:58]
