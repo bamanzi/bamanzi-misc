@@ -26,9 +26,9 @@
        ["  hide sublevels" hide-sublevels t]
        ["  show all" show-all t]
        )
-      ["Pretty lambda mode" pretty-lambda-mode
-       :style toggle :selected lambda-mode
-       :help "Pretty-print lambdas"]
+      ;; ["Pretty lambda mode" pretty-lambda-mode
+      ;;  :style toggle :selected lambda-mode
+      ;;  :help "Pretty-print lambdas"]
       ["Highlight indentation mode" highlight-indentation
        :style toggle :selected highlight-indent-active
        :help "Highlight indentation."]
@@ -46,6 +46,11 @@
       ("Auto-Complete"
        ["on/off" auto-complete-mode
         :style toggle :selected auto-complete-mode]
+       ["Emacs builtin completion" ac-enable-python-builtin-source
+        :style toggle :selected (memq ac-source-python-builtin ac-sources)]
+       ["pycompletemine source" ac-enable-pycompletemine-source
+        :active (boundp 'ac-source-pycompletemine) ;;and (boundp 'py-shell)
+        :style toggle :selected (memq ac-source-pycompletemine ac-sources)]
        ["ropemacs source" eepy-enable-ac-ropemacs-source
         :style toggle :selected (memq 'ac-source-nropemacs ac-sources)]
        ["yasnippets source" ac-python-mode-setup
@@ -53,14 +58,12 @@
        ["scite-api source" nil
         :style toggle :selected nil]
        )
-      ["pycomplete source" nil
-       :active (fboundp 'py-shell) :style toggle]
       "--"
       ("Syntax Check"
        ["Pyflakes" nil t]
        ["Pylint" eepy-pylint t]
        ["Pychecker" nil t]
-       ["PEP8" eepy-pep8 t]    
+       ["PEP8" eepy-pep8 t]
        )
       ("Flymake"
        ["on/off"          flymake-mode
@@ -77,7 +80,7 @@
        "--"
        ["next error"      flymake-goto-next-error :active flymake-mode]
        ["previous error"  flymake-goto-prev-error :active flymake-mode]
-       )    
+       )
       ("Debug"
        ["pdb" pdb t]
        ["ipdb" nil t]
@@ -92,19 +95,25 @@
       ["python.chm (windows)" eepy-python-chm-keyword
        :active (eq window-system 'w32)]
       "--"
-      ["eproject" eproject t]
-      ["refactoring: rename current symbol" iedit-mode
+      ("Project"
+       ["open rope project..." rope-open-project]
+       ["auto-open ropeproject if found" nil]
+       ["eproject" eproject t]
+      )
+      ("Misc"
+       ["refactoring: rename current symbol" iedit-mode
        :help "Use `iedit-mode' to replace all occurren of current symbol in whole buffer."]
-      ["refactoring: rename current symbol in function"  eepy-iedit-in-defun
+       ["refactoring: rename current symbol in function"  eepy-iedit-in-defun
        :style toggle :selected iedit-mode
        :help "Use `narrow-to-defun' and 'iedit-mode' to replace all "]
+       )
       )))
 
 (define-menu-for-eepy python-mode-map)
 
-(when (require 'python-mode nil t)
-  (define-menu-for-eepy py-mode-map)
-  (setq outline-regexp "[[:space:]]*\\(?:\\(?:class\\|def\\)\\)\\_>")
-  )
+(eval-after-load "python-mode"
+  `(progn
+     (define-menu-for-eepy py-mode-map)
+     ))
 
 (provide 'eepy-menu)

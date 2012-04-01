@@ -1,20 +1,34 @@
+#+title: EEPY - Enhanced Emacs for PYthon
+
 Based on Gabriele Lanaro's Emacs-for-Python
 https://github.com/gabrielelanaro/emacs-for-python
 
 * Difference with emacs-for-python
-with the following changes
-  * disable ropemacs by default
+eepy is based on [[https://github.com/gabrielelanaro/emacs-for-python][Gabriele Lanaro's Emacs-for-Python]], with the following improvments & changes
+** disable ropemacs by default
+  * for performance reason, disalbe ropemacs by default
   * autoload ropemacs when .ropeproject dir found 
-  * add an easy-to-use menu, you can invoke most stuff here
+** improve code completion 
+  * pdee pycompletemine 
+    + auto-complete
+    + python-shell
+  * a new auto-complete source for GNU Emacs's built-in python completion
+** documentation
+  * chm
+    + keyhh on windows
+    + [ ] ??? on windows (which one supports keyword argumenting?)
+  * pycompletemine's <M-f1>, <M-f3>
+  * `info-lookup-symbol' and python document in texinfo format
+  * [ ] pylookup
+** add an easy-to-use menu, you can invoke most stuff here
    - toggle auto-complete sources
-   - invoke syntax checking with pylint/pep8/pyflakes/pychecker 
    - turn on/off flymaker, and switch flymaker between pylint/pep8/pyflakes/pychecker
-
-  * add some third-party tools: pylookup gpycomplete
+   - invoke syntax checking with pylint/pep8/pyflakes/pychecker 
+** others
   * removed Gabriele Lanaro's personal preferences (epy-bindings, epy-editing) 
 
 * References
-** General
+** general
    - [[http://www.emacswiki.org/emacs/PythonProgrammingInEmacs][EmacsWiki: Python Programming In Emacs]]
    - [[http://pedrokroger.net/2010/07/configuring-emacs-as-a-python-ide-2/][Configuring Emacs as a Python IDE | Pedro Kroger]]
      - python-mode
@@ -82,21 +96,27 @@ with the following changes
 
 ** documentation
    - [[http://stackoverflow.com/questions/1054903/how-do-you-get-python-documentation-in-texinfo-info-format][emacs - How do you get Python documentation in Texinfo Info format? - Stack Overflow]]
+     - [[http://stackoverflow.com/questions/1054903/how-do-you-get-python-documentation-in-texinfo-info-format/1068731#1068731][Another "workaround" is to execute pydoc as suggested by Nikokrock directly in Emacs]]
    - [[http://furius.ca/haddoc/][haddoc: Browse HTML Python Documentation From Emacs]]
    - [[http://taesoo.org/Opensource/Pylookup][Pylookup - Taesoo Kim]]
    - [[http://regding.is-programmer.com/posts/31668.html][Linux查看本地Python文档 - Regding - 7hink different]]
    - [ ] [[https://bitbucket.org/jonwaltman/pydoc-info/][jonwaltman / pydoc-info / overview — Bitbucket]]
-   - 
+   - [ ] devhelp
+   - [ ] [[http://boa-constructor.cvs.sourceforge.net/viewvc/boa-constructor/boa/Docs/][python.htb from boa-constructor]] (needs wxpython's helpviewer. improvments?)
+   - [ ] pydoc command line
 ** project
    - [[http://pygabriel.blogspot.com/2011/04/using-eproject-to-manage-your-python.html][using-eproject-to-manage-your-python]]
    - [[http://pygabriel.blogspot.com/2011/04/using-eproject-to-manage-your-python.html][Riding Python: Using Eproject to Manage your Python Projects in Emacs]]
    - [[http://www.reddit.com/r/emacs/comments/e28ai/simple_tip_for_browsing_python_using_emacs/][Simple tip for browsing python using emacs : emacs]] (pycscope)
 
-** Run & Debug
+** run & debug
    - [[http://twistedmatrix.com/documents/current/core/howto/debug-with-emacs.html][Twisted Documentation: Debugging Python(Twisted) with Emacs]]
    - [[http://stackoverflow.com/questions/283294/django-debugging-with-emacs][python - Django debugging with Emacs - Stack Overflow]]
    - [[http://jesselegg.com/archives/2010/03/14/emacs-python-programmers-2-virtualenv-ipython-daemon-mode/][Emacs for Python Programmers #2: Virtualenv, IPython & Daemon Mode | JesseLegg.com]]
    - [[http://plone.org/documentation/kb/using-pdb][Debugging with pdb (the python debugger) — Plone CMS: Open Source Content Management]]
+
+   - [ ] [[http://www.scons.org/wiki/IDEIntegration#Compilation_mode_and_error_navigation][Compilation mode and error navigation]]
+   - [ ] [[http://python.6.n6.nabble.com/making-stack-traces-clickable-in-gud-el-pdb-output-td2012756.html#a2012768][Python - python-mode - making stack traces clickable in gud.el pdb output.]]
 
 *** ipython
     - [[https://bugs.launchpad.net/ipython/%2Bbug/290228][Bug #290228 in IPython: “workaround for IPython Emacs WinXP”]]
