@@ -23,6 +23,10 @@
        (add-to-list 'exec-path bin-path)
        (setenv "PATH" (concat bin-path path-separator (getenv "PATH"))))
 
+;; add `eepy/python-libs' to PYTHONPATH
+(let ( (pylibs-path (concat eepy-install-dir "python-libs")) )
+       (setenv "PYTHONPATH" (concat pylibs-path path-separator (getenv "PYTHONPATH"))))
+
 (defgroup eepy nil
   "emacs-for-python package"
   :group  'python
