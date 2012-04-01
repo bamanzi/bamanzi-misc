@@ -13,6 +13,22 @@ eepy is based on [[https://github.com/gabrielelanaro/emacs-for-python][Gabriele 
     + auto-complete
     + python-shell
   * a new auto-complete source for GNU Emacs's built-in python completion
+** improve flymake
+***  eepy uses this fork version of flymake.el: https://github.com/illusori/emacs-flymake
+    * Support for queuing up syntax checks once a certain number are in-progress.
+    * Support for placing temporary files in the system temporary directory.
+    * Spawns only one buffer-modification timer check rather than one per buffer.
+    * Show multiple errors in tooltips.
+    * Improved support for remote files over Tramp.
+    * Improved error message classification. (err/warn/info, customizable regexp)
+    * Support for new languages: Javascript and CSS.
+    * Minor other bug fixes.
+*** eepy's changes
+    * use =flymake-cursor.el= to displays flymake error msg in minibuffer.
+    * you can switch flymaker within between epylint/pep8/pyflakes/pychecker when editing.
+      (not only before eepy start-up)
+    * you can invoke flymaker manually with =eepy-flymake-with=
+    
 ** documentation
   * chm
     + keyhh on windows
@@ -26,6 +42,8 @@ eepy is based on [[https://github.com/gabrielelanaro/emacs-for-python][Gabriele 
    - invoke syntax checking with pylint/pep8/pyflakes/pychecker 
 ** others
   * removed Gabriele Lanaro's personal preferences (epy-bindings, epy-editing) 
+
+* Usage
 
 * References
 ** general
