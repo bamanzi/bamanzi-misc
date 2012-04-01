@@ -1,6 +1,16 @@
 ;;* static checker and flymake checker
 
-;;** checker
+;;** develock
+(autoload 'develock-mode  "develock"
+  "additional font-lock keywords for the developers." t)
+
+(eval-after-load "develock"
+  `(progn
+     (require 'develock-py)
+     ))
+
+
+;;** static checker
 (defun eepy-pylint ()
   (interactive)
   (let ( (compile-command (concat "epylint"   ;; "pylint -rn -f parseable "
@@ -30,7 +40,7 @@
                               '("epylint" "pep8" "pyflakes" "pychecker")
                               nil
                               nil
-                              eepy-static-checker
+                              nil
                               nil
                               eepy-static-checker)))
   (setq eepy-set-checker checker)
@@ -39,7 +49,8 @@
 
 
 ;;** flymake
-(when (require 'flymake "flymake-patch" t)
+(when (or (require 'flymake (concat eepy-install-dir "elisp/flymake") t)
+          (require 'flymake))
   (if (boundp 'flymake-info-line-regex)
       (setq flymake-info-line-regex     ;;only available in `flymake-patch.el'
             (append flymake-info-line-regex '("unused$" "^redefinition" "used$"))))
@@ -50,62 +61,64 @@
 
 (defun flymake-create-copy-file ()
        "Create a copy local file"
-       (let* ((temp-file (flymake-init-create-temp-buffer-copy 
+       (let* ((temp-file (flymake-init-create-temp-buffer-copy
                           'flymake-create-temp-inplace)))
-         (file-relative-name 
-          temp-file 
+         (file-relative-name
+          temp-file
           (file-name-directory buffer-file-name))))
-  
-(defun flymake-command-setup (command &optional options)
-  "Setup the command to be used with flymake, the command
-will be called in this way: COMMAND OPTIONS FILE The FILE varible
-is passed after the options."
-  ;; Make sure it's not a remote buffer or flymake would not work
-  (when (not (current-file-remotep)) 
-    (list command
-          (append options (list (flymake-create-copy-file))))))
 
-;;Usage: (eepy-setup-checker "epylint %f")
-(defun eepy-setup-checker (cmdline)
-  (let ( (old-cfg (assoc-string "\\.py\\'" flymake-allowed-file-name-masks))
-         (new-cfg (list (apply-partially 'flymake-command-parse cmdline))) )
-    (if old-cfg
-        (setcdr old-cfg new-cfg)
-      (add-to-list 'flymake-allowed-file-name-masks new-cfg))))
+(defcustom eepy-flymake-cmdline nil
+  "The static checker used for flymake-mode in python.
 
+The CMDLINE should be something like:
 
-(defcustom eepy-flymaker nil
-  "Whether to enable flymake"
+  flymaker %f
+  python -mpylint %f
+
+%f will be substituted with a temporary copy of the file that is
+ currently being checked.
+
+Make sure a `%f' is included in the command line"
   :type '(choice (const :tag "Off" nil)
-                 (const :tag "epylint")                                                                                                                           
-                 (const :tag "pep8")
-                 (const :tag "pycheckers")
-                 (const :tag "pyflakes")
+                 (const :tag "epylint"  "epylint \"%f\"")
+                 (const :tag "pep8"     "pep8 %f")
+                 (const :tag "pycheckers" "pycheckers %f"  )
+                 (const :tag "pyflakes"   "pyflakes %f")
                  (string :tag "custom..."))
-  :group 'eepy
-  :set (lambda (symbol value)
-         (set-default symbol value)
-         (eepy-setup-checker (concat value " %f"))))
+  :group 'eepy)
 
-(defun eepy-flymake-with (checker)
+
+(defun flymake-eepy-init ()
+    (let ((cmdline-subst (replace-regexp-in-string "%f"
+                                                   (flymake-create-copy-file)
+                                                   eepy-flymake-cmdline)))
+    (setq cmdline-subst (split-string-and-unquote cmdline-subst))
+    (list (first cmdline-subst) (rest cmdline-subst))
+    ))
+
+(defun eepy-flymake-with (checker-cmdline)
   (interactive
       (list (ido-completing-read "Checker: "
-                              '("epylint" "pep8" "pyflakes" "pychecker")
+                              '("epylint \"%f\""
+                                "pep8 \"%f\""
+                                "pyflakes \"%f\""
+                                "pychecker \"%f\"")
                               nil
                               nil
-                              eepy-flymaker
+                              "epylint \"%f\""
                               nil
                               eepy-flymaker)))
-  (eepy-setup-checker (concat checker " %f"))
-  (flymake-mode t))
+  (let ((eepy-flymake-cmdline cmdline))                              
+    (flymake-mode -1)
+    (flymake-mode t)))
   
 (defun python-mode-hook-flymake ()
   "initialize flymake on open python files."
-  (when eepy-flymaker
-    (eepy-flymake-with eepy-flymaker)))
+  (when eepy-flymake-cmdline
+    (eepy-flymake-with eepy-flymake-=cmdline)))
 
+(add-to-list 'flymake-allowed-file-name-masks '("\\.pyw?\\'" flymake-eepy-init))
 (add-hook 'python-mode-hook 'python-mode-hook-flymake)
-
 
 
 (provide 'eepy-checker)
