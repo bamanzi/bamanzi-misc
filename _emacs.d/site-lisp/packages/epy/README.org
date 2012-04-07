@@ -8,11 +8,13 @@ eepy is based on [[https://github.com/gabrielelanaro/emacs-for-python][Gabriele 
 ** disable ropemacs by default
   * for performance reason, disalbe ropemacs by default
   * autoload ropemacs when .ropeproject dir found 
+
 ** improve code completion 
   * pdee pycompletemine 
     + auto-complete
     + python-shell
   * a new auto-complete source for GNU Emacs's built-in python completion
+
 ** improve flymake
 ***  eepy uses this fork version of flymake.el: https://github.com/illusori/emacs-flymake
     * Support for queuing up syntax checks once a certain number are in-progress.
@@ -36,10 +38,12 @@ eepy is based on [[https://github.com/gabrielelanaro/emacs-for-python][Gabriele 
   * pycompletemine's <M-f1>, <M-f3>
   * `info-lookup-symbol' and python document in texinfo format
   * [ ] pylookup
+
 ** add an easy-to-use menu, you can invoke most stuff here
    - toggle auto-complete sources
    - turn on/off flymaker, and switch flymaker between pylint/pep8/pyflakes/pychecker
    - invoke syntax checking with pylint/pep8/pyflakes/pychecker 
+
 ** others
   * removed Gabriele Lanaro's personal preferences (epy-bindings, epy-editing) 
 
