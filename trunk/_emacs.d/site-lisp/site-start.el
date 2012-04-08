@@ -20,13 +20,17 @@
 
 ;; common
 (my-add-sub-dir-to-load-path "common")
+
+;; package
+(my-add-sub-dir-to-load-path "packages")
+
+(my-add-sub-dir-to-load-path "proglangs")
+
 ;; emacs-xx
 (my-add-sub-dir-to-load-path (concat "emacs-" (format "%d" emacs-major-version)))
 ;; emacs-xx.x
 (my-add-sub-dir-to-load-path (concat "emacs-" emacs-version))
 
-;; package
-(my-add-sub-dir-to-load-path "packages")
 
    
 ;; load each file in site-start.d     
