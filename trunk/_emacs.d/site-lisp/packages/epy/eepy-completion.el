@@ -2,21 +2,8 @@
 
 (require 'eepy)
 
-;;** autopair
-;; Matching parentheses for all languages and so on
-(require 'autopair)
-;;(autopair-global-mode t)
-(setq autopair-autowrap t)
-;; Fix for triple quotes in python
-(add-hook 'python-mode-hook
-          #'(lambda ()
-              (setq autopair-handle-action-fns
-                    (list #'autopair-default-handle-action
-                          #'autopair-python-triple-quote-action))))
 
 ;;** auto-complete
-(require 'auto-complete)
-
 (autoload 'auto-complete-mode  "auto-complete"
   "AutoComplete mode" t)
 (autoload 'global-auto-complete-mode  "auto-complete"
@@ -28,13 +15,34 @@
        (load "auto-complete-config")
        (setq ac-dwim t)
        (ac-config-default))
-     
+
      (add-to-list 'ac-dictionary-directories
                   (concat eepy-install-dir "extensions/auto-complete/dict/"))
      ))
 
 (require 'auto-complete)
-;;*** Emacs's built-in completion python.el
+
+(defcustom eepy-auto-complete-sources
+  '(ac-source-python-builtin
+    ;;ac-source-pycompletemine
+    ;;ac-source-scite-api
+    ;;ac-source-yasnippet
+    )
+  "Default additional auto-completion sources for python-mode
+(besides `ac-sources' default value).
+
+You don't need add `ac-source-nropemacs' into this, as it's due to add
+by ropeproject hook."
+  :group 'eepy)
+
+(defun python-mode-init-ac-sources ()
+  (mapc #'(lambda (source)
+            (add-to-list 'ac-source source))
+        eepy-auto-complete-sources))
+
+(add-hook 'python-mode-hook 'python-mode-init-ac-sources)  
+  
+;;*** Emacs's built-in completion
 ;;advantages:
 ;;      + no other libraries needed
 ;;      + with 'send region' to inferior python process, you can get more completions
@@ -64,7 +72,8 @@
     (if turn-on
         (add-to-list 'ac-sources 'ac-source-python-builtin)
       (setq ac-sources (remq ac-source-python-builtin ac-sources)))))
-      
+
+
 ;;*** pycompletemine from PDEE (https://github.com/pdee/pdee/ )
 ;; You need `pycompletemine.{el,py}' from PDEE and pymacs
 ;;advantages:
@@ -94,6 +103,7 @@
 (require 'eepy-ropemacs)
 
 ;;** yasnippets
+ttps://github.com/mlf176f2/yas-jit.el
 ;; Disabling Yasnippet completion 
 (defun epy-snips-from-table (table)
   (with-no-warnings
@@ -107,7 +117,7 @@
       )))
 
 (defun epy-get-all-snips ()
-  (require 'yasnippet nil t) ;; FIXME: find a way to conditionally load it
+  (require 'yas-jit nil t) ;; FIXME: find a way to conditionally load it
   (if (featurep 'yasnippet)
       (let (candidates)
         (maphash
@@ -120,6 +130,6 @@
   )
 
 ;;** other completion methods
-;;TODO: implement this
+;;TODO: scite-api
 
 (provide 'eepy-completion)

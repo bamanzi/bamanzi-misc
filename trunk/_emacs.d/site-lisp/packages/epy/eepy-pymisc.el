@@ -1,6 +1,5 @@
-;;==================================================
+
 ;; Virtualenv Commands
-;;==================================================
 (autoload 'virtualenv-activate "virtualenv"
   "Activate a Virtual Environment specified by PATH" t)
 (autoload 'virtualenv-workon "virtualenv"
@@ -22,6 +21,10 @@
 
 ;; Django
 ;;...
+
+;; PyDB
+(autoload 'pydb  "pydb"
+  "Run pydb on program FILE in buffer *gud-cmd-FILE*." t)
 
 
 (provide 'eepy-pymisc)
