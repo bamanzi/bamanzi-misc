@@ -1,12 +1,16 @@
 ;;* static checker and flymake checker
 
 ;;** develock
+;;(setq develock-auto-enable nil)
+
 (autoload 'develock-mode  "develock"
   "additional font-lock keywords for the developers." t)
 
+;;TODO: (defcustom eepy-enable-develock)
+
 (eval-after-load "develock"
   `(progn
-     (require 'develock-py)
+     (load-file (concat eepy-install-dir "elisp/develock-py.el"))
      ))
 
 
@@ -73,17 +77,19 @@
 The CMDLINE should be something like:
 
   flymaker %f
-  python -mpylint %f
+
+e.g.
+  python -mpylint \"%f\"
 
 %f will be substituted with a temporary copy of the file that is
  currently being checked.
 
 Make sure a `%f' is included in the command line"
   :type '(choice (const :tag "Off" nil)
-                 (const :tag "epylint"  "epylint \"%f\"")
-                 (const :tag "pep8"     "pep8 %f")
-                 (const :tag "pycheckers" "pycheckers %f"  )
-                 (const :tag "pyflakes"   "pyflakes %f")
+                 (const :tag "epylint"    "epylint \"%f\"")
+                 (const :tag "pep8"       "pep8 \"%f\"")
+                 (const :tag "pycheckers" "pycheckers \"%f\""  )
+                 (const :tag "pyflakes"   "pyflakes \"%f\"")
                  (string :tag "custom..."))
   :group 'eepy)
 
@@ -96,6 +102,8 @@ Make sure a `%f' is included in the command line"
     (list (first cmdline-subst) (rest cmdline-subst))
     ))
 
+(add-to-list 'flymake-allowed-file-name-masks '("\\.pyw?\\'" flymake-eepy-init))
+
 (defun eepy-flymake-with (checker-cmdline)
   (interactive
       (list (ido-completing-read "Checker: "
@@ -105,19 +113,19 @@ Make sure a `%f' is included in the command line"
                                 "pychecker \"%f\"")
                               nil
                               nil
-                              "epylint \"%f\""
                               nil
-                              eepy-flymaker)))
-  (let ((eepy-flymake-cmdline cmdline))                              
-    (flymake-mode -1)
-    (flymake-mode t)))
+                              nil
+                              eepy-flymake-cmdline)))
+  (make-variable-buffer-local 'eepy-flymake-cmdline)
+  (setq eepy-flymake-cmdline cmdline)
+  (flymake-mode -1)
+  (flymake-mode t))
   
 (defun python-mode-hook-flymake ()
   "initialize flymake on open python files."
   (when eepy-flymake-cmdline
-    (eepy-flymake-with eepy-flymake-=cmdline)))
+    (eepy-flymake-with eepy-flymake-cmdline)))
 
-(add-to-list 'flymake-allowed-file-name-masks '("\\.pyw?\\'" flymake-eepy-init))
 (add-hook 'python-mode-hook 'python-mode-hook-flymake)
 
 

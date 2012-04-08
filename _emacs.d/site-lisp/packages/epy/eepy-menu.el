@@ -29,6 +29,8 @@
       ;; ["Pretty lambda mode" pretty-lambda-mode
       ;;  :style toggle :selected lambda-mode
       ;;  :help "Pretty-print lambdas"]
+      ["Develock mode" develock-mode
+       :help "A lightweight way to highlight code formatting problems (indentation, whitespaces, long lines...)"]
       ["Highlight indentation mode" highlight-indentation
        :style toggle :selected highlight-indent-active
        :help "Highlight indentation."]
@@ -39,54 +41,59 @@
       ["Autopair mode" autopair-mode
        :style toggle :selected autopair-mode
        :help "Automagically pair braces and quotes like TextMate."]
-      ("Yasnippets"
-       ["on/off" yasnippet :style: toggle :selected nil]
-       ["Load Django templates" nil nil]
-       )
       ("Auto-Complete"
        ["on/off" auto-complete-mode
         :style toggle :selected auto-complete-mode]
-       ["Emacs builtin completion" ac-enable-python-builtin-source
+       ["Emacs builtin completion" (ac-toggle-source 'ac-source-python-builtin)
         :style toggle :selected (memq ac-source-python-builtin ac-sources)]
-       ["pycompletemine source" ac-enable-pycompletemine-source
+       ["pycompletemine source"    (ac-toogle-source 'ac-source-pycompletemine)
         :active (boundp 'ac-source-pycompletemine) ;;and (boundp 'py-shell)
         :style toggle :selected (memq ac-source-pycompletemine ac-sources)]
-       ["ropemacs source" eepy-enable-ac-ropemacs-source
+       ["ropemacs source"          (ac-toggle-source 'ac-source-nropemacs)
+        :active nil
         :style toggle :selected (memq 'ac-source-nropemacs ac-sources)]
-       ["yasnippets source" ac-python-mode-setup
-        :style radio]
-       ["scite-api source" nil
-        :style toggle :selected nil]
+       ["yasnippets source"        (ac-toggle-source 'ac-source-yasnippet)
+        :style toggle :selected (memq 'ac-source-yasnippet ac-sources)]
+       ["scite-api source"         (ac-toogle-source 'ac-source-scite-api)
+        :active (boundp 'ac-source-scite-api)
+        :style toggle :selected (memq 'ac-source-scite-api ac-sources)]
+       )
+      ("Yasnippets"
+       ["on/off" yasnippet-mode :style: toggle :selected nil]
+       ["Load Django templates" nil nil]
        )
       "--"
       ("Syntax Check"
-       ["Pyflakes" nil t]
-       ["Pylint" eepy-pylint t]
-       ["Pychecker" nil t]
-       ["PEP8" eepy-pep8 t]
+       ["Pylint"    eepy-pylint t]
+       ["PEP8"      eepy-pep8 t]
+       ["Pyflakes"  eepy-pyflake t]
+       ["Pychecker" eepy-pychecker t]
        )
       ("Flymake"
        ["on/off"          flymake-mode
         :style toggle :selected flymake-mode]
-       ["Pylint"          (eepy-flymake-with "eepylint")
-        :style radio  :selected (string= eepy-flymaker "epylint")]
-       ["PEP8"            (eepy-flymake-with "pep8")
-        :style radio  :selected (string= eepy-flymaker "pep8")]
-       ["Pyflakes"        (eepy-flymake-with "pyflakes")
-        :style radio  :selected (string= eepy-flymaker "pyflakes")]
-       ["Pycheckers"      (eepy-flymake-with "pychecker")
-        :style radio  :selected (string= eepy-flymaker "pycheckers")]
-       ["Set default checker..." (customize-variable 'eepy-flymaker)]
+       ["Epylint"               (eepy-flymake-with            eepy-flymake-cmdline-epylint)
+        :style radio  :selected (string= eepy-flymake-cmdline eepy-flymake-cmdline-epylint)]
+       ["PEP8"                  (eepy-flymake-with            eepy-flymake-cmdline-pep8)
+        :style radio  :selected (string= eepy-flymake-cmdline eepy-flymake-cmdline-pep8)]
+       ["Pyflakes"              (eepy-flymake-with            eepy-flymake-cmdline-pyflakes)
+        :style radio  :selected (string= eepy-flymake-cmdline eepy-flymake-cmdline-pyflakes)]
+       ["Pychecker"             (eepy-flymake-with            eepy-flymake-cmdline-pychecker)
+        :style radio  :selected (string= eepy-flymake-cmdline eepy-flymake-cmdline-pychecker)]
+       ["Set default checker..." (customize-variable 'eepy-flymake-cmdline)]
        "--"
        ["next error"      flymake-goto-next-error :active flymake-mode]
        ["previous error"  flymake-goto-prev-error :active flymake-mode]
        )
+      ["Python shell" python-shell]
+      ["IPython shell" ipython
+       :active (fboundp 'ipython)]  ;;FIXME: python-mode.el needed
       ("Debug"
        ["pdb" pdb t]
-       ["ipdb" nil t]
-       ["pydb" nil t]
+       ["ipdb" ipdb t]
+       ["pydb" pydb t]
        )
-      ["byte-compile" nil t]
+      ;;["byte-compile" nil t]
       "--"
       ["eldoc-mode" eldoc-mode
        :style toggle :selected eldoc-mode]
@@ -96,8 +103,9 @@
        :active (eq window-system 'w32)]
       "--"
       ("Project"
-       ["open rope project..." rope-open-project]
-       ["auto-open ropeproject if found" nil]
+       ["open rope project..." eepy-rope-open-project]
+       ["auto-open ropeproject if found" eepy-toggle-auto-detect-rope-project
+        :style toggle :selected eepy-auto-detect-rope-project]
        ["eproject" eproject t]
       )
       ("Misc"

@@ -1,63 +1,19 @@
-;; ropemacs Integration with auto-completion
-(eval-after-load "auto-complete"
-  `(progn     
-     (defun ac-ropemacs-candidates ()
-       (mapcar (lambda (completion)
-                 (concat ac-prefix completion))
-               (rope-completions)))
-
-     (ac-define-source nropemacs
-       '((candidates . ac-ropemacs-candidates)
-         (symbol     . "p")))
-
-     (ac-define-source nropemacs-dot
-       '((candidates . ac-ropemacs-candidates)
-         (symbol     . "p")
-         (prefix     . c-dot)
-         (requires   . 0)))
-
-     (defun ac-nropemacs-setup ()
-       (setq ac-sources (append '(ac-source-nropemacs
-                                  ac-source-nropemacs-dot) ac-sources)))
-
-     (eval-after-load "ropemacs"
-       `(add-hook 'rope-open-project-hook 'ac-nropemacs-setup)
-       )
-     ))
-
-(defun detect-rope-project ()
-  (cond ((file-exists-p ".ropeproject")
-         (rope-open-project default-directory)
-         (ropemacs-mode t))
-        ((file-exists-p "../.ropeproject")
-         (rope-open-project (concat default-directory ".."))
-         (ropemacs-mode t))
-        ))
-
-(defvar ropemacs-auto-mode nil
-  "Whether to auto-detect `.ropeproject' file and turn on ropemacs-mode.")
-
-(defun toggle-ropemacs-auto-mode (&optional arg)
-  "Toggle: auto-detect `.ropeproject' file and if found turn on ropemacs-mode.
-
-When turned on, upon opening Python file, it would check whether there's
-`.ropeproject' file existing in current dir or parent dir. If found, it would
-load it with ropemacs."
-  (interactive "P")
-  (setq ropemacs-auto-mode (if arg arg
-                             (not ropemacs-auto-mode)))
-  (if ropemacs-auto-mode
-      (progn ;;turned on
-        (add-hook 'python-mode-hook 'detect-rope-project)
-        (if (eq major-mode 'python-mode)
-            (detect-rope-project)))
-    (progn
-      (remove-hook 'python-mode-hook 'detect-rope-project)))
-  (message "`ropemacs-mode' now would%s be automatically turned on."
-           (if ropemacs-auto-mode "" " NOT"))
-  )
+;;; eepy-ropemacs --- ropemacs support for EEPY suite
 
 
+;; This file is part of EEPY suite.
+
+(require 'eepy-init)
+
+(defun ropemacs-mode ()
+  "Temp loader for real `ropemacs-mode'."
+  ;; load ropemacs first
+  (unless (fboundp 'ropemacs-mode)
+        (setup-ropemacs))
+  ;; invoke the real `ropemacs-mode'.
+  (unless (symbol-file 'ropemacs-mode) ;;if ropemacs correctly loaded, it should be nil
+    (call-interactively 'ropemacs-mode)))
+      
 (defun setup-ropemacs ()
   (require 'pymacs (concat eepy-install-dir "extensions/pymacs.el"))
   
@@ -85,13 +41,76 @@ load it with ropemacs."
   (if (fboundp 'ac-nropemacs-setup)
       (add-hook 'rope-open-project-hook 'ac-nropemacs-setup))
 
-  (toggle-ropemacs-auto-mode t)
+;;  (eepy-toggle-auto-detect-rope-project t)
   )
 
-;; Python or python mode?
-(eval-after-load 'python
-  '(progn
-     (setup-ropemacs)))
+;; ropemacs Integration with auto-completion
+(eval-after-load "auto-complete"
+  `(progn     
+     (defun ac-ropemacs-candidates ()
+       (mapcar (lambda (completion)
+                 (concat ac-prefix completion))
+               (rope-completions)))
+
+     (ac-define-source nropemacs
+       '((candidates . ac-ropemacs-candidates)
+         (symbol     . "p")))
+
+     (ac-define-source nropemacs-dot
+       '((candidates . ac-ropemacs-candidates)
+         (symbol     . "p")
+         (prefix     . c-dot)
+         (requires   . 0)))
+
+     (defun ac-nropemacs-setup ()
+       (setq ac-sources (append '(ac-source-nropemacs
+                                  ac-source-nropemacs-dot) ac-sources)))
+
+     (eval-after-load "ropemacs"
+       `(add-hook 'rope-open-project-hook 'ac-nropemacs-setup)
+       )
+     ))
+
+
+(defun eepy-open-rope-project (dir)
+  "Simple wrapper to load ropemacs and them open a rope project."
+  (interactive "D")
+  (unless (fboundp 'rope-open-project)
+    (setup-ropemacs))
+  (rope-open-project dir))
+
+(defun eepy-detect-rope-project ()
+  (cond ((file-exists-p ".ropeproject")
+         (eepy-open-rope-project default-directory)
+         (ropemacs-mode t))
+        ((file-exists-p "../.ropeproject")
+         (eepy-open-rope-project (concat default-directory ".."))
+         (ropemacs-mode t))
+        ))
+
+(defvar eepy-auto-detect-rope-project nil
+  "Whether to auto-detect `.ropeproject' file and turn on ropemacs-mode.")
+
+(defun eepy-toggle-auto-detect-rope-project (&optional arg)
+  "Toggle: auto-detect `.ropeproject' file and if found turn on ropemacs-mode.
+
+When turned on, upon opening Python file, it would check whether there's
+`.ropeproject' file existing in current dir or parent dir. If found, it would
+load it with ropemacs."
+  (interactive "P")
+  (setq eepy-auto-detect-rope-project (if arg arg
+                             (not eepy-auto-detect-rope-project)))
+  (if eepy-auto-detect-rope-project
+      (progn ;;turned on
+        (add-hook 'python-mode-hook 'eepy-detect-rope-project)
+        (if (eq major-mode 'python-mode)
+            (eepy-detect-rope-project)))
+    (progn
+      (remove-hook 'python-mode-hook 'eepy-detect-rope-project)))
+  (message "`ropemacs-mode' now would%s be automatically turned on."
+           (if eepy-auto-detect-rope-project "" " NOT"))
+  )
+
 
 (provide 'eepy-ropemacs)
 
