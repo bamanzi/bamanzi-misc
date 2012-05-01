@@ -7,7 +7,7 @@ lang="en" xml:lang="en">
 <title>巴蛮子的闪存</title>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2012-03-25 11:39:01 HKT"/>
+<meta name="generated" content="2012-05-01 21:32:13 HKT"/>
 <meta name="author" content="bamanzi"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -99,6 +99,9 @@ org_html_manager.setup();  // activate after the parameters are set
 <h1 class="title">巴蛮子的闪存</h1>
 
 
+
+
+
 <!--
 
 
@@ -140,6 +143,7 @@ org_html_manager.setup();  // activate after the parameters are set
 <li><a href="#sec-15">2012-01 </a></li>
 <li><a href="#sec-16">2012-02 </a></li>
 <li><a href="#sec-17">2012-03 </a></li>
+<li><a href="#sec-18">2012-04 </a></li>
 </ul>
 </div>
 </div>
@@ -6788,7 +6792,345 @@ orgstruct-mode &amp; org-footnote-action
 have block comments.  <a href="https://github.com/emacsmirror/org-table-comment">https://github.com/emacsmirror/org-table-comment</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-03-24 13:28:58</span></span>
 
 </li>
+<li>
+[python] 支持调试python的编辑器还真没几个：
+<a href="http://wiki.python.org/moin/PythonDebuggers#IDEs_with_Debug_Capabilities">http://wiki.python.org/moin/PythonDebuggers#IDEs_with_Debug_Capabilities</a> 不过Spyder和Eric也支持调
+试，没在这里列出来——居然还找不到一个基于wx（这两个都是基于Qt的） <span class="timestamp-wrapper"> <span class="timestamp">2012-03-25 21:18:14</span></span>
+
+</li>
+<li>
+[emacs][python] 另一个思路是geben + komodo debugger extension (基于dbgp protocol)
+<a href="http://docs.activestate.com/komodo/5.2/debugger.html">http://docs.activestate.com/komodo/5.2/debugger.html</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-03-25 21:20:22</span></span>
+
+</li>
+<li>
+最近工作上老碰到 provisioning 这个词，不知道具体是什么意思，今天发现原来维基百科上有很详细的解
+释: <a href="http://zh.wikipedia.org/wiki/%E6%9C%8D%E5%8A%A1%E5%BC%80é%80%9A">http://zh.wikipedia.org/wiki/%E6%9C%8D%E5%8A%A1%E5%BC%80%E9%80%9A</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-03-28 11:31:01</span></span>
+
+</li>
+<li>
+[orgmode] 经试验，使用Consolas字体的话，Windows下表格线是能对齐的。另:《Emacs里中英文混排的文字对
+齐》 <a href="http://ysong.me/2012/03/emacs_chinese_character_width/">http://ysong.me/2012/03/emacs_chinese_character_width/</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-03-30 11:50:53</span></span>
+
+</li>
+<li>
+[emacs][tips] C-x 4 c (clone-indirect-buffer-other-window) gives user two (or more) different
+buffers which have their textual content linked together. You can use different major modes in
+the clones.  <a href="http://www.emacswiki.org/emacs/IndirectBuffers">http://www.emacswiki.org/emacs/IndirectBuffers</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-03-30 12:58:49</span></span>
+
+</li>
+<li>
+[firefox] 这个FloatNotes扩展不错（在特定地址的页面上贴一个便签），支持用markdown格式来写内容，于
+是可以添加粗体、列表、链接、图片，数据可跟随firefox sync（需要在其设置界面选一下）
+<a href="https://addons.mozilla.org/zh-CN/firefox/addon/floatnotes/?src=search">https://addons.mozilla.org/zh-CN/firefox/addon/floatnotes/?src=search</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-03-30 15:41:02</span></span>
+
+</li>
+<li>
+Markdown 语法说明(简体中文版) <a href="http://wowubuntu.com/markdown/">http://wowubuntu.com/markdown/</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-03-30 15:42:17</span></span>
+
+</li>
+<li>
+"The same features that can make Scala more productive can also make it unreadable." -
+Scala or Java? Exploring myths and facts <a href="http://www.infoq.com/articles/scala-java-myths-facts">http://www.infoq.com/articles/scala-java-myths-facts</a>
+<span class="timestamp-wrapper"> <span class="timestamp">2012-03-30 16:02:00</span></span><br/>
+
+</li>
+<li>
+[emacs] 用frame-bufs.el实现了一直想要的类似perspective功能 <a href="https://gist.github.com/2250340">https://gist.github.com/2250340</a> 相比之
+前研究的perspective.el，现在直接用frame绑定buffer，不同的frame即是不同的透视图，要简单直观得多。
+perspective.el 定义的透视图在不同的frame之间不是共享的，所以比较适合单一frame的情况 [2012-03-30
+17:44:42]
+
+</li>
+<li>
+[emacs][todo] eshell/start, frame-bufs, popwin (&lt;f11&gt; ~) <span class="timestamp-wrapper"> <span class="timestamp">2012-03-30 18:11:43</span></span>
+
+</li>
+<li>
+[firefox] FloatNotes扩展的两个相关链接: FloatNotes Guide
+<a href="http://www.floatnotes.org/documentation/guide">http://www.floatnotes.org/documentation/guide</a> Markdown 语法说明(简体中文版)
+<a href="http://wowubuntu.com/markdown/">http://wowubuntu.com/markdown/</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-03-31 08:41:07</span></span>
+
+</li>
+<li>
+RT @hecaitou: 波尔定律：在非常专业的研究领域犯过一切错误的，就是专家。 <span class="timestamp-wrapper"> <span class="timestamp">2012-03-31 11:06:53</span></span>
+
+</li>
+<li>
+[emacs][todo] 这个改进的flymake.el 对多文件时的性能做了改进（也有不少其它的改进），有必要合入到
+eepy里面去（也已经包含了epy里面所用info统计功能) <a href="https://github.com/illusori/emacs-flymake">https://github.com/illusori/emacs-flymake</a>
+<span class="timestamp-wrapper"> <span class="timestamp">2012-03-31 16:51:47</span></span><br/>
+
+</li>
 </ol>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-18" class="outline-2">
+<h2 id="sec-18">2012-04 </h2>
+<div class="outline-text-2" id="text-18">
+
+<ol>
+<li>
+The Best Articles for Backing Up and Syncing Your Data - How-To Geek
+<a href="http://www.howtogeek.com/108679/the-best-articles-for-backing-up-and-syncing-your-data/">http://www.howtogeek.com/108679/the-best-articles-for-backing-up-and-syncing-your-data/</a>
+<span class="timestamp-wrapper"> <span class="timestamp">2012-04-01 16:06:01</span></span><br/>
+
+</li>
+<li>
+[emacs] 终于知道tabbar-ruler在emacs-24上不出现关闭按钮的原因了: 它重定义的那个tabbar-line-tab原本
+是用defsubst定义的，所以要重新对使用该函数的tabbar-line-format 重新eval一下，以让tabbar-line-tab
+的新实现生效。至于再底层的原因，为什么emacs-23可以而v24不可以，就不清楚了。 [2012-04-06
+12:06:00]
+
+</li>
+<li>
+[emacs][python] 奇怪，pdb怎么不好使了，启动后就卡在*gud-foobar.py*里面不动，这个buffer里也只有
+Current directory is&hellip;.这样一行内容 (Windows版本有此问题，Cygwin就没有) <span class="timestamp-wrapper"> <span class="timestamp">2012-04-06 14:06:00</span></span>
+
+</li>
+<li>
+[emacs][python] 续: 明白了，跟ipython一样的问题，需要在命令行加一个-i: python -i -mpdb foobar.py
+arg1 arg2 <a href="http://old.nabble.com/pdb-problem-td11173089.html">http://old.nabble.com/pdb-problem-td11173089.html</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-04-06 14:32:03</span></span>
+
+</li>
+<li>
+[cygwin] 原来cygwin里面还模拟了一个/dev/clipboard设备（但ls /dev看不到）
+<a href="http://comments.gmane.org/gmane.os.cygwin/132879">http://comments.gmane.org/gmane.os.cygwin/132879</a> 不知道还有一些别的什么 <span class="timestamp-wrapper"> <span class="timestamp">2012-04-16 11:46:10</span></span>
+
+</li>
+<li>
+M$ Word最让人蛋疼的功能是章节编号，每次被折磨的死去活来。。。 <span class="timestamp-wrapper"> <span class="timestamp">2012-04-18 08:42:07</span></span>
+
+</li>
+<li>
+[firefox] keysnail 里面如何调出类似vimperator那样的ex命令行(包含open,tabopen,dialog,js等命令那
+个，而不是ext命令行)？不知道是不是我改过配置，导致直接按冒号不好使了（记得keysnail缺省设置应该是
+可以的），找了好一阵才发现对应的ext命令是list-command 囧。如果要绑定到键的话，对应内容是
+shell.input(null, arg)或者ext.exec("list-command") <span class="timestamp-wrapper"> <span class="timestamp">2012-04-18 11:35:04</span></span>
+
+</li>
+<li>
+[emacs][ipython] Windows下启动方法: @python -i -mIPython.frontend.terminal.ipapp %* [2012-04-18
+18:28:44]
+
+</li>
+<li>
+[far] 换新版ConEmu (120417) 不成功，换了之后FAR老僵死，conemu不刷新。开始以为是版本不配套，换了新
+的far2也不行，回退conemu到1201xx,1111xx,1110xx等多个版本也不行 <span class="timestamp-wrapper"> <span class="timestamp">2012-04-19 09:38:13</span></span>
+
+</li>
+<li>
+[far] 续: 然后从注册表里面关闭了新版conemu提供的KeyboardHooks，UseInjects两个新特性，还是不行。
+（BTW: 更新症状: FAR2界面不响应鼠标、键盘，而conemu界面调整大小后FAR界面不刷新，而用来跑cmd则正常
+（甚至里面跑mc或者jasspa都正常）——跑FAR3也正常 <span class="timestamp-wrapper"> <span class="timestamp">2012-04-19 09:54:36</span></span>
+
+</li>
+<li>
+How To Download Android Market Apps To Your Computer - APK Downloader <a href="http://is.gd/XxclYk">http://is.gd/XxclYk</a>
+<span class="timestamp-wrapper"> <span class="timestamp">2012-04-19 16:31:45</span></span><br/>
+
+</li>
+<li>
+xfce里面切换workspace的快捷键居然是在Settings -&gt; Window Manager里面设置的，而不是Keyboard
+-&gt; Application Shortcuts，让我找了好一阵
+<a href="http://www.linux-pages.com/2011/04/remove-xfce-global-shortcuts-e-g-ctrl-f4/">http://www.linux-pages.com/2011/04/remove-xfce-global-shortcuts-e-g-ctrl-f4/</a> [2012-04-19
+18:21:00]
+
+</li>
+<li>
+[far] 很多插件还不支持FAR3，而且FAR3显示中文有问题：两个汉字会前后有半个叠在一起，所以还是折腾
+FAR2吧 <span class="timestamp-wrapper"> <span class="timestamp">2012-04-20 09:58:31</span></span>
+
+</li>
+<li>
+[far] 将官方far2在最新的conemu试了一下，没有加其它地方放插件，居然没有问题。看来是插件导致的问
+题，用二分法定位发觉问题出在wlx2far，删除后就行了 <span class="timestamp-wrapper"> <span class="timestamp">2012-04-20 09:59:28</span></span>
+
+</li>
+<li>
+wxcommander前年提供了一个Linux预览版，单一文件，功能不少，不过不太稳定，应急时可以凑合着用用
+<a href="http://download-preview-gtk.wxcommander.com/">http://download-preview-gtk.wxcommander.com/</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-04-20 16:26:16</span></span>
+
+</li>
+<li>
+wxcommander支持外部工具、支持命令行（非嵌入终端），支持TC的wcx/wlx插件，带内置查看器，缺点是不带
+中文界面，不支持搜索 <span class="timestamp-wrapper"> <span class="timestamp">2012-04-20 16:29:17</span></span>
+
+</li>
+<li>
+[iphone] Leafsnap is the first in a series of electronic field guides&hellip; (it) uses visual
+recognition software to help identify tree species from photographs of their
+leaves. <a href="http://leafsnap.com/">http://leafsnap.com/</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-04-21 09:29:28</span></span>
+
+</li>
+<li>
+为大家都能看google上好的帖子，给大家一个翻墙工具 - CN-Clojure | Google Groups -
+<a href="http://groups.google.com/group/cn-clojure/browse_thread/thread/2aca923a6f438333">http://groups.google.com/group/cn-clojure/browse_thread/thread/2aca923a6f438333</a> [2012-04-21
+13:59:47]
+
+</li>
+<li>
+GaleForce: Adding Resource Types Based on Manufacturer Only (to your topology) page 282
+<span class="timestamp-wrapper"> <span class="timestamp">2012-04-22 15:07:30</span></span><br/>
+
+</li>
+<li>
+[gnome] Firefox下载对话框双击文件时出现一个错误“位置不是文件”，原来是今天安装thunar导致的， 用
+exo-preferred-applications命令重新设置一下缺省文件管理器(为thunar)就解决了 <a href="http://is.gd/XEFHmg">http://is.gd/XEFHmg</a>
+<span class="timestamp-wrapper"> <span class="timestamp">2012-04-22 15:18:05</span></span><br/>
+
+</li>
+<li>
+[emacs][tips] A Key Sequence For revert-buffer: C-x C-v RET (i.e. M-x find-alternate-file and
+choose the first one) <a href="http://irreal.org/blog/?p=767">http://irreal.org/blog/?p=767</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-04-23 10:19:50</span></span>
+
+</li>
+<li>
+[firefox] firefox 3.6要寿终正寝了，赶紧下载了最后一个小版本3.6.28的便携版 <a href="http://is.gd/cHT588">http://is.gd/cHT588</a>
+(sf.net) <span class="timestamp-wrapper"> <span class="timestamp">2012-04-23 11:36:23</span></span>
+
+</li>
+<li>
+[emacs] make psvn.el work on svn-1.7 <a href="http://www.eaflux.com/">http://www.eaflux.com/</a> via Suresh' Blog
+<a href="http://www.sureshpw.com/2012/04/gnu-emacs-and-subversion-17.html">http://www.sureshpw.com/2012/04/gnu-emacs-and-subversion-17.html</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-04-23 14:27:57</span></span>
+
+</li>
+<li>
+[vim] 官方的Windows版本7.2/7.3都是动态加载python26.dll的，想要跟python2.7配套的话，可以装这个
+<a href="http://code.google.com/p/manshow/downloads/list">http://code.google.com/p/manshow/downloads/list</a> 或者这个 <a href="http://wyw.dcweb.cn/#download">http://wyw.dcweb.cn/#download</a>
+<span class="timestamp-wrapper"> <span class="timestamp">2012-04-23 18:04:52</span></span><br/>
+
+</li>
+<li>
+[vim] 试了一下VOoM <a href="http://vim-voom.github.com/">http://vim-voom.github.com/</a> 在敲入:Voom后vim报了一大堆错误，先是报告python里
+import os失败，然后报告Unknown filetype 'voomtree'，现在又list index out of range&hellip; 反正
+就是不正常工作。唉，对vim还是比较失望，用在简单的编辑文件场景吧 <span class="timestamp-wrapper"> <span class="timestamp">2012-04-23 18:15:21</span></span>
+
+</li>
+<li>
+电脑用久了变慢了？桌面上的沙漏或是小圆圈让人发疯？我们要找出原因来，不然玩电脑就只会越用越郁
+闷……譬如今天介绍的来自以色列创业公司的产品: Soluto！——什么，装了dotNet和soluto，电脑更慢了，半
+天打不开soluto? 所以你更需要soluto!  哈哈哈 <span class="timestamp-wrapper"> <span class="timestamp">2012-04-24 18:51:37</span></span>
+
+</li>
+<li>
+『Perl有世上最好的市场推广。你可以写一本介绍他们市场推广有多绝的书。Sun公司砸大笔钱给Java推市
+场，Perl在受欢迎程度来说能跟Java齐头并进，但Perl纯粹是依靠Larry Wall和他那帮哥们的三寸不烂之舌做
+市场。哈佛商学院的人应该去研究Perl的市场是怎么做出来的。真的让人瞠目结舌。 』
+<a href="http://code.google.com/p/windows-config/wiki/TourDeBabel">http://code.google.com/p/windows-config/wiki/TourDeBabel</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-04-25 09:04:02</span></span>
+
+</li>
+<li>
+[prog.lang.war] 关于C++的复杂性，这段话说得好: "Every C++ programmer loves 20% of C++. The
+problem is, they each love a different 20%". Unfortunately, programmers spend the vast
+majority of their time working within the context of other peoples' code. This means that
+you're going to have to deal with whichever language features you hate on a fairly regular
+basis.<a href="http://is.gd/Sco6vd">http://is.gd/Sco6vd</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-04-25 10:32:33</span></span>
+
+</li>
+<li>
+[screen] 几个与窗口(它叫region)相关的快捷键: S:split, V:vert_split, TAB: focus(next region)
+X:remove Q:only(delete others) 我得改成跟Emacs一致才行 <span class="timestamp-wrapper"> <span class="timestamp">2012-04-25 12:04:42</span></span>
+
+</li>
+<li>
+tmux里与pane相关的键: ":split vert, %:split horiz, x:kill, o:other, C-o:rotate, M-o:rotate
+backwards, {}:swap, arrows:jump to, C-arrows/M-arrows: resize, M-1..5: preset layouts
+<span class="timestamp-wrapper"> <span class="timestamp">2012-04-25 13:42:52</span></span><br/>
+
+</li>
+<li>
+[prog.lang.war] 关于C++的复杂性，这段话说得好: "Every C++ programmer loves 20% of C++. The
+problem is, they each love a different 20%". Unfortunately&hellip; <a href="http://is.gd/WuNBZF">http://is.gd/WuNBZF</a>
+<span class="timestamp-wrapper"> <span class="timestamp">2012-04-25 13:49:09</span></span><br/>
+
+</li>
+<li>
+tmux里面的window跟Emacs的frame比较象，每个有自己的window layout，tmux屏幕下方会先是window列表，切
+换到哪个就心里有数了 <span class="timestamp-wrapper"> <span class="timestamp">2012-04-25 13:56:34</span></span>
+
+</li>
+<li>
+byobu是对gnu screen和tmux做的封装和二次开发，这里有两篇相关介绍: <a href="http://is.gd/ZIXThc">http://is.gd/ZIXThc</a>
+(webupd8.org) <a href="http://goo.gl/nt3M">http://goo.gl/nt3M</a> (blogspot.com) <span class="timestamp-wrapper"> <span class="timestamp">2012-04-26 11:39:20</span></span>
+
+</li>
+<li>
+linuxtoy网站换用”评论啦“之后我就没几次能看见评论 <span class="timestamp-wrapper"> <span class="timestamp">2012-04-26 11:58:26</span></span>
+
+</li>
+<li>
+说到笔顺，『国际标准汉字大字典』里面有每个字的笔顺，但我感觉这个是为电脑/手机上用笔顺输入法设计
+的，跟实际不太一致，比如竖心旁的字它是"点点竖&hellip;" <span class="timestamp-wrapper"> <span class="timestamp">2012-04-26 13:40:04</span></span>
+
+</li>
+<li>
+[emacs] 如果想按文件名/路径名配置文件编码，可以设置auto-coding-alist
+<a href="http://www.emacswiki.org/emacs/SelectingTheRightCodingSystem#toc2">http://www.emacswiki.org/emacs/SelectingTheRightCodingSystem#toc2</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-04-26 14:08:59</span></span>
+
+</li>
+<li>
+[emacs][tips][unicode] 如何你经常会编辑不同编码的文件，可以试试这个自动探测编码的包: unicad.el
+<a href="http://code.google.com/p/unicad/">http://code.google.com/p/unicad/</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-04-26 14:14:19</span></span>
+
+</li>
+<li>
+[emacs][tips][unicode] 自动检测文件编码: 如果只涉及中文的话，可以用这个fenc.el
+<a href="http://code.google.com/p/ywb-codes/source/browse/trunk/emacs/site-lisp/contrib/fenc.el">http://code.google.com/p/ywb-codes/source/browse/trunk/emacs/site-lisp/contrib/fenc.el</a>
+<span class="timestamp-wrapper"> <span class="timestamp">2012-04-26 14:58:13</span></span><br/>
+
+</li>
+<li>
+玩了一下“Vim大冒险” ( vim-adventures.com )，还挺难的 :=) <a href="http://news.cnblogs.com/n/140263/">http://news.cnblogs.com/n/140263/</a>
+<span class="timestamp-wrapper"> <span class="timestamp">2012-04-26 16:48:45</span></span><br/>
+
+</li>
+<li>
+几天前装了TortoiseGit之后，Cygwin里面的git也改用那个tortoiseplink来建立ssh链接了，死活不能提交代
+码了，今天终于找到问题在哪儿了：小乌龟设了个GIT_SSH环境变量，解决方法是在cygwin里unset GIT_SSH就
+行了（恢复成使用openssh） <span class="timestamp-wrapper"> <span class="timestamp">2012-04-27 13:16:07</span></span>
+
+</li>
+<li>
+[linux][rhel] EPEL(Extra Packages for Enterprise Linux) 是个好东西
+<a href="http://fedoraproject.org/wiki/EPEL/FAQ">http://fedoraproject.org/wiki/EPEL/FAQ</a> 很多Debian/Ubuntu镜像网站上也可以找到EPEL镜像，比如
+<a href="http://mirrors.ustc.edu.cn/epel">http://mirrors.ustc.edu.cn/epel</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-04-27 13:40:35</span></span>
+
+</li>
+<li>
+[tmux] 如何查看历史输出，Shift-PgUp/PgDn不好使了？ 改用C-b [进入copy mode，然后就可以用
+PgUp/PgDn/光标来浏览历史输出了，按q退出。C-b PgUp也可以进入coy
+mode. <a href="http://superuser.com/a/209608">http://superuser.com/a/209608</a> <span class="timestamp-wrapper"> <span class="timestamp">2012-04-27 17:56:56</span></span>
+
+</li>
+<li>
+费了两个半天，终于把github开源山寨版——gitlab给搭起来了，RHEL上搭这些真是不省心啊 [2012-04-28
+08:59:07]
+
+</li>
+<li>
+[firefox][rss] newsfox最新版(1.0.8.3)在fx 3.6上不可用，界面根本调不出来，经测试，最新的一个可用
+版本是1.0.6.3 <a href="https://addons.mozilla.org/zh-CN/firefox/addon/newsfox/versions/">https://addons.mozilla.org/zh-CN/firefox/addon/newsfox/versions/</a> [2012-04-28
+11:35:08]
+
+</li>
+<li>
+[tmux] C-b [ 进入的copy mode其实比较类似vi/emacs里面一个只读buffer，可以移动光标，可以搜索，用
+C-SPC开始选择，选择完后用M-w拷贝(拷贝后自动退出copy mode)，然后可以C-b ]粘贴(可在其它窗口粘贴),
+C-b <code>可以从剪贴板历史中选 <span class</code>"timestamp-wrapper"> <span class="timestamp">2012-04-28 14:29:53</span></span>
+
+</li>
+<li>
+gnu [screen]进入copy mode的方式跟tmux类似(C-a [)，但进入后它是vi style keybindings，第一次空格设
+置开始标记，然后用hjklw之类移动光标，第二次空格完成拷贝。粘贴也是用C-a ] <span class="timestamp-wrapper"> <span class="timestamp">2012-04-28 17:55:56</span></span>
+
+</li>
+</ol>
+
 
 
 
@@ -6810,7 +7152,7 @@ have block comments.  <a href="https://github.com/emacsmirror/org-table-comment"
 <div id="postamble">
 <p class="author"> Author: bamanzi
 </p>
-<p class="date"> Date: 2012-03-25 11:39:01 HKT</p>
+<p class="date"> Date: 2012-05-01 21:32:13 HKT</p>
 <p class="creator">HTML generated by org-mode 7.3 in emacs 23</p>
 </div>
 </div>
