@@ -1,6 +1,9 @@
+# -*- fill-column:100 -*- 
+
 #+TITLE: 巴蛮子的闪存
 #+OPTIONS: ^:{} 
 #+INFOJS_OPT: view:toc
+
 
 #+BEGIN_HTML
 <!--
@@ -3303,3 +3306,154 @@
     http://orgmode.org/worg/org-faq.html#use-editing-features-in-other-modes [2012-03-24 13:26:34]
 49. [orgmode][tips] org-table-comment.el allows you to create org-tables in languages that do not
     have block comments.  https://github.com/emacsmirror/org-table-comment [2012-03-24 13:28:58]
+50. [python] 支持调试python的编辑器还真没几个：
+    http://wiki.python.org/moin/PythonDebuggers#IDEs_with_Debug_Capabilities 不过Spyder和Eric也支持调
+    试，没在这里列出来——居然还找不到一个基于wx（这两个都是基于Qt的） [2012-03-25 21:18:14]
+51. [emacs][python] 另一个思路是geben + komodo debugger extension (基于dbgp protocol)
+    http://docs.activestate.com/komodo/5.2/debugger.html [2012-03-25 21:20:22]
+52. 最近工作上老碰到 provisioning 这个词，不知道具体是什么意思，今天发现原来维基百科上有很详细的解
+    释: http://zh.wikipedia.org/wiki/%E6%9C%8D%E5%8A%A1%E5%BC%80%E9%80%9A [2012-03-28 11:31:01]
+53. [orgmode] 经试验，使用Consolas字体的话，Windows下表格线是能对齐的。另:《Emacs里中英文混排的文字对
+    齐》 http://ysong.me/2012/03/emacs_chinese_character_width/ [2012-03-30 11:50:53]
+54. [emacs][tips] C-x 4 c (clone-indirect-buffer-other-window) gives user two (or more) different
+    buffers which have their textual content linked together. You can use different major modes in
+    the clones.  http://www.emacswiki.org/emacs/IndirectBuffers [2012-03-30 12:58:49]
+55. [firefox] 这个FloatNotes扩展不错（在特定地址的页面上贴一个便签），支持用markdown格式来写内容，于
+    是可以添加粗体、列表、链接、图片，数据可跟随firefox sync（需要在其设置界面选一下）
+    https://addons.mozilla.org/zh-CN/firefox/addon/floatnotes/?src=search [2012-03-30 15:41:02]
+56. Markdown 语法说明(简体中文版) http://wowubuntu.com/markdown/ [2012-03-30 15:42:17]
+57. "The same features that can make Scala more productive can also make it unreadable." -
+    Scala or Java? Exploring myths and facts http://www.infoq.com/articles/scala-java-myths-facts
+    [2012-03-30 16:02:00]
+58. [emacs] 用frame-bufs.el实现了一直想要的类似perspective功能 https://gist.github.com/2250340 相比之
+    前研究的perspective.el，现在直接用frame绑定buffer，不同的frame即是不同的透视图，要简单直观得多。
+    perspective.el 定义的透视图在不同的frame之间不是共享的，所以比较适合单一frame的情况 [2012-03-30
+    17:44:42]
+59. [emacs][todo] eshell/start, frame-bufs, popwin (<f11> ~) [2012-03-30 18:11:43]
+60. [firefox] FloatNotes扩展的两个相关链接: FloatNotes Guide
+    http://www.floatnotes.org/documentation/guide Markdown 语法说明(简体中文版)
+    http://wowubuntu.com/markdown/ [2012-03-31 08:41:07]
+61. RT @hecaitou: 波尔定律：在非常专业的研究领域犯过一切错误的，就是专家。 [2012-03-31 11:06:53]
+62. [emacs][todo] 这个改进的flymake.el 对多文件时的性能做了改进（也有不少其它的改进），有必要合入到
+    eepy里面去（也已经包含了epy里面所用info统计功能) https://github.com/illusori/emacs-flymake
+    [2012-03-31 16:51:47]
+
+* 2012-04
+1. The Best Articles for Backing Up and Syncing Your Data - How-To Geek
+   http://www.howtogeek.com/108679/the-best-articles-for-backing-up-and-syncing-your-data/
+   [2012-04-01 16:06:01]
+2. [emacs] 终于知道tabbar-ruler在emacs-24上不出现关闭按钮的原因了: 它重定义的那个tabbar-line-tab原本
+   是用defsubst定义的，所以要重新对使用该函数的tabbar-line-format 重新eval一下，以让tabbar-line-tab
+   的新实现生效。至于再底层的原因，为什么emacs-23可以而v24不可以，就不清楚了。 [2012-04-06
+   12:06:00]
+3. [emacs][python] 奇怪，pdb怎么不好使了，启动后就卡在*gud-foobar.py*里面不动，这个buffer里也只有
+   Current directory is....这样一行内容 (Windows版本有此问题，Cygwin就没有) [2012-04-06 14:06:00]
+4. [emacs][python] 续: 明白了，跟ipython一样的问题，需要在命令行加一个-i: python -i -mpdb foobar.py
+   arg1 arg2 http://old.nabble.com/pdb-problem-td11173089.html [2012-04-06 14:32:03]
+5. [cygwin] 原来cygwin里面还模拟了一个/dev/clipboard设备（但ls /dev看不到）
+   http://comments.gmane.org/gmane.os.cygwin/132879 不知道还有一些别的什么 [2012-04-16 11:46:10]
+6. M$ Word最让人蛋疼的功能是章节编号，每次被折磨的死去活来。。。 [2012-04-18 08:42:07]
+7. [firefox] keysnail 里面如何调出类似vimperator那样的ex命令行(包含open,tabopen,dialog,js等命令那
+   个，而不是ext命令行)？不知道是不是我改过配置，导致直接按冒号不好使了（记得keysnail缺省设置应该是
+   可以的），找了好一阵才发现对应的ext命令是list-command 囧。如果要绑定到键的话，对应内容是
+   shell.input(null, arg)或者ext.exec("list-command") [2012-04-18 11:35:04]
+8. [emacs][ipython] Windows下启动方法: @python -i -mIPython.frontend.terminal.ipapp %* [2012-04-18
+   18:28:44]
+9. [far] 换新版ConEmu (120417) 不成功，换了之后FAR老僵死，conemu不刷新。开始以为是版本不配套，换了新
+   的far2也不行，回退conemu到1201xx,1111xx,1110xx等多个版本也不行 [2012-04-19 09:38:13]
+10. [far] 续: 然后从注册表里面关闭了新版conemu提供的KeyboardHooks，UseInjects两个新特性，还是不行。
+    （BTW: 更新症状: FAR2界面不响应鼠标、键盘，而conemu界面调整大小后FAR界面不刷新，而用来跑cmd则正常
+    （甚至里面跑mc或者jasspa都正常）——跑FAR3也正常 [2012-04-19 09:54:36]
+11. How To Download Android Market Apps To Your Computer - APK Downloader http://is.gd/XxclYk
+    [2012-04-19 16:31:45]
+12. xfce里面切换workspace的快捷键居然是在Settings -> Window Manager里面设置的，而不是Keyboard
+    -> Application Shortcuts，让我找了好一阵
+    http://www.linux-pages.com/2011/04/remove-xfce-global-shortcuts-e-g-ctrl-f4/ [2012-04-19
+    18:21:00]
+13. [far] 很多插件还不支持FAR3，而且FAR3显示中文有问题：两个汉字会前后有半个叠在一起，所以还是折腾
+    FAR2吧 [2012-04-20 09:58:31]
+14. [far] 将官方far2在最新的conemu试了一下，没有加其它地方放插件，居然没有问题。看来是插件导致的问
+    题，用二分法定位发觉问题出在wlx2far，删除后就行了 [2012-04-20 09:59:28]
+15. wxcommander前年提供了一个Linux预览版，单一文件，功能不少，不过不太稳定，应急时可以凑合着用用
+    http://download-preview-gtk.wxcommander.com/ [2012-04-20 16:26:16]
+16. wxcommander支持外部工具、支持命令行（非嵌入终端），支持TC的wcx/wlx插件，带内置查看器，缺点是不带
+    中文界面，不支持搜索 [2012-04-20 16:29:17]
+17. [iphone] Leafsnap is the first in a series of electronic field guides... (it) uses visual
+    recognition software to help identify tree species from photographs of their
+    leaves. http://leafsnap.com/ [2012-04-21 09:29:28]
+18. 为大家都能看google上好的帖子，给大家一个翻墙工具 - CN-Clojure | Google Groups -
+    http://groups.google.com/group/cn-clojure/browse_thread/thread/2aca923a6f438333 [2012-04-21
+    13:59:47]
+19. GaleForce: Adding Resource Types Based on Manufacturer Only (to your topology) page 282
+    [2012-04-22 15:07:30]
+20. [gnome] Firefox下载对话框双击文件时出现一个错误“位置不是文件”，原来是今天安装thunar导致的， 用
+    exo-preferred-applications命令重新设置一下缺省文件管理器(为thunar)就解决了 http://is.gd/XEFHmg
+    [2012-04-22 15:18:05]
+21. [emacs][tips] A Key Sequence For revert-buffer: C-x C-v RET (i.e. M-x find-alternate-file and
+    choose the first one) http://irreal.org/blog/?p=767 [2012-04-23 10:19:50]
+22. [firefox] firefox 3.6要寿终正寝了，赶紧下载了最后一个小版本3.6.28的便携版 http://is.gd/cHT588
+    (sf.net) [2012-04-23 11:36:23]
+23. [emacs] make psvn.el work on svn-1.7 http://www.eaflux.com/ via Suresh' Blog
+    http://www.sureshpw.com/2012/04/gnu-emacs-and-subversion-17.html [2012-04-23 14:27:57]
+24. [vim] 官方的Windows版本7.2/7.3都是动态加载python26.dll的，想要跟python2.7配套的话，可以装这个
+    http://code.google.com/p/manshow/downloads/list 或者这个 http://wyw.dcweb.cn/#download
+    [2012-04-23 18:04:52]
+25. [vim] 试了一下VOoM http://vim-voom.github.com/ 在敲入:Voom后vim报了一大堆错误，先是报告python里
+    import os失败，然后报告Unknown filetype 'voomtree'，现在又list index out of range... 反正
+    就是不正常工作。唉，对vim还是比较失望，用在简单的编辑文件场景吧 [2012-04-23 18:15:21]
+26. 电脑用久了变慢了？桌面上的沙漏或是小圆圈让人发疯？我们要找出原因来，不然玩电脑就只会越用越郁
+    闷……譬如今天介绍的来自以色列创业公司的产品: Soluto！——什么，装了dotNet和soluto，电脑更慢了，半
+    天打不开soluto? 所以你更需要soluto!  哈哈哈 [2012-04-24 18:51:37]
+27. 『Perl有世上最好的市场推广。你可以写一本介绍他们市场推广有多绝的书。Sun公司砸大笔钱给Java推市
+    场，Perl在受欢迎程度来说能跟Java齐头并进，但Perl纯粹是依靠Larry Wall和他那帮哥们的三寸不烂之舌做
+    市场。哈佛商学院的人应该去研究Perl的市场是怎么做出来的。真的让人瞠目结舌。 』
+    http://code.google.com/p/windows-config/wiki/TourDeBabel [2012-04-25 09:04:02]
+28. [prog.lang.war] 关于C++的复杂性，这段话说得好: "Every C++ programmer loves 20% of C++. The
+    problem is, they each love a different 20%". Unfortunately, programmers spend the vast
+    majority of their time working within the context of other peoples' code. This means that
+    you're going to have to deal with whichever language features you hate on a fairly regular
+    basis.http://is.gd/Sco6vd [2012-04-25 10:32:33]
+29. [screen] 几个与窗口(它叫region)相关的快捷键: S:split, V:vert_split, TAB: focus(next region)
+    X:remove Q:only(delete others) 我得改成跟Emacs一致才行 [2012-04-25 12:04:42]
+30. tmux里与pane相关的键: ":split vert, %:split horiz, x:kill, o:other, C-o:rotate, M-o:rotate
+    backwards, {}:swap, arrows:jump to, C-arrows/M-arrows: resize, M-1..5: preset layouts
+    [2012-04-25 13:42:52]
+31. [prog.lang.war] 关于C++的复杂性，这段话说得好: "Every C++ programmer loves 20% of C++. The
+    problem is, they each love a different 20%". Unfortunately... http://is.gd/WuNBZF
+    [2012-04-25 13:49:09]
+32. tmux里面的window跟Emacs的frame比较象，每个有自己的window layout，tmux屏幕下方会先是window列表，切
+    换到哪个就心里有数了 [2012-04-25 13:56:34]
+33. byobu是对gnu screen和tmux做的封装和二次开发，这里有两篇相关介绍: http://is.gd/ZIXThc
+    (webupd8.org) http://goo.gl/nt3M (blogspot.com) [2012-04-26 11:39:20]
+34. linuxtoy网站换用”评论啦“之后我就没几次能看见评论 [2012-04-26 11:58:26]
+35. 说到笔顺，『国际标准汉字大字典』里面有每个字的笔顺，但我感觉这个是为电脑/手机上用笔顺输入法设计
+    的，跟实际不太一致，比如竖心旁的字它是"点点竖..." [2012-04-26 13:40:04]
+36. [emacs] 如果想按文件名/路径名配置文件编码，可以设置auto-coding-alist
+    http://www.emacswiki.org/emacs/SelectingTheRightCodingSystem#toc2 [2012-04-26 14:08:59]
+37. [emacs][tips][unicode] 如何你经常会编辑不同编码的文件，可以试试这个自动探测编码的包: unicad.el
+    http://code.google.com/p/unicad/ [2012-04-26 14:14:19]
+38. [emacs][tips][unicode] 自动检测文件编码: 如果只涉及中文的话，可以用这个fenc.el
+    http://code.google.com/p/ywb-codes/source/browse/trunk/emacs/site-lisp/contrib/fenc.el
+    [2012-04-26 14:58:13]
+39. 玩了一下“Vim大冒险” ( vim-adventures.com )，还挺难的 :=) http://news.cnblogs.com/n/140263/
+    [2012-04-26 16:48:45]
+40. 几天前装了TortoiseGit之后，Cygwin里面的git也改用那个tortoiseplink来建立ssh链接了，死活不能提交代
+    码了，今天终于找到问题在哪儿了：小乌龟设了个GIT_SSH环境变量，解决方法是在cygwin里unset GIT_SSH就
+    行了（恢复成使用openssh） [2012-04-27 13:16:07]
+41. [linux][rhel] EPEL(Extra Packages for Enterprise Linux) 是个好东西
+    http://fedoraproject.org/wiki/EPEL/FAQ 很多Debian/Ubuntu镜像网站上也可以找到EPEL镜像，比如
+    http://mirrors.ustc.edu.cn/epel [2012-04-27 13:40:35]
+42. [tmux] 如何查看历史输出，Shift-PgUp/PgDn不好使了？ 改用C-b [进入copy mode，然后就可以用
+    PgUp/PgDn/光标来浏览历史输出了，按q退出。C-b PgUp也可以进入coy
+    mode. http://superuser.com/a/209608 [2012-04-27 17:56:56]
+43. 费了两个半天，终于把github开源山寨版——gitlab给搭起来了，RHEL上搭这些真是不省心啊 [2012-04-28
+    08:59:07]
+44. [firefox][rss] newsfox最新版(1.0.8.3)在fx 3.6上不可用，界面根本调不出来，经测试，最新的一个可用
+    版本是1.0.6.3 https://addons.mozilla.org/zh-CN/firefox/addon/newsfox/versions/ [2012-04-28
+    11:35:08]
+45. [tmux] C-b [ 进入的copy mode其实比较类似vi/emacs里面一个只读buffer，可以移动光标，可以搜索，用
+    C-SPC开始选择，选择完后用M-w拷贝(拷贝后自动退出copy mode)，然后可以C-b ]粘贴(可在其它窗口粘贴),
+    C-b =可以从剪贴板历史中选 [2012-04-28 14:29:53]
+46. gnu [screen]进入copy mode的方式跟tmux类似(C-a [)，但进入后它是vi style keybindings，第一次空格设
+    置开始标记，然后用hjklw之类移动光标，第二次空格完成拷贝。粘贴也是用C-a ] [2012-04-28 17:55:56]
+
