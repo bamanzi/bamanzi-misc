@@ -17,7 +17,7 @@
 (when (file-exists-p "~/.emacs.d/site-lisp/site-start.el")
   (load "~/.emacs.d/site-lisp/site-start.el"))
 
-
+(add-to-list 'image-load-path "~/.emacs.d/etc/images/")
 (add-to-list 'load-path "~/.emacs.d/lisp/")
 ;;(add-to-list 'load-path "~/.emacs.d/mylisp/")
 
@@ -30,17 +30,17 @@
 ;;}}}
 
 
-;;{{{ generate autoload and load them
-(defun generate-dir-autoload-and-load (top-dir)
-  (let ( (generated-autoload-file "~/.emacs.d/autoloads.el") )
-    (mapc '(lambda (dir)
-             (update-autoloads-from-directories dir))
-          '("e:/emacs/site-lisp/misc_"
-            "e:/emacs/site-lisp/filetype_"
-            "e:/emacs/site-lisp/prog_"
-            "e:/emacs/site-lisp/win32_"
-            ))
-    (load-file generated-autoload-file)))
+;; ;;{{{ generate autoload and load them
+;; (defun generate-dir-autoload-and-load (top-dir)
+;;   (let ( (generated-autoload-file "~/.emacs.d/autoloads.el") )
+;;     (mapc '(lambda (dir)
+;;              (update-autoloads-from-directories dir))
+;;           '("e:/emacs/site-lisp/misc_"
+;;             "e:/emacs/site-lisp/filetype_"
+;;             "e:/emacs/site-lisp/prog_"
+;;             "e:/emacs/site-lisp/win32_"
+;;             ))
+;;     (load-file generated-autoload-file)))
 
 
 
@@ -55,11 +55,34 @@
 ;; (setq idle-require-symbols '(cedet nxml-mode)) ;; <- Specify packages here.
 
 
-(mapc  '(lambda (file)
-          (unless ;;(ignore-errors        
-                    (load file);;)
-            (message "Failed to load %s." file)))          
-       (directory-files "~/.emacs.d/init.d/" t "^[0-9[0-9].*\.el$"))
+(defun load-file-if-not-loaded (file)
+  (interactive "f")
+  (with-current-buffer "*Messages*"
+    (goto-char (point-min))
+    (if (search-forward-regexp (concat "Loading .*" file ".*\.\.\.done") 
+                                   nil 
+                                   'noerror)
+        (message "%s already load. skipped." file) ;;skip this file and return true
+      (load-file file)
+      )))
+
+;;test: (load-file-if-not-loaded "~/.emacs.d/init.d/20-windows.el")
+
+(defun load-dotemacs-files ()
+  "Load all my dotemacs files from ~/.emacs.d/init.d.
+
+If any error occurs, it would exit. After you fixed the errors, you can use this command again (and again) , to finish all the dotemacs files."
+  (interactive)
+  (mapc '(lambda (file)
+           (unless ;;;(ignore-errors
+               (let ( (debug-on-error nil) )
+                 (load-file-if-not-loaded file)
+                 );;;)
+             (message "Failed to load %s." file)))
+        (directory-files "~/.emacs.d/init.d/" t "^[0-9].*\\.el$")))
+
+(load-dotemacs-files)
+
 
 (when nil
   ;; for debugging initscripts
@@ -69,19 +92,18 @@
              (insert-string (format "   (load \"%s\")\n" file)))
           (directory-files "~/.emacs.d/init.d/" t "[0-9[0-9].*\.el$"))
       (insert-string ")  \n"))  ;;put cursor on next line, and press C-x C-e
-    
+  
   (progn
    (load "/home/bamanzi/.emacs.d/init.d/00-init.el")
    (load "/home/bamanzi/.emacs.d/init.d/10-emacs-env.el")
    (load "/home/bamanzi/.emacs.d/init.d/10-essential.el")
    (load "/home/bamanzi/.emacs.d/init.d/20-buffers.el")
-   (load "/home/bamanzi/.emacs.d/init.d/20-emacs-env.el")
    (load "/home/bamanzi/.emacs.d/init.d/20-files.el")
    (load "/home/bamanzi/.emacs.d/init.d/20-windows.el")
    (load "/home/bamanzi/.emacs.d/init.d/25-minibuffer.el")
    (load "/home/bamanzi/.emacs.d/init.d/25-tabbar.el")
-   (load "/home/bamanzi/.emacs.d/init.d/25-win-fns.el")
-   (load "/home/bamanzi/.emacs.d/init.d/29-env-misc.el")
+   (load "/home/bamanzi/.emacs.d/init.d/25-win-keys.el")
+   (load "/home/bamanzi/.emacs.d/init.d/30-dict-spell.el")
    (load "/home/bamanzi/.emacs.d/init.d/30-shell.el")
    (load "/home/bamanzi/.emacs.d/init.d/40-completion.el")
    (load "/home/bamanzi/.emacs.d/init.d/40-edit-basic.el")
@@ -96,6 +118,7 @@
    (load "/home/bamanzi/.emacs.d/init.d/59-mouse.el")
    (load "/home/bamanzi/.emacs.d/init.d/60-prog-basic.el")
    (load "/home/bamanzi/.emacs.d/init.d/65-cedet-ecb.el")
+   (load "/home/bamanzi/.emacs.d/init.d/65-prog-help.el")
    (load "/home/bamanzi/.emacs.d/init.d/70-file-assoc.el")
    (load "/home/bamanzi/.emacs.d/init.d/75-delphi.el")
    (load "/home/bamanzi/.emacs.d/init.d/75-elisp.el")
@@ -105,11 +128,16 @@
    (load "/home/bamanzi/.emacs.d/init.d/75-sh-script.el")
    (load "/home/bamanzi/.emacs.d/init.d/75-xml.el")
    (load "/home/bamanzi/.emacs.d/init.d/79-autohotkey.el")
+   (load "/home/bamanzi/.emacs.d/init.d/79-misc-lang.el")
    (load "/home/bamanzi/.emacs.d/init.d/80-ports.el")
    (load "/home/bamanzi/.emacs.d/init.d/90-foobar.el")
+   (load "/home/bamanzi/.emacs.d/init.d/90-fun.el")
+   (load "/home/bamanzi/.emacs.d/init.d/90-unicode.el")
    (load "/home/bamanzi/.emacs.d/init.d/95-one-key.el")
    (load "/home/bamanzi/.emacs.d/init.d/99-temp.el")
-  )
+)  
+  
+  
  
   )
 
