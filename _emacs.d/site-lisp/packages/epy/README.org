@@ -1,53 +1,116 @@
-#+title: EEPY - Enhanced Emacs for PYthon
+* EEPY - Enhanced Emacs for PYthon
 
-Based on Gabriele Lanaro's Emacs-for-Python
+Based on Gabriele Lanaro's *Emacs-for-Python*
 https://github.com/gabrielelanaro/emacs-for-python
 
-* Difference with emacs-for-python
+** Difference with emacs-for-python
 eepy is based on [[https://github.com/gabrielelanaro/emacs-for-python][Gabriele Lanaro's Emacs-for-Python]], with the following improvments & changes
-** disable ropemacs by default
-  * for performance reason, disalbe ropemacs by default
-  * autoload ropemacs when .ropeproject dir found 
+*** disable ropemacs by default
+   * for performance reason, disalbe ropemacs by default
+   * autoload ropemacs when .ropeproject dir found on current dir or parent dir
 
-** improve code completion 
-  * pdee pycompletemine 
-    + auto-complete
-    + python-shell
-  * a new auto-complete source for GNU Emacs's built-in python completion
+*** improve code completion 
+   * pycompletemine from [[https://github.com/pdee/pdee/][pdee]], plus the following changes
+     + made it a source for auto-complete
+     + made it work on python-shell
+   * a new auto-complete source for GNU Emacs's built-in python completion
+   * a new auto-complete source with external API files (SciTE way)
 
-** improve flymake
-***  eepy uses this fork version of flymake.el: https://github.com/illusori/emacs-flymake
-    * Support for queuing up syntax checks once a certain number are in-progress.
-    * Support for placing temporary files in the system temporary directory.
-    * Spawns only one buffer-modification timer check rather than one per buffer.
-    * Show multiple errors in tooltips.
-    * Improved support for remote files over Tramp.
-    * Improved error message classification. (err/warn/info, customizable regexp)
-    * Support for new languages: Javascript and CSS.
-    * Minor other bug fixes.
-*** eepy's changes
-    * use =flymake-cursor.el= to displays flymake error msg in minibuffer.
-    * you can switch flymaker within between epylint/pep8/pyflakes/pychecker when editing.
+*** improved flymake
+  *  eepy uses this fork version of flymake.el: https://github.com/illusori/emacs-flymake
+     * Support for queuing up syntax checks once a certain number are in-progress.
+     * Support for placing temporary files in the system temporary directory.
+     * Spawns only one buffer-modification timer check rather than one per buffer.
+     * Show multiple errors in tooltips.
+     * Improved support for remote files over Tramp.
+     * Improved error message classification. (err/warn/info, customizable regexp)
+     * Support for new languages: Javascript and CSS.
+     * Minor other bug fixes.
+  * eepy's changes
+    * Python package pep8 & pylint already bundled in this suite. You don't need to install them by yourself.
+    * Use =flymake-cursor.el= to displays flymake msg in minibuffer when cursor moves to corresponding position
+    * You can switch flymaker within between epylint/pep8/pyflakes/pychecker when editing.
       (not only before eepy start-up)
-    * you can invoke flymaker manually with =eepy-flymake-with=
-    
-** documentation
-  * chm
-    + keyhh on windows
-    + [ ] ??? on windows (which one supports keyword argumenting?)
-  * pycompletemine's <M-f1>, <M-f3>
-  * `info-lookup-symbol' and python document in texinfo format
-  * [ ] pylookup
+    * You can invoke flymaker manually with =eepy-flymake-with=
 
-** add an easy-to-use menu, you can invoke most stuff here
-   - toggle auto-complete sources
-   - turn on/off flymaker, and switch flymaker between pylint/pep8/pyflakes/pychecker
-   - invoke syntax checking with pylint/pep8/pyflakes/pychecker 
+*** python documentation
+   * chm
+     + keyhh on windows
+   * pycompletemine's <M-f1>, <M-f3>
+   * `info-lookup-symbol': query python document in texinfo format 
+     (stolen from `info-lookup` from [[http://www.loveshack.ukfsn.org/emacs/][loveshack's python.el]])
+     - [ ] python documentation in info format (not available in python 2.6/2.7's official packages)
+     - [ ] or, [[https://bitbucket.org/jonwaltman/pydoc-info/][pydoc-info]] ?
 
-** others
-  * removed Gabriele Lanaro's personal preferences (epy-bindings, epy-editing) 
+*** support different python major modes
+   * emacs 23 & 24's built-in python-mode
+   * [[https://launchpad.net/python-mode][python-mode.el from launchpad.net]]
+   * [[https://github.com/fgallina/python.el][fgallina's python.el]]
+   * [[http://www.loveshack.ukfsn.org/emacs/python.el][loveshack's python.el]]
 
-* Usage
+*** others features
+   * imenu integration
+     + choose method (M-x imenu)
+     + anything-imenu / anything-browse-code
+     + imenu tree
+   * code folding with visual indicators
+     + hideshow + hideshowvis
+     + outline + outline  
+   * *develock* to highlight code style violations
+
+*** add an easy-to-use menu, you can invoke most stuff here
+    - toggle auto-complete sources
+    - turn on/off flymaker, and switch flymaker between pylint/pep8/pyflakes/pychecker
+    - invoke syntax checking with pylint/pep8/pyflakes/pychecker 
+
+*** removed Gabriele Lanaro's personal preferences 
+   - disabled autopair-mode by default
+   - disabled smart-operator-mode by default 
+   - remove epy's configurations file epy-bindings, epy-editing
+
+** Limitations & TODO
+   + Only tested on GUI version of Emacs 23.1 & 24.0.95, on Windows XP SP2 & LinuxMint 11.
+     - [ ] test on console version of Emacs, esp. fringe stuff (code folding, flymake etc)
+   + Only tested on CPython 2.6 & 2.7
+     - [ ] Currently on plan for CPython 3.x or Jython/IronPython
+   + IPython shell only works under python-mode.el.
+     - [ ] Make it work on other python major modes (?)
+   + [ ] Project support (?)
+   + [ ] Yasnippet not tested
+   + python documentation
+     - [ ] [[https://github.com/tsgates/pylookup][pylookup]] (not yet)
+     - [ ] pydoc command line?
+
+** Quick Start
+*** Quick Start
+  1. In your dotemacs, add path of `eepy' to `load-path'
+#+begin_src emacs-lisp
+     (add-to-list 'load-path "/some/where/storing/eepy")
+#+end_src
+  2. On Linux, make sure all files in folder `bin' have x permission
+#+begin_src bash
+     chmod u+x /some/where/storing/eepy/bin/*
+#+end_src
+     (On Windows, you don't need to do anything).
+  3. Load feature `eepy', either in dotemacs
+#+begin_src emacs-lisp
+     (require 'eepy)
+#+end_src
+  or on demand:
+#+begin_example
+     M-x load-library RET eepy RET
+#+end_example
+  4. Then open your python source files to edit. You can access most features
+     from the `eepy' menu.
+
+*** If you want to customize something
+   Just customize eepy group.
+#+begin_example
+   M-x customize-group RET eepy RET
+#+end_example
+   Or, you can edit `eepy-custom.el' to suit your needs, and then load `eepy-custom' rather than `eepy'.
+
+   Refer [[file:Usage.org]] for detail info.
 
 * References
 ** general

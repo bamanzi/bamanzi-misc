@@ -112,7 +112,7 @@ Used with `eval-after-load'."
                  (format "'%s'" symbol)
                  help-file ))
 
-(defun eepy-get-keyword-help (symbol)
+(defun eepy-chm-keyword-help (symbol)
   (interactive
    (list (read-string "Help on symbol(CHM): "
                       (or (thing-at-point 'symbol) ""))))

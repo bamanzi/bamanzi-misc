@@ -9,12 +9,12 @@
   "Temp loader for real `ropemacs-mode'."
   ;; load ropemacs first
   (unless (fboundp 'ropemacs-mode)
-        (setup-ropemacs))
+        (eepy-setup-ropemacs))
   ;; invoke the real `ropemacs-mode'.
   (unless (symbol-file 'ropemacs-mode) ;;if ropemacs correctly loaded, it should be nil
     (call-interactively 'ropemacs-mode)))
       
-(defun setup-ropemacs ()
+(defun eepy-setup-ropemacs ()
   (require 'pymacs (concat eepy-install-dir "extensions/pymacs.el"))
   
   "Setup the ropemacs harness"
@@ -76,7 +76,7 @@
   "Simple wrapper to load ropemacs and them open a rope project."
   (interactive "D")
   (unless (fboundp 'rope-open-project)
-    (setup-ropemacs))
+    (eepy-setup-ropemacs))
   (rope-open-project dir))
 
 (defun eepy-detect-rope-project ()

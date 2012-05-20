@@ -22,6 +22,31 @@
 
 (require 'auto-complete)
 
+;;a helper command
+(defun ac-toggle-source (source &optional desire)
+  "Add or remove a SOURCE in `ac-sources'.
+
+If DESIRE given, this source would be absolutely added (if DESIRE > 0) or
+remove (if DESIRE <= 0). If DESIRE not given, it would be toggled."
+  (interactive
+   (list (intern-soft (ido-completing-read "Source: "
+										   (loop for x being the symbols
+												 if (and (boundp x)
+														 (string-match "^ac-source-" (symbol-name x)))
+												 collect (symbol-name x))))))
+  (when (and source (symbolp source))
+	(if desire
+		(if (> desire 0)
+			(add-to-list 'ac-sources source)
+		  (setq ac-sources (remq source ac-sources)))
+	  (if (memq source ac-sources)
+		  (setq ac-sources (remq source ac-sources))
+		(add-to-list 'ac-sources source)))
+	(message "Source `%s' %s." source (if (memq source ac-sources)
+										  "enabled"
+										"disabled"))))
+
+
 (defcustom eepy-auto-complete-sources
   '(ac-source-python-builtin
     ;;ac-source-pycompletemine
@@ -55,7 +80,7 @@ by ropeproject hook."
 
 (defun python-symbol-completions-maybe (prefix)
   (let ((python-el (symbol-file major-mode)))
-    (if (string-match "lisp/progmodes/python.el" python-el) ;;Emacs builtin lisp.el
+    (if (string-match "lisp/progmodes/python.el" python-el) ;;Emacs builtin python.el
         (python-symbol-completions prefix)
       nil) ;;otherwise, return nil
     ))
@@ -83,14 +108,14 @@ by ropeproject hook."
 ;;disadvantages:
 ;;   - `pymacs' needed
 
-(ac-define-source pycomplete
+(ac-define-source pycompletemine
   '((depends pycompletemine)  ;;FIXME: ok?
     (prefix .  "[ \t\n['\",()]\\([^\t\n['\",()]+\\)\\=")
     (candidates . (pycomplete-get-all-completions-for-ac ac-prefix))
     (symbol . "pyc")
     (document . py-complete-help)))
 
-(defun ac-enable-pycompletemine (&optional on)
+(defun ac-enable-pycompletemine-source (&optional on)
   (interactive)
   (let ((turn-on (or on
                      (not (memq ac-source-pycompletemine ac-sources)))))
@@ -98,12 +123,17 @@ by ropeproject hook."
         (add-to-list 'ac-sources 'ac-source-pycompletemine)
       (setq ac-sources (remq ac-source-pycompletemine ac-sources)))))
 
+;;*** auto-complete-scite-api
+;;TODO: ...
+(if (require 'auto-complete-scite-api nil t)
+    (add-to-list 'ac-scite-api-directories (concat eepy-install-dir "etc")))
+
 
 ;;** ropemacs: (code completion (and other features) for project
 (require 'eepy-ropemacs)
 
 ;;** yasnippets
-ttps://github.com/mlf176f2/yas-jit.el
+
 ;; Disabling Yasnippet completion 
 (defun epy-snips-from-table (table)
   (with-no-warnings
@@ -117,6 +147,7 @@ ttps://github.com/mlf176f2/yas-jit.el
       )))
 
 (defun epy-get-all-snips ()
+  ;;https://github.com/mlf176f2/yas-jit.el
   (require 'yas-jit nil t) ;; FIXME: find a way to conditionally load it
   (if (featurep 'yasnippet)
       (let (candidates)
@@ -129,7 +160,5 @@ ttps://github.com/mlf176f2/yas-jit.el
   `(setq ac-ignores (concatenate 'list ac-ignores (epy-get-all-snips)))
   )
 
-;;** other completion methods
-;;TODO: scite-api
 
 (provide 'eepy-completion)
