@@ -39,6 +39,7 @@
   )
 
 (defun eepy-set-checker (checker)
+  "Set default checker (compiler) for `eepy-check'."
   (interactive
    (list (ido-completing-read "Checker: "
                               '("epylint" "pep8" "pyflakes" "pychecker")
@@ -47,9 +48,16 @@
                               nil
                               nil
                               eepy-static-checker)))
-  (setq eepy-set-checker checker)
+  (setq eepy-static-checker checker)
   (message "Default python checker set to %s." checker))
 
+(defun eepy-check ()
+  "Static check current file with `eepy-static-checker'"
+  (interactive)
+  (let ( (compile-command (concat eepy-static-checker " "
+                                  (shell-quote-argument (buffer-file-name)))) )
+    (call-interactively 'compile)  
+  ))
 
 
 ;;** flymake
@@ -58,7 +66,7 @@
   (if (boundp 'flymake-info-line-regex)
       (setq flymake-info-line-regex     ;;only available in `flymake-patch.el'
             (append flymake-info-line-regex '("unused$" "^redefinition" "used$"))))
-  
+
   (load "flymake-cursor" nil t)
   (require 'rfringe nil t))
 
@@ -120,7 +128,7 @@ Make sure a `%f' is included in the command line"
   (setq eepy-flymake-cmdline cmdline)
   (flymake-mode -1)
   (flymake-mode t))
-  
+
 (defun python-mode-hook-flymake ()
   "initialize flymake on open python files."
   (when eepy-flymake-cmdline

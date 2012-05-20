@@ -52,7 +52,7 @@ here our check are buffer-specific."
       'loveshack)                   ;; http://www.loveshack.ukfsn.org/emacs/NEWS.python
      (t
       'built-in)))))
-     
+
 
 
 (autoload 'pymacs-load  "pymacs"
