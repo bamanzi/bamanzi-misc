@@ -76,6 +76,48 @@ ext.add("split-window-horizontally", function() {
         splitpannel.toggle(window._content.document.location, true, "right");
     }
 }, 'split-window-horizontally (Fox Splitter addon)');
+    
+ext.add("view-in-split-panel", function () {
+    splitpannel.toggle(window._content.document.location, true, 'right');
+}, 'Open Split Panel and load current URL in it .');
+
+ext.add("cnblogs-ing-in-split-panel", function () {
+    splitpannel.toggle('http://space.cnblogs.com/mi/', true, 'right');
+}, 'Open Split Panel and load http://space.cnblogs.com/mi/ in it .');
+
+ext.add("google-reader-i-in-split-panel", function() {
+    splitpannel.toggle('https://www.google.com/reader/i/#stream/user%2F02753487812100788291%2Fstate%2Fcom.google%2Fread', true, 'right');
+}, 'Open Split Panel and load Google Reader in it .');
+
+ext.add("google-translate-in-split-panel", function () {    
+    splitpannel.toggle("http://translate.google.com/m?hl=zh-CN&sl=auto&tl=en&ie=UTF-8", true, 'right');
+}, 'Open Split Panel and load Google Translate (any->en) in it .');
+    
+ext.add("google-translate-cn-in-split-panel", function () {
+    splitpannel.toggle("http://translate.google.com/m?hl=zh-CN&sl=auto&tl=zh-CN&ie=UTF-8", true, 'right');
+}, 'Open Split Panel and load Google Translate (any->zh-CN) in it .');
+
+//toggle sidebar
+ext.add("toggle-sidebar", function () {
+    toggleSidebar("");
+}, 'toggle sidebar');
+ 
+ext.add("read-it-later-sidebar", function () {
+    toggleSidebar("RIL_sidebarlist");
+}, 'Toggle ReadItLater sidebar. (readitlater extension)');
+ 
+ext.add("save-to-read-sidebar", function () {    
+    toggleSidebar("viewSidebar_save2read");
+}, 'Toggle Save-To-Read sidebar. (save2read extension)');
+
+ext.add("pano-sidebar", function() {
+    toggleSidebar('viewPanoramaSidebar');
+}, 'Toggle Pano side bar (extension Pano).');
+    
+ext.add("scrapbook-sidebar", function () {
+    toggleSidebar("viewScrapBookSidebar");
+}, 'Toggle Scrapbook sidebar (extension Scrapbook or Scrapbook Plus)');
+
 
 //make some ScrapBook (Plus)'s command could be manipulated with keyboard     
 ext.add("scrapbook-highlight", function(ev, arg) {
@@ -125,7 +167,7 @@ util.httpPostJSON= function (url, params, callback) {
                 // nothing
                 break;
             case "object":
-                params = JSON.stringify(params)
+                params = JSON.stringify(params);
                 break;
             default:
                 params = "";
@@ -252,6 +294,7 @@ ext.add("paste-to-tab-and-go", function() {
 	    BrowserSearch.loadSearch(url, true);
     }
 }, "Paste the URL or keyword from clipboard to a new tab and Go");
+
 
 
 // selection
@@ -428,6 +471,56 @@ ext.add("wiktionary-lookup-selection", function() {
     }
     gd12.select.lookupSelected();
 }, 'Show translation for selection (extension: Wiktionary & Google Translate).');
+
+ext.add("open-extension-dialog", function(ev, arg) {
+    var wm = Components.classes['@mozilla.org/appshell/window-mediator;1'].getService(Components.interfaces.nsIWindowMediator);
+
+    OpenAddonsMgr = function(type, typeUrl) {
+        var extensionManager = wm.getMostRecentWindow("Extension:Manager");
+        if (extensionManager) {
+            extensionManager.focus();
+            extensionManager.showView(type);
+        } else {
+            var addonManager = wm.getMostRecentWindow("Addons:Manager");
+            if (addonManager) {
+                addonManager.focus();
+                addonManager.gViewController.loadView(typeUrl);
+            } else {
+                //var contents = toolbar_buttons.getUrlContents("chrome://mozapps/content/extensions/extensions.xul");
+                window.openDialog(
+                    "chrome://mozapps/content/extensions/extensions.xul",
+                    "",
+                    "chrome,menubar,extra-chrome,toolbar,dialog=no,resizable,width=1024,height=768,centerscreen",
+                    //contents.match("Addons:Manager") ? {"view" :typeUrl} : type);
+                    {"view" :typeUrl});
+            }
+        }
+    };
+    OpenAddonsMgr('extensions', 'addons://list/extension');
+}, "Open the Addons Manager.");
+
+ext.add("gwt", function() {
+    var newurl = "http://gxc.google.com/gwt/x?u=" + window.content.location.href;
+    content.location.href = newurl;
+}, "Use GWT to view current url.");
+
+    
+ext.add("evernote-clearly", function() {
+   readable_by_evernote__menu__call();
+}, "Read current page in Evernote Clearly (call again to quit)."); 
+
+ext.add("tabundle-group", function(ev, arg) {
+    Tabundle.createGroupListHtml = function() {
+		//....https://gist.github.com/1851778
+    };
+    Tabundle.createIndexHtml();
+    //var path = Tabundle.createListHtml()
+    var path = Tabundle.createGroupListHtml();
+    if (path) {
+        gBrowser.selectedTab = gBrowser.addTab('file://' + path)
+    }
+}, "Use tabundle extension to capture info of all tabs of current group."); 
+    
 //}}%PRESERVE%
 // ========================================================================= //
 
@@ -492,7 +585,6 @@ hook.setHook('Unload', function () {
         return true;
     });
 });
-
 hook.addToHook('Unload', function () {
     util.getBrowserWindows().some(function (win) {
         if (win === window) {
@@ -558,19 +650,19 @@ key.setGlobalKey('C-m', function (ev) {
     key.generateKey(ev.originalTarget, KeyEvent.DOM_VK_RETURN, true);
 }, 'Generate the return key code');
 
-key.setGlobalKey(['M-g', 'M-d'], function (ev) {
+key.setGlobalKey(['C-x', 'l'], function (ev) {
     command.focusToById("urlbar");
 }, 'Focus to the location bar', true);
 
-key.setGlobalKey(['M-g', 'M-k'], function (ev) {
+key.setGlobalKey(['C-x', 'g'], function (ev) {
     command.focusToById("searchbar");
 }, 'Focus to the search bar', true);
 
-key.setGlobalKey(['M-g', 'M-t'], function (ev) {
+key.setGlobalKey(['C-x', 't'], function (ev) {
     command.focusElement(command.elementsRetrieverTextarea, 0);
 }, 'Focus to the first textarea', true);
 
-key.setGlobalKey(['M-g', 'M-b'], function (ev, arg) {
+key.setGlobalKey(['C-x', 's'], function (ev) {
     command.focusElement(command.elementsRetrieverButton, 0);
 }, 'Focus to the first button', true);
 
@@ -670,7 +762,7 @@ key.setGlobalKey(['C-c', 'C-e'], function (ev, arg) {
     ext.exec("hok-start-continuous-mode", arg, ev);
 }, 'Start Hit a Hint continuous mode', true);
 
-key.setGlobalKey([['C-c', 'g', 'u'], ['M-g', 'u']], function (ev) {
+key.setGlobalKey(['C-c', 'g', 'u'], function (ev) {
     var uri = getBrowser().currentURI;
     if (uri.path == "/") {
         return;
@@ -682,7 +774,7 @@ key.setGlobalKey([['C-c', 'g', 'u'], ['M-g', 'u']], function (ev) {
     loadURI(uri.prePath + pathList.join("/") + "/");
 }, 'Go upper directory');
 
-key.setGlobalKey([['C-c', 'g', 'U'], ['M-g', 'U']], function (ev) {
+key.setGlobalKey(['C-c', 'g', 'U'], function (ev) {
     var uri = window._content.location.href;
     if (uri == null) {
         return;
@@ -1132,46 +1224,7 @@ key.setViewKey(["C-x", 'b'], function (ev, arg) {
     ext.exec("tanything", arg);
 }, "view all tabs", true);
 
-key.setGlobalKey(['C-<f11>', 'C-<f11>'], function (ev, arg) {
-    splitpannel.toggle(window._content.document.location, true, 'right');
-}, 'Open Split Panel and load current URL in it .');
 
-key.setGlobalKey(['C-<f11>', 'i'], function (ev, arg) {
-    splitpannel.toggle('http://space.cnblogs.com/mi/', true, 'right');
-}, 'Open Split Panel and load http://space.cnblogs.com/mi/ in it .');
-
-key.setGlobalKey(['C-<f11>', 'g'], function (ev, arg) {
-    splitpannel.toggle('https://www.google.com/reader/i/#stream/user%2F02753487812100788291%2Fstate%2Fcom.google%2Fread', true, 'right');
-}, 'Open Split Panel and load Google Reader in it .');
-
-key.setGlobalKey(['C-<f11>', 't'], function (ev, arg) {
-    splitpannel.toggle("http://translate.google.com/m?hl=zh-CN&sl=auto&tl=en&ie=UTF-8", true, 'right');
-}, 'Open Split Panel and load Google Translate (any->en) in it .');
-
-key.setGlobalKey(['C-<f11>', 'T'], function (ev, arg) {
-    splitpannel.toggle("http://translate.google.com/m?hl=zh-CN&sl=auto&tl=zh-CN&ie=UTF-8", true, 'right');
-}, 'Open Split Panel and load Google Translate (any->zh-CN) in it .');
-
-//toggle sidebar
-key.setGlobalKey(['C-<f11>', 'C-<f11>'], function (ev, arg) {
-    toggleSidebar("", false);
-}, 'close sidebar');
- 
-key.setGlobalKey(['C-<f11>', 'C-r'], function (ev, arg) {
-    toggleSidebar("RIL_sidebarlist", true);
-}, 'Show ReadItLater sidebar. (readitlater extension)');
- 
-key.setGlobalKey(['C-<f11>', 'C-2'], function (ev, arg) {
-    toggleSidebar("viewSidebar_save2read");
-}, 'Show Save-To-Read sidebar. (save2read extension)');
-
-key.setGlobalKey(['C-<f11>', 'C-s'], function (ev, arg) {
-    toggleSidebar("viewScrapBookSidebar");
-}, 'Toggle Scrapbook sidebar (extension Scrapbook or Scrapbook Plus)');
-
-key.setGlobalKey(['C-<f11>', 'C-p'], function(ev, arg) {
-    toggleSidebar('viewPanoramaSidebar');
-}, 'Toggle Pano side bar (extension Pano).');
 
 key.setViewKey(['C-c', 'C-a'], function (ev, arg) {
     ext.exec('increase-digit-in-url', arg, ev);
@@ -1205,11 +1258,11 @@ key.setEditKey(["C-x", '8', '-'], function(ev, arg) {
     inputChars(ev, "…");
 }, "Input …");
 
-key.setGlobalKey(["C-<f10>", 'p'], function(ev, arg) {
+key.setGlobalKey(["<C-f10>", 'p'], function(ev, arg) {
     toggleproxy.toggleProxy();
 }, "Toggle proxy.");
 
-key.setGlobalKey(["C-<f10>", 'c'], function(ev, arg) {
+key.setGlobalKey(["<C-f10>", 'c'], function(ev, arg) {
     addon9408.ctmain.btDoToggle();
 }, "Toggle color.");
 
