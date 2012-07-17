@@ -19,10 +19,17 @@
 *** DONE fix mark-defun
 
 * init.d
+** init.el
+http://www.emacswiki.org/emacs/OptimizingEmacsStartup
+
 ** 00-init
 *** DONE (add-to-list 'custom-theme-load-path "~/.emacs.d/themes"))
 
 ** 10-essential
+*** TODO session/desktop
+   - [X] desktop-save-mode
+   - [X] bookmark-plus: save desktop to bookmark
+   - [ ] [[http://scottfrazersblog.blogspot.com/2009/12/emacs-named-desktop-sessions.html][Scott Frazer's Blog: Emacs: Named Desktop Sessions]]
 *** frame icon: 
 (set-frame-parameter (car (frame-list)) 'icon-type "~/.emacs.d/emacs_07.ico")
 
@@ -37,6 +44,7 @@ C-h il - elisp-index-search
   - [X] advice split-window-v/h+, 
   - [X] my default layout
   - [X] winner: layout history 
+  Refer: [[http://fullofsta.rs/2012/01/an-improved-emacs-window-setup/][An improved Emacs window setup | Full Of Stars]]
 
 *** jumping between windows 
   - [X] windmove: jump by direction
@@ -79,7 +87,8 @@ they're all at the top.
 
 (I actually prefer M-x ibuffer to M-x list-buffers, but ibuffer provides a similar feature.)
 
-*** ibuffer-vc
+*** DONE ibuffer-vc
+ https://github.com/purcell/ibuffer-vc
 
 ** 20-files
 *** DONE bookmarks
@@ -100,17 +109,17 @@ http://xahlee.org/emacs/xah_emacs_generic.el
 
 *** TODO backup-dir.el
 *** DONE backup-each-save
-  - [ ] fix `backup-each-save-compute-location'
-
+  - [X] fix `backup-each-save-compute-location' on Windows
 #+begin_src emacs-lisp
   (defun backup-each-save-compute-location (filename)
     (let* ((containing-dir (replace-regexp-in-string ":" "" (file-name-directory filename)))
 #+end_src
+  - [X] fix `backup-each-save' failure on `copy-file' when editing files in zip/tar
 
-*** ediff & emerge
+*** TODO ediff & emerge
  [[http://www.emacswiki.org/emacs-en/EmergeDiff][EmacsWiki: Emerge Diff]]
 
-*** TODO ido-find-file-in-current-dir (& anything), 
+*** TODO ido-find-file-in-current-dir (& anything)
 *** DONE add `dir' param to `bmz/nav-goto-dir'
 
 ** 30-shell
@@ -119,7 +128,7 @@ http://xahlee.org/emacs/xah_emacs_generic.el
 *** add-mode-line-dirtrack (shell PS1)
 
 ** 25-tabbar
-*** TODO check tabbar-mode
+*** DONE check tabbar-mode
 *** TODO some tabbar-buffer-group-function
 
 ** 40-completion
@@ -130,7 +139,7 @@ http://xahlee.org/emacs/xah_emacs_generic.el
 *** hippie-expand-filename,
 
 ** 40-higlights
-*** TODO face highlight-changes: auto change with color theme
+*** DONE face highlight-changes: auto change with color theme
 #+begin_src emacs-lisp
   (progn ;;NOTE: you need to call this each time you change your color-theme
     (set-face-background 'highlight-changes (face-background 'fringe nil t))
@@ -141,7 +150,10 @@ http://xahlee.org/emacs/xah_emacs_generic.el
 *** TODO highlight TODO/FIXME
 http://emacs-fu.blogspot.com/2008/12/highlighting-todo-fixme-and-friends.html
 *** whitespaces
-  - [X]  develock
+**** TODO whitespaces
+  [[http://xahlee.org/emacs/whitespace-mode.html][How to Use and Setup Emacs's whitespace-mode]]
+  [[http://batsov.com/articles/2011/11/25/emacs-tip-number-3-whitespace-cleanup/][Emacs Tip #3: Whitespace Cleanup - (think)]]
+**** DONE develock
     - [X] develock-py
 (setq develock-auto-enable t)
 
@@ -165,9 +177,13 @@ http://emacs-fu.blogspot.com/2008/12/highlighting-todo-fixme-and-friends.html
 *** bm-bookmark-symbol
 
 ** 40-edit-basic
-*** DONE abs-indent
+*** TODO indent
+    - [X] tab-stop-list
+    - [X] abs-indent
+    - [ ] http://www.emacswiki.org/emacs/SmartTabs
+          tabs for indentation, spaces for alignment
+
 *** DONE visible-mark.el
-*** DONE tab-stop-list
 *** auto-fill only for comment: comment-auto-fill-only-comments
 
 *** region: if not region marked, take current line as region
@@ -189,6 +205,9 @@ http://emacs-fu.blogspot.com/2008/12/highlighting-todo-fixme-and-friends.html
 *** goto-chg / goto-last-change, 
 *** titlecase,
 
+** 50-vi-emu
+   [[http://www.delorie.com/gnu/docs/emacs/viper.html][Viper Is a Package for Emacs Rebels]]
+   
 ** 50-vi-keys
 *** open-next-line http://is.gd/yud6UE, 
 *** viper-describe-file
@@ -203,7 +222,12 @@ http://emacs-fu.blogspot.com/2008/12/highlighting-todo-fixme-and-friends.html
 *** DONE comment-or-uncomment-line
 
 ** TODO 60-prog-help
-
+*** info
+**** `info-lookup-symbol'/`info-lookup-file'
+**** `anything-info-...'
+*** CHM/HLP/MSDN
+*** DevHelp/QtAssistant
+*** web
 ** TODO 60-project
  * [[http://misspent.wordpress.com/2011/05/31/eproject-anything-simple-emacs-project-management/][eproject + anything: simple emacs project management]]
  * eproject (jrockway) https://github.com/jrockway/eproject/wiki/
@@ -224,6 +248,7 @@ http://emacs-fu.blogspot.com/2008/12/highlighting-todo-fixme-and-friends.html
 *** major modes
   + espresso-mode
   + js2-mode
+    + fork: An improved JavaScript mode  https://github.com/mooz/js2-mode
   + js3-mode
 
 *** DONE serveral jslint methods 
@@ -251,11 +276,14 @@ http://emacs-fu.blogspot.com/2008/12/highlighting-todo-fixme-and-friends.html
 ** 90-foobar: 
 *** artist
 *** box
-*** scratch-log
-[[http://dorophone.blogspot.com/2011/11/how-to-make-emacs-scratch-buffer.html][How to Make Emacs' Scratch Buffer Persistent Across Sessions]]
-*** command-log
-http://www.emacswiki.org/emacs/CommandLogMode
-
+*** TODO scratch-log
+    [[http://dorophone.blogspot.com/2011/11/how-to-make-emacs-scratch-buffer.html][How to Make Emacs' Scratch Buffer Persistent Across Sessions]]
+    [[https://github.com/wakaran/scratch-log][wakaran/scratch-log - GitHub]]
+*** TODO command-log
+  http://www.emacswiki.org/emacs/CommandLogMode
+*** TODO command frequency
+  http://xahlee.org/emacs/command-frequency.html
+ 
 ** TODO 90-fun
 *** fortune,
 *** cowsay,
