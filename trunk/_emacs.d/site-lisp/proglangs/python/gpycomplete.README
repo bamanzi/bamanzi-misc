@@ -1,0 +1,106 @@
+This package contains gpycomplete.
+
+0. Info
+
+   Author: Fabián Ezequiel Gallina
+   Contact: fabian at gnu dot org dot ar
+   Project homepage: http://github.com/fgallina/gpycomplete
+   Wiki: http://github.com/fgallina/gpycomplete/wikis
+   Screencast: http://blip.tv/file/1559227/
+   My Blog: http://www.from-the-cloud.com
+   Downloads page: http://github.com/fgallina/gpycomplete/downloads
+
+1. Introduction
+
+   gpycomplete is a python code autocompletion and helper suite for
+   GNU/Emacs. It feels like having ipython in your buffer.
+
+   gpycomplete is written from scratch by Fabián E. Gallina, althought
+   some functions (namely get_help and get_signature) are strongly
+   inspired in the original pycomplete package that was available at
+   http://python-mode.sf.net.
+
+   The main feature of gpycomplete is that the completions it returns
+   are actually what the python interpreter running in the background
+   has available in its context. This is what makes gpycomplete so
+   powerful and what it gives the feel of using ipython.
+
+2. Requirements
+
+   To use gpycomplete you must have Pymacs. This package was tested
+   sucessfully with 0.23 and 0.24b. If you run this package with a
+   different version please let me know at the email listed in the top
+   of the file.
+
+   You can download Pymacs 0.23 from:
+   http://pymacs.progiciels-bpi.ca/archives/Pymacs-0.23.tar.gz
+
+   Regarding the version of Emacs, this package was tested successfully
+   with Emacs 23
+
+3. Installation
+
+   To install gpycomplete just put gpycomplete.el in a directory
+   included in your Emacs load-path and put the gpycomplete folder in
+   your site-packages or if you like you can specify an specific path
+   where gpycomplete is located by doing something like this:
+
+   (require 'pymacs)
+   (setq pymacs-load-path
+            (append pymacs-load-path '("/path-to/gpycomplete")))
+   (require 'gpycomplete)
+
+   In the case you included gpycomplete in the site-packages folder
+   you will only need to add this in your .emacs:
+
+   (require 'gpycomplete)
+
+   Finally, restart Emacs or use load-file ~/.emacs.
+
+4. Usage
+
+   gpycomplete binds the following keystrokes:
+
+   [tab] : Tries to get the completions of the current expression, if
+   only one completion is available then it inserts it in the buffer
+   else if no completions are available indents.
+
+   [(] : inserts a "(" and displays the signature of the current
+   expression.
+
+   [,] : inserts a "," and displays the signature of the current
+   expression.
+
+   [f1] : prints the help string of the current expression.
+
+   [f2] : prompts the user for the object he wants to get the
+   signature and displays it.
+
+   [f3] : prompts the user for the object he wants to get the help
+   string and displays it.
+
+   [.] : refreshes context to the interpreter and inserts a ".".
+
+   [return] : refreshes the context to the interpreter and inserts a
+   newline.
+
+   gpycomplete provides the following interactive commands:
+
+   gpy-add-path, gpy-check-errors, gpy-complete-and-indent,
+   gpy-electric-comma, gpy-electric-lparen, gpy-help,
+   gpy-help-at-point, gpy-refresh-and-dot, gpy-refresh-and-newline,
+   gpy-refresh-context, gpy-set-django-project, gpy-signature
+
+   Besides the names are almost self-explanatory you can get the
+   documentation of them by using C-h f <name of the function> within
+   Emacs
+
+5. Bug Reports
+
+   If you find a bug please report it sending an email listed in the
+   top of the file.
+
+6. License
+
+   gpycomplete is free software under the GPL v3, see LICENSE file for
+   details.
