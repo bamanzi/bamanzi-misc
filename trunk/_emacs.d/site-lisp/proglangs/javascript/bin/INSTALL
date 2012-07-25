@@ -1,0 +1,7 @@
+Nothing fancy, but be carefull, since it may overwrite your previous jshint .
+
+Just execute
+sudo make install
+
+The installation consist of copying the 2 files (the command line wrapper starter and jshint.js itself)
+to the /usr/local/bin folder

@@ -1,0 +1,16 @@
+A command line interface for jshint, using jsdb as the engine.
+
+jsdb is a *fast* and *easy* to install js engine, with very quick
+startup (unlike rhino ;-) ), thus very suitable for commandline js apps.
+It also has a rich API for different things like file I/O, networking
+and so on. See http://www.jsdb.org/ .
+
+JSHint is a very flexible tool to detect errors and potential problems in JavaScript
+code and to enforce coding conventions. See http://jshint.com/ .
+
+This project gives you the ability to run jshint using the jsdb engine with a
+very simple commandline interface :
+jshint yourfile.js
+
+It will show you the potential problems with your code as a result.
+
