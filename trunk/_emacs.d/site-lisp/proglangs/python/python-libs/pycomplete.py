@@ -86,10 +86,31 @@ def get_all_completions(s, imports=None):
         s = dots[-1]
         return [k for k in dir(sym) if k.startswith(s)]
 
+def get_all_completions_for_ac(s, imports=None):
+    """Return contextual completion of s (string of >= zero chars).
+    If given, imports is a list of import statements to be executed first.
+
+    Different from `get_all_completions', this one would return ["os.path.isabs",
+    "os.path.isfile", "os.path.isdir", "os.path.islink"] for `os.path.is", while
+    the original would return ["isab", "isfile", "isdir", "islink"]. This behaviour
+    is assumed to be compliant with `auto-complete' rather than `complete-symbol'
+    
+    """
+    completions = get_all_completions(s, imports)
+    dots = s.split(".")
+    prefix = ".".join(dots[0:-1])
+    return [ (prefix + "." + k) for k in completions] #modified by EEPY
+    
+    
+    
 def pycomplete(s, imports=None):
     completions = get_all_completions(s, imports)
     dots = s.split(".")
-    return os.path.commonprefix([k[len(dots[-1]):] for k in completions])
+    result = os.path.commonprefix([k[len(dots[-1]):] for k in completions])
+    if ""==result:
+        return completions
+    else:
+        return [result,]
 
 if __name__ == "__main__":
     print "<empty> ->", pycomplete("")
