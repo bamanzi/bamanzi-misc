@@ -21,6 +21,14 @@
 
 (pymacs-load "pycomplete")
 
+(when (not (boundp 'py-dotted-expression-syntax-table))
+  (setq py-dotted-expression-syntax-table
+        (copy-syntax-table (if (boundp 'python-mode-syntax-table)
+                               python-mode-syntax-table
+                             py-mode-syntax-table)))
+  (modify-syntax-entry ?_ "_" py-dotted-expression-syntax-table)
+  (modify-syntax-entry ?. "_" py-dotted-expression-syntax-table))
+
 (defun py-symbol-near-point ()
   "Return the first textual item to the nearest point."
   ;; alg stolen from etag.el
@@ -62,8 +70,8 @@
   (let* ((pymacs-forget-mutability t)
          (symbol (py-symbol-near-point))
          (completions
-          (list (pycomplete-pycomplete symbol
-                                       (py-find-global-imports)))))
+          (pycomplete-pycomplete symbol
+                                 (py-find-global-imports))))
     (cond  ((null completions) ; no matching symbol
            (message "Can't find completion for \"%s\"" symbol)
            (ding))
@@ -230,9 +238,27 @@
       (py-complete-show (format "%s" py-complete-current-signature))))
 
 
-(define-key py-mode-map [f1] 'py-complete-help-thing-at-point)
-(define-key py-mode-map "(" 'py-complete-electric-lparen)
-(define-key py-mode-map "," 'py-complete-electric-comma)
-(define-key py-mode-map [f2] 'py-complete-signature-expr)
-(define-key py-mode-map [f3] 'py-complete-help)
+(defun py-complete-init-keys (map)
+  (define-key map [M-f1] 'py-complete-help-thing-at-point)
+  (define-key map "("  'py-complete-electric-lparen)
+  (define-key map ","  'py-complete-electric-comma)
+  (define-key map [M-f2] 'py-complete-signature-expr)
+  (define-key map [M-f3] 'py-complete-help)
+  ;;(define-key map "\M-\C-i"  'py-complete)
+  )
+
+(py-complete-init-keys python-mode-map)
+(py-complete-init-keys python-shell-map)
+(define-key python-shell-map "\C-i" 'py-complete)
+
+(eval-after-load "python-mode"
+  `(progn
+     (when (boundp 'py-mode-map) ;;not in python-mode.el >= 6.0.4
+         (py-complete-init-keys py-mode-map))
+     (when (boundp 'py-shell-map)
+       (py-complete-init-keys py-shell-map)
+       (define-key py-shell-map "\C-i" 'py-complete))
+     ))
+     
+
 (provide 'pycompletemine)
