@@ -28,7 +28,7 @@ class CygAptSetup:
     def __init__(self, cygwin_p):
         self.cygwin_p = cygwin_p
         self.rc_options = ['ROOT', 'mirror', 'cache', 'setup_ini', 'distname',\
-            'barred', 'auto_update']
+            'barred', 'auto_update', 'mirrors']
         self.rc_comments = {\
             "ROOT"     : "# The root of your Cygwin installation as a windows path\n",
             "mirror"   : "# URL of your Cygwin mirror: example "\
@@ -195,90 +195,96 @@ class CygAptSetup:
             pm = PathMapper(rc["ROOT"][:-1], False)
         setup_ini = pm.map_path(rc["setup_ini"])
         if (main_mirror):
-            mirror = main_mirror
+            mirrors = { 'main': main_mirror }
         else:
-            mirror = rc["mirror"]
-        downloads = pm.map_path(rc["cache"]) + '/' + urllib.quote(mirror, '').lower()
-        if not mirror[-1] == "/":
-            sep = "/"
-        else:
-            sep = ""
-            
-        setup_ini_names = [os.path.basename(setup_ini).replace(".ini", ".bz2"),\
-            os.path.basename(setup_ini)]
-        
-        for (setup_ini_name, index) in zip(setup_ini_names, range(len(setup_ini_names))):
-            setup_ini_url = '%s%s%s' % (mirror, sep, setup_ini_name)
-            err = None
-            try:
-                uri_get(self.tmpdir, setup_ini_url, verbose=True)
-            except CygAptError, (err):
-                # Failed to find a possible .ini
-                if index == len(setup_ini_names) - 1:
-                    sys.stderr.write(self.sn + ": " + err.msg +\
-                    ", exiting.\n")
-                    sys.exit(1)
+            if rc.has_key('mirrors'):
+                mirrors = rc["mirrors"]
+            else:
+                mirrors = { 'offcial': rc["mirror"] }
+
+        for mirror_id, mirror in mirrors.items():
+            downloads = pm.map_path(rc["cache"]) + '/' + urllib.quote(mirror, '').lower()
+            if not mirror[-1] == "/":
+                sep = "/"
+            else:
+                sep = ""
+
+            setup_ini_names = [os.path.basename(setup_ini).replace(".ini", ".bz2"),\
+                os.path.basename(setup_ini)]
+
+            for (setup_ini_name, index) in zip(setup_ini_names, range(len(setup_ini_names))):
+                setup_ini_url = '%s%s%s' % (mirror, sep, setup_ini_name)
+                err = None
+                try:
+                    uri_get(self.tmpdir, setup_ini_url, verbose=True)
+                except CygAptError, (err):
+                    # Failed to find a possible .ini
+                    if index == len(setup_ini_names) - 1:
+                        sys.stderr.write(self.sn + ": " + err.msg +\
+                        ", exiting.\n")
+                        sys.exit(1)
+                    else:
+                        continue
+                        # Not an error to fail to find the first one
+                # Take the first one we find
+                break       
+
+            if setup_ini_name[-4:] == ".bz2":
+                compressed = file(self.tmpdir + "/" + setup_ini_name, "rb").read()
+                decomp = bz2.decompress(compressed)
+                os.remove(self.tmpdir + "/" + setup_ini_name)
+                setup_ini_name =  os.path.basename(setup_ini)
+                if self.cygwin_p:
+                    mode = "w"
                 else:
-                    continue
-                    # Not an error to fail to find the first one
-            # Take the first one we find
-            break       
+                    mode = "wb"
+                file(self.tmpdir + "/" + setup_ini_name, mode).write(decomp)
 
-        if setup_ini_name[-4:] == ".bz2":
-            compressed = file(self.tmpdir + "/" + setup_ini_name, "rb").read()
-            decomp = bz2.decompress(compressed)
-            os.remove(self.tmpdir + "/" + setup_ini_name)
-            setup_ini_name =  os.path.basename(setup_ini)
-            if self.cygwin_p:
-                mode = "w"
-            else:
-                mode = "wb"
-            file(self.tmpdir + "/" + setup_ini_name, mode).write(decomp)
-        
-        if not self.cygwin_p:
-            sys.stderr.write("WARNING can't verify setup.ini outside Cygwin.\n")
-            verify = False
-        
-        if verify:
-            sig_name = setup_ini_name + ".sig"
-            sig_url = "%s%s%s" % (mirror, sep, sig_name)
-            err = uri_get(self.tmpdir, sig_url, verbose=True)
-            if err:
-                print >> sys.stderr,\
-                    "%s: failed to download signature %s Use -X to ignore "\
-                    "signatures. Exiting" %\
-                    (self.sn, sig_url)
-                sys.exit(1)
-            if self.cygwin_p:
-                gpg_path = "gpg "
-            else:
-                gpg_path = "/usr/bin/gpg "
+            if not self.cygwin_p:
+                sys.stderr.write("WARNING can't verify setup.ini outside Cygwin.\n")
+                verify = False
 
-            cmd = gpg_path + "--verify --no-secmem-warning "
-            cmd += self.tmpdir + "/" + sig_name + " "
-            cmd += self.tmpdir + "/" + setup_ini_name
-            verify = os.popen3(cmd)[2].read()
-            if not self.gpg_good_sig_msg in verify:
-                sys.stderr.write("%s: %s not signed by Cygwin's public key. "\
-                    "Use -X to ignore sigatures. Exiting.\n" % \
-                    (self.sn, setup_ini_url))
-                sys.exit(1)
-                
-        if not os.path.exists(downloads):
-            os.makedirs(downloads)
-            
-        shutil.copy(self.tmpdir + "/" + setup_ini_name, downloads + "/" +\
-           setup_ini_name)        
-        if os.path.exists(setup_ini):
-            shutil.copy(setup_ini, setup_ini + ".bak")
-        shutil.copy(downloads + "/" + setup_ini_name, setup_ini)
-        if os.path.exists(self.tmpdir + "/" + setup_ini_name):
-            os.remove(self.tmpdir + "/" + setup_ini_name)
-        if sig_name:
-            if os.path.exists(self.tmpdir + "/" + sig_name):
-                os.remove(self.tmpdir + "/" + sig_name)
+            if verify:
+                sig_name = setup_ini_name + ".sig"
+                sig_url = "%s%s%s" % (mirror, sep, sig_name)
+                err = uri_get(self.tmpdir, sig_url, verbose=True)
+                if err:
+                    print >> sys.stderr,\
+                        "%s: failed to download signature %s Use -X to ignore "\
+                        "signatures. Exiting" %\
+                        (self.sn, sig_url)
+                    sys.exit(1)
+                if self.cygwin_p:
+                    gpg_path = "gpg "
+                else:
+                    gpg_path = "/usr/bin/gpg "
 
-    
+                cmd = gpg_path + "--verify --no-secmem-warning "
+                cmd += self.tmpdir + "/" + sig_name + " "
+                cmd += self.tmpdir + "/" + setup_ini_name
+                verify = os.popen3(cmd)[2].read()
+                if not self.gpg_good_sig_msg in verify:
+                    sys.stderr.write("%s: %s not signed by Cygwin's public key. "\
+                        "Use -X to ignore sigatures. Exiting.\n" % \
+                        (self.sn, setup_ini_url))
+                    sys.exit(1)
+
+            if not os.path.exists(downloads):
+                os.makedirs(downloads)
+
+            shutil.copy(self.tmpdir + "/" + setup_ini_name, \
+                            downloads + "/" + setup_ini_name)        
+            if len(mirrors)==1:   #FIXME: no need to do this?
+                if os.path.exists(setup_ini):
+                    shutil.copy(setup_ini, setup_ini + ".bak")
+                shutil.copy(downloads + "/" + setup_ini_name, setup_ini)
+            if os.path.exists(self.tmpdir + "/" + setup_ini_name):
+                os.remove(self.tmpdir + "/" + setup_ini_name)
+            if sig_name:
+                if os.path.exists(self.tmpdir + "/" + sig_name):
+                    os.remove(self.tmpdir + "/" + sig_name)
+
+
     def _get_last_cache_pre17(self, location):
         if not os.path.exists(location + "/last-mirror" or\
             not os.path.exists(location + "/last-cache")):
@@ -288,8 +294,6 @@ class CygAptSetup:
             last_cache = cygpath(last_cache)
             last_mirror = file(location + "/last-mirror").read().strip()
             return (last_cache, last_mirror)
-
-    
 
 
 
@@ -477,7 +481,7 @@ class CygApt:
         # Define constants
         self.installed_db_magic = 'INSTALLED.DB 2\n'
         self.INSTALL = 'install'
-        self.rc_options = ['ROOT', 'mirror', 'cache', 'setup_ini', 'distname', 'barred']
+        self.rc_options = ['ROOT', 'mirror', 'cache', 'setup_ini', 'distname', 'barred', 'mirrors']
         self.distnames = ('curr', 'test', 'prev')
         self.rc_regex = re.compile("^\s*(\w+)\s*=\s*(.*)\s*$")
 
@@ -517,9 +521,11 @@ class CygApt:
         
         # Overrides to the .rc
         if (main_mirror):
-            self.mirror = main_mirror
+            self.mirrors = {'main': main_mirror}
 
-        self.downloads = self.cache + '/' + urllib.quote(self.mirror, '').lower()
+        self.downloads = {}
+        for mirror_id, mirror_url in self.mirrors.items():
+            self.downloads[mirror_id] = self.cache + '/' + urllib.quote(mirror_url, '').lower()
     
         if (main_distname):
             self.distname = main_distname
@@ -587,76 +593,97 @@ class CygApt:
         print  self.__dict__[self.packagename].__doc__
     
     
-    def _parse_setup_ini(self):
+    def _parse_setup_inis(self):
+        ''' parse setup.ini (for each repo) to get packages info. '''
         if self.dists:
             return
         self.dists = {'test': {}, 'curr': {}, 'prev' : {}}
-        chunks = string.split(open(self.setup_ini).read(), '\n\n@ ')
-        for i in chunks[1:]:
-            lines = string.split(i, '\n')
-            name = string.strip(lines[0])
-            self.debug('package: ' + name)
-            packages = self.dists['curr']
-            records = {'sdesc': name}
-            j = 1
-            while j < len(lines) and string.strip(lines[j]):
-                self.debug('raw: ' + lines[j])
-                if lines[j][0] == '#':
-                    j = j + 1
-                    continue
-                elif lines[j][0] == '[':
-                    self.debug('dist: ' + lines[j][1:5])
-                    packages[name] = records.copy()
-                    packages = self.dists[lines[j][1:5]]
-                    j = j + 1
-                    continue
-    
-                try:
-                    key, value = map(string.strip,
-                          string.split(lines[j], ': ', 1))
-                except:
-                    print lines[j]
-                    raise
-                if key=="message" or value[0] == '"' and value.find('"', 1) == -1:
-                    while 1:
+        for mirror_id, mirror_url in self.mirrors.items():
+            setup_ini = self.cache + urllib.quote(mirror_url, '').lower() + '/' + 'setup.ini'
+            chunks = string.split(open(setup_ini).read(), '\n\n@ ')
+            for i in chunks[1:]:
+                lines = string.split(i, '\n')
+                name = string.strip(lines[0])
+                self.debug('package: ' + name)
+                packages = self.dists['curr']
+                records = {'sdesc': name}
+                j = 1
+                while j < len(lines) and string.strip(lines[j]):
+                    self.debug('raw: ' + lines[j])
+                    if lines[j][0] == '#':
                         j = j + 1
-                        value += '\n' + lines[j]
-                        if lines[j].find('"') != -1:
-                            break
-                records[key] = value
-                j = j + 1
-            packages[name] = records
+                        continue
+                    elif lines[j][0] == '[':
+                        self.debug('dist: ' + lines[j][1:5])
+                        packages[name] = records.copy()
+                        packages = self.dists[lines[j][1:5]]
+                        j = j + 1
+                        continue
+
+                    try:
+                        key, value = map(string.strip,
+                              string.split(lines[j], ': ', 1))
+                    except:
+                        print lines[j]
+                        raise
+                    if key=="message" or value[0] == '"' and value.find('"', 1) == -1:
+                        while 1:
+                            j = j + 1
+                            value += '\n' + lines[j]
+                            if lines[j].find('"') != -1:
+                                break
+                    records[key] = value
+                    j = j + 1
+                records['mirror'] = mirror_id
+                if not packages.has_key(name):
+                    packages[name] = records
+                else:
+                    package_prev = packages[name]
+                    print "WARN: package %s already in repo '%s'." % (name, package_prev['mirror'])
+                    from distutils import LooseVersion
+                    ver_this = records['version']
+                    ver_that = package_prev['version']
+                    if LooseVersion(ver_this) > LooseVersion(ver_that):
+                        self.debug("WARN: package '%s' in repo '%s'(%s) overrides that in repo '%s'(%s)" %
+                                   (name, mirror_id, records['version'], package_prev['mirror'], package_prev['version']))
+                        packages[name] = records
+                    elif LooseVersion(ver_this) < LooseVersion(ver_that):
+                        self.debug("WARN: package '%s' in repo '%s'(%s) is older than the one in repo '%s'(%s). ignored." %
+                                   (name, mirror_id, records['version'], package_prev['mirror'], package_prev['version']))
+                        
     
             
     def _get_url(self):
+        package = None
         if not self.dists[self.distname].has_key(self.packagename) \
            or not self.dists[self.distname][self.packagename].has_key(self.INSTALL):
             self.no_package()
-            install = 0
             for d in self.distnames:
                 if self.dists[d].has_key(self.packagename) \
                    and self.dists[d][self.packagename].has_key(self.INSTALL):
-                    install = self.dists[d][self.packagename][self.INSTALL]
+                    package = self.dists[d][self.packagename]
                     sys.stderr.write("warning: using [%s]\n" % d)
                     break
-            if not install:
-                raise SetupIniError(str(self.packagename) + " is not in " + self.setup_ini)
+            if not package:
+                raise SetupIniError(str(self.packagename) + " has no available install url in setup.ini")
         else:
-            install = self.dists[self.distname][self.packagename][self.INSTALL]
-        file, size, md5 = string.split(install)
-        return file, md5
+            package = self.dists[self.distname][self.packagename]
+        
+        file, size, md5 = string.split(package['install'])
+        return file, md5, package['mirror']
     
     
     def url(self):
         '''print tarball url'''
         if not self.packagename:
             raise CygAptError("url command requires a package name")
-        print self.mirror + "/" + self._get_url()[0]
+        file, md5, mirror_id = self._get_url()
+        print self.mirrors[mirror_id] + "/" + file
     
     
     def _get_ball(self):
-        url, md5 = self._get_url()
-        return '%s/%s' % (self.downloads, url)
+        install, md5, mirror_id = self._get_url()
+        return '%s/%s' % (self.downloads[mirror_id], install)
     
     
     def ball(self):
@@ -665,18 +692,17 @@ class CygApt:
     
         
     def do_download(self):
-        url, md5 = self._get_url()
-        dir = '%s/%s' % (self.downloads, os.path.split(url)[0])
+        install, md5, mirror_id = self._get_url()
+        dir = '%s/%s' % (self.downloads[mirror_id], os.path.split(install)[0])
         if not os.path.exists(self._get_ball()) or not self.check_md5():
             if not os.path.exists(dir):
                 os.makedirs(dir)
-            status = uri_get(dir, '%s/%s' % (self.mirror, url))
+            status = uri_get(dir, '%s/%s' % (self.mirrors[mirror_id], install))
             if status:
-                sys.stderr.write("\n%s: didn't find %s "\
-                    "on mirror %s: possible mismatch between setup.ini and "\
-                    "mirror requiring %s update?"\
-                    % (self.sn, self.packagename, self.mirror,\
-                    self.sn))
+                sys.stderr.write("\n%s: didn't find %s on mirror %s: " \
+                                     "possible mismatch between setup.ini and "\
+                                     "mirror requiring %s update?"\
+                                     % (self.sn, self.packagename, self.mirrors[mirror_id], self.sn))
                 sys.exit(1)
                     
 
@@ -862,8 +888,8 @@ class CygApt:
     
     
     def get_md5(self):
-        url, md5 = self._get_url()
-        f = file("%s/%s" % (self.downloads, url),"rb").read()
+        install, md5, mirror_id = self._get_url()
+        f = file("%s/%s" % (self.downloads[mirror_id], install),"rb").read()
         m = hashlib.md5()
         m.update(f)
         digest = m.hexdigest()
@@ -880,8 +906,8 @@ class CygApt:
             sys.stderr.write("%s: %s not installed. Exiting.\n"\
                 % (os.path.basename(sys.argv[0]), self.packagename))
             return 1
-        url, md5 = self._get_url()
-        ball = os.path.basename(url)
+        install, md5, mirror_id = self._get_url()
+        ball = os.path.basename(install)
         print '%s  %s' % (md5, ball)
         actual_md5 = self.get_md5()
         print '%s  %s' % (actual_md5, ball)
@@ -1400,7 +1426,6 @@ class CygApt:
         self.pm = PathMapper(self.PREFIX_ROOT, self.cygwin_p)
         self.config = self.pm.map_path("/etc/setup")
         self.cache = self.pm.map_path(self.cache)
-        self.downloads = self.cache + '/' + urllib.quote(self.mirror, '').lower()
         self.installed_db = self.config + '/installed.db'
         
         # It might seem odd that we don't map these paths: we need
