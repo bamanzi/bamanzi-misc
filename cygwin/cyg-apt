@@ -28,40 +28,40 @@ class CygAptSetup:
     def __init__(self, cygwin_p):
         self.cygwin_p = cygwin_p
         self.rc_options = ['ROOT', 'mirror', 'cache', 'setup_ini', 'distname',\
-            'barred', 'always_update']
+            'barred', 'auto_update']
         self.rc_comments = {\
-            "ROOT" : "# The root of your Cygwin installation as a windows path\n",\
-            "mirror" : "# URL of your Cygwin mirror: example "\
-            "http://mirror.internode.on.net/pub/cygwin/\n",\
-            "cache" : "# Your package cache as a POSIX path: example "\
-            "/e/home/cygwin_package_cache\n",\
-            "setup_ini" : "# setup.ini lists available packages and is "\
-            "downloaded from the top level\n"\
-            "# of the downloaded mirror. Standard location is "\
-            "/etc/setup/setup.ini,\n"\
-            "# seutp-2.ini for Cygwin 1.7 Beta\n",\
+            "ROOT"     : "# The root of your Cygwin installation as a windows path\n",
+            "mirror"   : "# URL of your Cygwin mirror: example "\
+                "http://mirror.internode.on.net/pub/cygwin/\n",
+            "cache"    : "# Your package cache as a POSIX path: example "\
+                "/e/home/cygwin_package_cache\n",
+            "setup_ini": "# setup.ini lists available packages and is "\
+                "downloaded from the top level\n"\
+                "# of the downloaded mirror. Standard location is "\
+                "/etc/setup/setup.ini,\n"\
+                "# seutp-2.ini for Cygwin 1.7 Beta\n",
             "distname" : "# The distribution, current previous or test "\
-            "[curr, prev, test].\n"\
-            "# Usually you want the \"curr\" version of a package.\n",\
-            "barred" : "# Packages which cyg-apt can't change under Cygwin "\
-            "since it depends on them.\n"\
-            "# Run cyg-apt under DOS with -f (force) option to change "\
-            "these packages.\n"\
-            "# Treat Cygwin core packages with CAUTION.\n",\
-            "always_update" : "# Always update setup.ini before any command"\
-            " that uses it. cyg-apt will be\n# faster and use less bandwidth if"\
-            " False but you will have to run the update\n# command manually.\n"
+                "[curr, prev, test].\n"\
+                "# Usually you want the \"curr\" version of a package.\n",
+            "barred"   : "# Packages which cyg-apt can't change under Cygwin "\
+                "since it depends on them.\n"\
+                "# Run cyg-apt under DOS with -f (force) option to change "\
+                "these packages.\n"\
+                "# Treat Cygwin core packages with CAUTION.\n",
+            "auto_update" : "# Auto update setup.ini before install any package (default: False)."\
+                "# If set to False, you need to manually call 'cyg-apt update' to update setup.ini.\n"
             }
         self.sn = os.path.basename(sys.argv[0])
         self.rc_regex = re.compile("^\s*(\w+)\s*=\s*(.*)\s*$")
-        if os.environ['TMP']: 
+        if os.environ.has_key('TMP'): 
             self.tmpdir = os.environ['TMP']
         else:
             self.tmpdir = "/usr/share/cyg-apt"
         self.gpg_good_sig_msg = "1169 DF9F 2273 4F74 3AA5  9232 A9A2 62FF 6760 41BA"    
         #self.gpg_good_sig_msg = "Good signature"    
        
-    def get_setup_rc(self, location):
+    def _parse_setup_rc(self, location):
+        ''' Parse /etc/setup/setup.rc '''
         if not (os.path.exists(location + "/" + "setup.rc")):
             return (None, None)
         setup_rc = file(location + "/" + "setup.rc").readlines()
@@ -77,7 +77,7 @@ class CygAptSetup:
     
     
     def setup(self, flags=None):
-        '''create cyg-apt configuration file'''
+        '''create cyg-apt configuration file (~/.cyg-apt)'''
         if not self.cygwin_p:
             print "%s: setup outside Cygwin not supported. Exiting." % self.sn
             sys.exit(1)
@@ -104,16 +104,16 @@ class CygAptSetup:
         # Refuse to remove/install any package including these substrings
         # since cyg-apt is dependent on them
         self.barred = "python cygwin base-cygwin coreutils bash zlib libreadline gnupg"
-        self.always_update = True
+        self.auto_update = True
         
         if not self.cygwin_p:
             print >> sys.stderr, "%s: settup only supported under Cygwin. Exiting."\
                 % self.sn
             return
          
-        (last_cache, last_mirror) = self.get_setup_rc(self.config)
+        (last_cache, last_mirror) = self._parse_setup_rc(self.config)
         if ((not last_cache) or (not last_mirror)):
-            (last_cache, last_mirror) = self.get_pre17_last(self.config)
+            (last_cache, last_mirror) = self._get_last_cache_pre17(self.config)
             if ((not last_cache) or (not last_mirror)):
                 print "%s: %s/setup.rc not found. Please edit %s to "\
                 "provide mirror and cache." % (self.sn, self.config, self.cyg_apt_rc)
@@ -155,11 +155,11 @@ class CygAptSetup:
             print("Configuration: %s\n\n" % cyg_apt_rc)
         print("    Commands:")
         for m in inspect.getmembers(CygAptSetup):
-            if type(m[1]) == type(self.usage):
+            if (type(m[1]) == type(self.usage)) and not m[0].startswith('_'):
                 if m[1].__doc__:
                     print "    " + m[0] + " - " + m[1].__doc__        
         for m in inspect.getmembers(CygApt):
-            if type(m[1]) == type(self.usage):
+            if (type(m[1]) == type(self.usage)) and not m[0].startswith('_'):
                 if m[1].__doc__:
                     print "    " + m[0] + " - " + m[1].__doc__
         sys.stdout.write(r'''
@@ -279,7 +279,7 @@ class CygAptSetup:
                 os.remove(self.tmpdir + "/" + sig_name)
 
     
-    def get_pre17_last(self, location):
+    def _get_last_cache_pre17(self, location):
         if not os.path.exists(location + "/last-mirror" or\
             not os.path.exists(location + "/last-cache")):
             return (None, None)
@@ -464,7 +464,6 @@ class CygApt:
         main_cygwin_p,\
         main_download_p,\
         main_mirror,\
-        main_downloads,\
         main_distname,\
         main_nodeps_p,\
         main_regex_search,\
@@ -494,8 +493,7 @@ class CygApt:
         self.packagename = main_packagename
         self.files = main_files
         self.cygwin_p = main_cygwin_p
-        self.download_p = main_download_p
-        self.downloads = main_downloads
+        self.download_p = main_download_p        
         self.nodeps_p = main_nodeps_p
         self.regex_search = main_regex_search
         self.nobarred = main_nobarred
@@ -520,7 +518,8 @@ class CygApt:
         # Overrides to the .rc
         if (main_mirror):
             self.mirror = main_mirror
-            self.downloads = self.cache + '/' + urllib.quote(self.mirror, '').lower()
+
+        self.downloads = self.cache + '/' + urllib.quote(self.mirror, '').lower()
     
         if (main_distname):
             self.distname = main_distname
@@ -531,8 +530,8 @@ class CygApt:
             sys.stderr.write('error: run cyg-apt setup?\n' % vars())
             sys.exit(2)
         else:
-            self.get_setup_ini()
-            self.get_installed()
+            self._parse_setup_ini()
+            self._parse_installed_db()
 
 
     def check_for_setup_exe(self):
@@ -588,7 +587,7 @@ class CygApt:
         print  self.__dict__[self.packagename].__doc__
     
     
-    def get_setup_ini(self):
+    def _parse_setup_ini(self):
         if self.dists:
             return
         self.dists = {'test': {}, 'curr': {}, 'prev' : {}}
@@ -629,7 +628,7 @@ class CygApt:
             packages[name] = records
     
             
-    def get_url(self):
+    def _get_url(self):
         if not self.dists[self.distname].has_key(self.packagename) \
            or not self.dists[self.distname][self.packagename].has_key(self.INSTALL):
             self.no_package()
@@ -652,23 +651,23 @@ class CygApt:
         '''print tarball url'''
         if not self.packagename:
             raise CygAptError("url command requires a package name")
-        print self.mirror + "/" + self.get_url()[0]
+        print self.mirror + "/" + self._get_url()[0]
     
     
-    def get_ball(self):
-        url, md5 = self.get_url()
+    def _get_ball(self):
+        url, md5 = self._get_url()
         return '%s/%s' % (self.downloads, url)
     
     
     def ball(self):
         '''print tarball name'''
-        print self.get_ball()
+        print self._get_ball()
     
         
     def do_download(self):
-        url, md5 = self.get_url()
+        url, md5 = self._get_url()
         dir = '%s/%s' % (self.downloads, os.path.split(url)[0])
-        if not os.path.exists(self.get_ball()) or not self.check_md5():
+        if not os.path.exists(self._get_ball()) or not self.check_md5():
             if not os.path.exists(dir):
                 os.makedirs(dir)
             status = uri_get(dir, '%s/%s' % (self.mirror, url))
@@ -732,7 +731,8 @@ class CygApt:
         print string.join(self.get_requires(), '\n')
     
     
-    def get_installed(self):
+    def _parse_installed_db(self):
+        ''' parse /etc/setup/installed.db for installed packages. '''
         if self.installed:
             return self.installed
         self.installed = {0:{}}
@@ -773,7 +773,7 @@ class CygApt:
         '''list installed packages'''
         print "--- Installed packages ---"
         for self.packagename in self.psort(self.installed[0].keys()):
-            ins = self.get_installed_version()
+            ins = self._parse_installed_db_version()
             new = 0
             if self.dists[self.distname].has_key(self.packagename) \
                and self.dists[self.distname][self.packagename].has_key(self.INSTALL):
@@ -823,7 +823,7 @@ class CygApt:
         return package['ver']
     
        
-    def get_installed_version(self):
+    def _parse_installed_db_version(self):
         return self.split_ball(self.installed[0][self.packagename])[1]
     
     
@@ -832,7 +832,7 @@ class CygApt:
         if self.packagename:
             if not self.installed[0].has_key(self.packagename):
                 raise CygAptError(self.packagename + " is not installed")
-            print self.version_to_string(self.get_installed_version())
+            print self.version_to_string(self._parse_installed_db_version())
         else:
             for self.packagename in self.psort(self.installed[0].keys()):
                 if not self.installed[0].has_key(self.packagename):
@@ -840,14 +840,14 @@ class CygApt:
                     self.no_package()
                     sys.exit(1)
                 print '%-20s%-12s' % (self.packagename,
-                         self.version_to_string(self.get_installed_version()))
+                         self.version_to_string(self._parse_installed_db_version()))
     
         
     def get_new(self):
         lst = []
         for self.packagename in self.installed[0].keys():
             new = self.get_version()
-            ins = self.get_installed_version()
+            ins = self._parse_installed_db_version()
             if new > ins:
                 self.debug(" %s > %s" % (new, ins))
                 lst.append(self.packagename)
@@ -862,7 +862,7 @@ class CygApt:
     
     
     def get_md5(self):
-        url, md5 = self.get_url()
+        url, md5 = self._get_url()
         f = file("%s/%s" % (self.downloads, url),"rb").read()
         m = hashlib.md5()
         m.update(f)
@@ -871,16 +871,16 @@ class CygApt:
     
     
     def check_md5(self, verbose=0):
-        return self.get_url()[1] == self.get_md5()
+        return self._get_url()[1] == self.get_md5()
     
         
     def md5(self):
         '''check md5 sum of cached package against database'''
-        if not os.path.exists(self.get_ball()):
+        if not os.path.exists(self._get_ball()):
             sys.stderr.write("%s: %s not installed. Exiting.\n"\
                 % (os.path.basename(sys.argv[0]), self.packagename))
             return 1
-        url, md5 = self.get_url()
+        url, md5 = self._get_url()
         ball = os.path.basename(url)
         print '%s  %s' % (md5, ball)
         actual_md5 = self.get_md5()
@@ -936,7 +936,12 @@ class CygApt:
             print ldesc
         else:
             print "%s: not found in setup.ini: %s" % (self.sn, s)
-    
+
+    def showpkg(self):
+        ''' show detail info '''
+        self.show()
+        print "\n"
+        self.url()        
     
     def get_missing(self):
         reqs = self.get_requires()
@@ -947,7 +952,7 @@ class CygApt:
         if lst and self.packagename not in lst:
             sys.stderr.write('warning: missing packages: %s\n' % string.join(lst))
         elif self.installed[0].has_key(self.packagename):
-            ins = self.get_installed_version()
+            ins = self._parse_installed_db_version()
             new = self.get_version()
             if ins >= new:
                 sys.stderr.write('%s is already the newest version\n' % self.packagename)
@@ -1045,7 +1050,7 @@ class CygApt:
 
 
     def do_install(self):
-        ball = self.get_ball()
+        ball = self._get_ball()
         if tarfile.is_tarfile(ball):
             tf = tarfile.open(ball)
             if self.cygwin_p:
@@ -1206,7 +1211,7 @@ class CygApt:
                 continue
             sys.stderr.write('uninstalling %s %s\n' \
                       % (self.packagename,
-                         self.version_to_string(self.get_installed_version())))
+                         self.version_to_string(self._parse_installed_db_version())))
             self.do_uninstall()
         self.barred_warn_if_need(barred, "removing")
     
@@ -1223,7 +1228,7 @@ class CygApt:
                         continue
                     sys.stderr.write('uninstalling %s %s\n' \
                         % (self.packagename,
-                        self.version_to_string(self.get_installed_version())))
+                        self.version_to_string(self._parse_installed_db_version())))
                     self.do_uninstall()
                 scripts = [self.postinstall_dir + "/%s.sh.done",\
                     self.preremove_dir + "/%s.sh.done",\
@@ -1233,7 +1238,7 @@ class CygApt:
                 for s in scripts:
                     if os.path.exists(s):
                         os.remove(s)
-                ball = self.get_ball()
+                ball = self._get_ball()
                 if os.path.exists(ball):
                     print "%s: removing %s" % (self.sn, ball)
                     os.remove(ball)
@@ -1274,7 +1279,7 @@ class CygApt:
             sys.stderr.write('\n')
     
         for self.packagename in missing.keys():
-            if not self.get_url():
+            if not self._get_url():
                 del missing[self.packagename]     
     
         for self.packagename in missing.keys():
@@ -1289,7 +1294,7 @@ class CygApt:
         for self.packagename in missing.keys():            
             if self.installed[0].has_key(self.packagename):
                 sys.stderr.write('preparing to replace %s %s\n' \
-                    % (self.packagename, self.version_to_string(self.get_installed_version())))
+                    % (self.packagename, self.version_to_string(self._parse_installed_db_version())))
                 self.do_uninstall()
             sys.stderr.write('installing %s %s\n' \
                   % (self.packagename, self.version_to_string(self.get_version())))
@@ -1313,7 +1318,7 @@ class CygApt:
     
     
     def do_unpack(self):
-        ball = self.get_ball()
+        ball = self._get_ball()
         basename = os.path.basename(ball)
         self.packagename = re.sub('(-src)*\.tar\.(bz2|gz)', '', basename)
         if os.path.exists(self.packagename):
@@ -1415,28 +1420,24 @@ class CygApt:
     def is_barred_package(self, package):
         return (not self.nobarred) and package in self.barred
 
-
 def parse_rc(cyg_apt_rc):
     # Currently main only needs to know if we alway call the update command
     # before other commands
     h = open(cyg_apt_rc)
     rc_regex = re.compile("^\s*(\w+)\s*=\s*(.*)\s*$")
-    always_update = False
+    auto_update = False
     for i in h.readlines():
         result = rc_regex.search(i)
         if result:
             k = result.group(1)
             v = result.group(2)
-            if k == "always_update":
-                always_update = eval(v)
+            if k == "auto_update":
+                auto_update = eval(v)
     h.close()
-    return always_update
-    
-
+    return auto_update    
         
 def main():
     main_mirror = None
-    main_downloads = None
     main_nodeps_p = None
     main_download_p = None
     main_distname = None
@@ -1453,12 +1454,12 @@ def main():
     main_scriptname = None
     home_cyg_apt_rc = None
     main_verify = False
-    main_noupdate = False
+    main_autoupdate = False
     
     main_cygwin_p = (sys.platform == "cygwin")
     cas = CygAptSetup(main_cygwin_p)
     update_not_needed = ["ball", "find", "help", "purge", "remove", "version",\
-        "filelist", "update", "setup", "md5"]
+        "filelist", "update", "setup", "md5", "show", "showpkg", "search"]
 
     main_scriptname = os.path.basename(sys.argv[0])
     if (main_scriptname[-3:] == ".py"):
@@ -1484,7 +1485,7 @@ def main():
         if 0:
             pass
         elif o == '-a':
-            main_noupdate = True
+            main_autoupdate = True
         elif o == '--download' or o == '-d':
             main_download_p = 1
         elif o == '--help' or o == '-h':
@@ -1533,11 +1534,12 @@ def main():
     elif (main_command == "update"):
         cas.update(main_cyg_apt_rc, main_verify, main_mirror = main_mirror)
         sys.exit(0)
-    always_update = parse_rc(main_cyg_apt_rc)
-    always_update = always_update and\
-        main_command not in update_not_needed and\
-        not main_noupdate
-    if always_update:
+
+    rc_auto_update = parse_rc(main_cyg_apt_rc)
+    need_update = (main_autoupdate or rc_auto_update) and \
+        (main_command not in update_not_needed)
+
+    if need_update:
         cas.update(main_cyg_apt_rc, main_verify, main_mirror = main_mirror)
         
     if main_command and main_command in dir(CygApt):
@@ -1548,7 +1550,6 @@ def main():
                 main_cygwin_p,\
                 main_download_p,\
                 main_mirror,\
-                main_downloads,\
                 main_distname,\
                 main_nodeps_p,\
                 main_regex_search,\
