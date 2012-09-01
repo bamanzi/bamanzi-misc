@@ -11,9 +11,18 @@
 (if (file-exists-p "~/.emacs.d/site-lisp/site-start.el")
     (load-file "~/.emacs.d/site-lisp/site-start.el"))
 
-(add-to-list 'load-path (concat (if load-file-name
-                                    (file-name-directory load-file-name))
-                                    default-directory) "lisp")
+(let ((this_dir (if load-file-name
+                    (file-name-directory load-file-name)
+                  default-directory)))
+  (add-to-list 'load-path (concat this_dir "lisp"))
+  (add-to-list 'load-path (concat this_dir "lisp/testing")))
+
+
+;;** key bindings
+
+;;***  key modifiers and prefix keys
+
+;;***  <f1> .. <f12> as prefix key
 
 ;;** gui options
 
@@ -28,7 +37,8 @@
                                       (format " - [%s]" buffer-file-name)
                                     ""))))
 
-
+(global-set-key (kbd "<C-M-wheel-up>")    'text-scale-increase)
+(global-set-key (kbd "<C-M-wheel-down>")  'text-scale-decrease)
 
 ;;** files & buffers
 (global-set-key (kbd "C-c C-b") 'ibuffer)
@@ -56,51 +66,18 @@
 (setq windresize-default-increment 4)
 (global-set-key (kbd "<f11> RET") 'windresize)
 
-
 ;;***  tabbar
-;; ide-skel would group buffers into two: editing buffer, emacs buffer
-;;(if window-system
-;;    (require 'ide-skel nil t))
+(eval-after-load "tabbar"
+  `(progn
+     (tabbar-mode t)
+     (define-key tabbar-mode-map (kbd "<C-tab>")     'tabbar-forward)
+     (define-key tabbar-mode-map (kbd "<C-S-tab>")   'tabbar-backward)
+     (define-key tabbar-mode-map (kbd "<C-M-tab>")   'tabbar-forward-group)
+     (define-key tabbar-mode-map (kbd "<C-S-M-tab>") 'tabbar-backward-group)
+     ))
 
-;; if you use `ide-skel', don't directly load `tabbar' after `ide-ske'
-;; as this would mess up the tab group definition of `ide-skel'
-(when (or (featurep 'tabbar)
-          (load "tabbar" t))
-  (tabbar-mode t)
-  (define-key tabbar-mode-map (kbd "<C-tab>")     'tabbar-forward)
-  (define-key tabbar-mode-map (kbd "<C-S-tab>")   'tabbar-backward)
-  (define-key tabbar-mode-map (kbd "<C-M-tab>")   'tabbar-forward-group)
-  (define-key tabbar-mode-map (kbd "<C-S-M-tab>") 'tabbar-backward-group)
-  )
+(require 'tabbar nil t)
 
-
-;;** key bindings
-
-;;***  key modifiers and prefix keys
-
-(when (eq window-system 'w32)
-  ;;(setq w32-lwindow-modifier 'super)
-  
-  (setq w32-lwindow-modifier 'nil)  ;;<lwindow> used as a prefix key
-  (setq w32-pass-lwindow-to-system t) ;;if set to nil, a single press <lwindow> would prevent Start Menu
-  (define-key key-translation-map (kbd "<lwindow>") (kbd "<f11>"))
-
-  ;; (setq w32-rwindow-modifier 'alt)      
-  (setq w32-rwindow-modifier 'hyper)
-  (setq w32-pass-rwindow-to-system nil)
-  ;;(define-key key-translation-map (kbd "<rwindow>") (kbd "C-c"))
-  
-  (setq w32-apps-modifier 'hyper)
-  
-  (setq w32-scroll-lock-modifier nil)
-  )
-  
-;;FIXME: not work
-(when (eq window-system 'x)
-  (define-key key-translation-map (kbd "<super>") (kbd "<f11>"))
-  )
-
-;;***  <f1> .. <f12> as prefix key
 
 ;;** editing
 
@@ -147,8 +124,9 @@
 (global-set-key (kbd "C-j") 'newline)
 
 ;;***  changes
-(if (require 'undo-tree nil 'noerror)
-    (progn
+(require 'undo-tree nil 'noerror)
+(eval-after-load "undo-tree"
+  `(progn
       (global-undo-tree-mode t)
       (global-set-key (kbd "C-c C-z") 'undo-tree-undo)
       (global-set-key (kbd "C-c C-y") 'undo-tree-redo)
@@ -168,26 +146,20 @@
      (add-to-list 'drag-stuff-except-modes 'org-mode)
      (drag-stuff-global-mode t)))
 
-(load "drag-stuff" t)
+(require 'drag-stuff nil t)
 
-;;***  vi-style join-line
-(defun join-line ()
-  "Join the following line with current line"
-  (interactive)
-  (delete-indentation 1))
-
-(global-set-key (kbd "C-c J") 'join-line)
 
 ;;***  misc
-
 (global-set-key (kbd "C-=") 'align-regexp)
 
 
 ;;** minibuffer
 
 ;;***  icomplete
-(icomplete-mode t)  ;; completion for minibuffer (commands (M-x)
-                    ;; variables (C-h v, customize-variable), functions (C-h f))
+(icomplete-mode t)  ;; completion for minibuffer
+                                        ; commands (M-x)
+                                        ; variables (C-h v, customize-variable)
+                                        ; functions (C-h f)
 
 ;;***  ido
 (require 'ido)
@@ -199,24 +171,30 @@
 (ido-mode 'buffers)
 
 ;;***  anything
-(if (and (load "anything" t)
-         (load "anything-config" t))
-    (progn
-      ;;enable multiple keyword/regexp match
-      ;;(load "anything-match-plugin" t) ;;FIXME: would cause crash?
-      ;;(global-set-key (kbd "M-x") 'anything-M-x)
-  
-      (global-set-key (kbd "<f5> r") 'anything-recentf)
-      (global-set-key (kbd "<f5> b") 'anything-buffers+)
-      (global-set-key (kbd "<f5> B") 'anything-bookmarks)
-      (global-set-key (kbd "<f5> l") 'anything-locate)
-      (global-set-key (kbd "<f5> c") 'anything-browse-code)
-      (global-set-key (kbd "<f5> i") 'anything-imenu)
-      (global-set-key (kbd "<f5> o") 'anything-occur)
+(progn
+  (global-set-key (kbd "<f5> r") 'anything-recentf)
+  (global-set-key (kbd "<f5> b") 'anything-buffers+)
+  (global-set-key (kbd "<f5> B") 'anything-bookmarks)
+  (global-set-key (kbd "<f5> l") 'anything-locate)
+  (global-set-key (kbd "<f5> c") 'anything-browse-code)
+  (global-set-key (kbd "<f5> i") 'anything-imenu)
+  (global-set-key (kbd "<f5> o") 'anything-occur)
+  )
 
-      (define-key minibuffer-local-map (kbd "<f5>") 'anything-minibuffer-history)
-      )
+(eval-after-load "anything-config"    
+    `(progn
+       (global-set-key ("<f5> a") anything-command-map)
+
+       ;;enable multiple keyword/regexp match
+       ;;(load "anything-match-plugin" t) ;;FIXME: would cause crash?
+       ;;(global-set-key (kbd "M-x") 'anything-M-x)
+
+       (define-key minibuffer-local-map (kbd "<f5>") 'anything-minibuffer-history)
+      ))
+
+(unless (require 'anything-config nil t)
   (message "%s: failed to load `anything'." load-file-name))
+
 
 ;;** completion
 ;;*** emacs built-in
@@ -290,18 +268,26 @@
 (global-set-key (kbd "<S-wheel-up>")      'highlight-symbol-prev)
 (global-set-key (kbd "<S-wheel-down>")    'highlight-symbol-next)
 
+(defun occur-current-symbol (arg)
+  (interactive "P")
+  (occur (thing-at-point 'symbol) arg))
+
+(define-key search-map "O" 'occur-current-symbol)
+
 ;;***  bm
 (require 'bm nil t)
 
-(global-set-key (kbd "<C-f2>")    'bm-toggle)
-(global-set-key (kbd "<M-f2>")    'bm-next)
-(global-set-key (kbd "<S-f2>")    'bm-previous)
-(global-set-key (kbd "<H-f2>")    'bm-show)
+(progn
+  (global-set-key (kbd "<f2> <f2>")    'bm-toggle)
+  (global-set-key (kbd "<f2> n")    'bm-next)
+  (global-set-key (kbd "<f2> p")    'bm-previous)
+  (global-set-key (kbd "<f2> l")    'bm-show)
 
-(global-set-key (kbd "<left-fringe> <C-mouse-1>")     'bm-toggle-mouse)
-(global-set-key (kbd "<left-fringe> <C-wheel-up>")    'bm-previous-mouse)
-(global-set-key (kbd "<left-fringe> <C-wheel-down>")  'bm-next-mouse)
-(global-set-key (kbd "<left-fringe> <C-mouse-2>")     'bm-show)
+  (global-set-key (kbd "<left-fringe> <C-mouse-1>")     'bm-toggle-mouse)
+  (global-set-key (kbd "<left-fringe> <C-wheel-up>")    'bm-previous-mouse)
+  (global-set-key (kbd "<left-fringe> <C-wheel-down>")  'bm-next-mouse)
+  (global-set-key (kbd "<left-fringe> <C-mouse-2>")     'bm-show)
+  )
 
 ;;*** idle-highlight
 (autoload 'idle-highlight "idle-highlight"
@@ -321,13 +307,14 @@
 ;;(add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
 
 (which-func-mode t)
+(setcar mode-line-format '(which-func-mode which-func-format))
 
 (global-set-key (kbd "C-c ;") 'comment-or-uncomment-region)
 
 ;;***  imenu
-(autoload 'idomenu "idomenu" "Switch to a buffer-local tag from Imenu via Ido." t)
-(define-key goto-map "i" 'idomenu)
-(define-key goto-map "I" 'imenu)
+(define-key goto-map "i" 'imenu)
+
+
 
 ;;*** tags
 (define-key goto-map "e" 'find-tag)
