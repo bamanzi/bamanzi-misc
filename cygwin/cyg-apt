@@ -506,6 +506,8 @@ class CygApt:
         self.dists = main_dists
         self.installed = main_installed
         self.cyg_apt_rc = main_cyg_apt_rc
+        self.mirror = ''
+        self.mirrors = {}
         
         # Read in our configuration
         self.get_rc(open(self.cyg_apt_rc))
@@ -518,7 +520,10 @@ class CygApt:
             self.can_use_ln = os.path.exists(self.PREFIX_ROOT + "/bin/ln.exe")
         else:
             self.can_use_ln = True
-        
+
+        if len(self.mirrors)==0:
+            self.mirrors = { 'mirror': self.mirror }
+            
         # Overrides to the .rc
         if (main_mirror):
             self.mirrors = {'main': main_mirror}
@@ -536,7 +541,7 @@ class CygApt:
             sys.stderr.write('error: run cyg-apt setup?\n' % vars())
             sys.exit(2)
         else:
-            self._parse_setup_ini()
+            self._parse_setup_inis()
             self._parse_installed_db()
 
 
@@ -599,14 +604,14 @@ class CygApt:
             return
         self.dists = {'test': {}, 'curr': {}, 'prev' : {}}
         for mirror_id, mirror_url in self.mirrors.items():
-            setup_ini = self.cache + urllib.quote(mirror_url, '').lower() + '/' + 'setup.ini'
+            setup_ini = self.cache + '/' + urllib.quote(mirror_url, '').lower() + '/' + 'setup.ini'
             chunks = string.split(open(setup_ini).read(), '\n\n@ ')
             for i in chunks[1:]:
                 lines = string.split(i, '\n')
                 name = string.strip(lines[0])
                 self.debug('package: ' + name)
                 packages = self.dists['curr']
-                records = {'sdesc': name}
+                records = {'sdesc': name, 'mirror': mirror_id}
                 j = 1
                 while j < len(lines) and string.strip(lines[j]):
                     self.debug('raw: ' + lines[j])
@@ -634,7 +639,7 @@ class CygApt:
                                 break
                     records[key] = value
                     j = j + 1
-                records['mirror'] = mirror_id
+                
                 if not packages.has_key(name):
                     packages[name] = records
                 else:
@@ -966,8 +971,19 @@ class CygApt:
     def showpkg(self):
         ''' show detail info '''
         self.show()
-        print "\n"
-        self.url()        
+        
+        package = self.dists[self.distname][self.packagename]
+        for key in ['category', 'requires']:
+            print "%s : %s" % (key, package.get(key, ''))
+
+        for dist in self.distnames:
+            if self.dists[dist].has_key(self.packagename):
+                package = self.dists[dist][self.packagename]
+                print "[%s]" % dist
+                print "install: %s" % package['install']
+                print "local:   %s" % (self.downloads[package['mirror']] \
+                                           + package['install'])
+
     
     def get_missing(self):
         reqs = self.get_requires()
@@ -1412,7 +1428,7 @@ class CygApt:
         if not self.cache:
             print "%s: %s doesn't define cache. Exiting." % (self.sn, self.cyg_apt_rc)
             sys.exit(1)
-        if not self.mirror:
+        if not self.mirror and not self.mirrors:
             print "%s: %s doesn't define mirror. Exiting." %(self.sn, self.cyg_apt_rc)
             sys.exit(1)
         
