@@ -6,6 +6,16 @@
                  <cjcormie@gmail.com> <janneke@gnu.org> 
   
   License: GNU GPL
+
+  Hacked by Ba Manzi <bamanzi@gmail.com> 2012
+  - disable gpg verifing by default
+  - disable automatically updating of setup.ini (rc & cmd option 'always_update'
+    changed to 'auto_update', and disabled by default). you can manually call
+    'cyg-apt update' to update them
+  - support multi-repos (e.g. Cygwin Ports). You need to add `mirrors' (in
+    python dictionary format) to ~/.cyg-apt, and it would overrides 'mirror' option
+    (but cmdline '--mirror' has higher priority).
+    Note: /etc/setup/setup.ini no longer used nor updated by this program.
 '''
 
 import getopt
@@ -640,21 +650,28 @@ class CygApt:
                     records[key] = value
                     j = j + 1
                 
-                if not packages.has_key(name):
+                if not packages.has_key(name) or not packages[name].has_key('version'):
                     packages[name] = records
                 else:
-                    package_prev = packages[name]
-                    print "WARN: package %s already in repo '%s'." % (name, package_prev['mirror'])
-                    from distutils import LooseVersion
-                    ver_this = records['version']
-                    ver_that = package_prev['version']
-                    if LooseVersion(ver_this) > LooseVersion(ver_that):
-                        self.debug("WARN: package '%s' in repo '%s'(%s) overrides that in repo '%s'(%s)" %
-                                   (name, mirror_id, records['version'], package_prev['mirror'], package_prev['version']))
-                        packages[name] = records
-                    elif LooseVersion(ver_this) < LooseVersion(ver_that):
-                        self.debug("WARN: package '%s' in repo '%s'(%s) is older than the one in repo '%s'(%s). ignored." %
-                                   (name, mirror_id, records['version'], package_prev['mirror'], package_prev['version']))
+                     package_prev = packages[name]
+                     if not records.has_key('version'):
+                         pass
+                     elif not package_prev.has_key('version'):
+                         self.debug("package %s has no installable version in repo %s" %
+                                    (name, mirror_id))
+                         packages[name] = records
+                     else:
+                         #print "WARN: package %s already in repo '%s'." % (name, package_prev['mirror'])                     
+                         from distutils.version import LooseVersion
+                         ver_this = records['version']
+                         ver_that = package_prev['version']
+                         if LooseVersion(ver_this) > LooseVersion(ver_that):
+                             self.debug("WARN: package '%s' in repo '%s'(%s) overrides that in repo '%s'(%s)" %
+                                        (name, mirror_id, records['version'], package_prev['mirror'], package_prev['version']))
+                             packages[name] = records
+                         elif LooseVersion(ver_this) < LooseVersion(ver_that):
+                             self.debug("WARN: package '%s' in repo '%s'(%s) is older than the one in repo '%s'(%s). ignored." %
+                                        (name, mirror_id, records['version'], package_prev['mirror'], package_prev['version']))
                         
     
             
@@ -804,7 +821,7 @@ class CygApt:
         '''list installed packages'''
         print "--- Installed packages ---"
         for self.packagename in self.psort(self.installed[0].keys()):
-            ins = self._parse_installed_db_version()
+            ins = self._get_installed_db_version()
             new = 0
             if self.dists[self.distname].has_key(self.packagename) \
                and self.dists[self.distname][self.packagename].has_key(self.INSTALL):
@@ -854,7 +871,7 @@ class CygApt:
         return package['ver']
     
        
-    def _parse_installed_db_version(self):
+    def _get_installed_db_version(self):
         return self.split_ball(self.installed[0][self.packagename])[1]
     
     
@@ -863,7 +880,7 @@ class CygApt:
         if self.packagename:
             if not self.installed[0].has_key(self.packagename):
                 raise CygAptError(self.packagename + " is not installed")
-            print self.version_to_string(self._parse_installed_db_version())
+            print self.version_to_string(self._get_installed_db_version())
         else:
             for self.packagename in self.psort(self.installed[0].keys()):
                 if not self.installed[0].has_key(self.packagename):
@@ -871,14 +888,14 @@ class CygApt:
                     self.no_package()
                     sys.exit(1)
                 print '%-20s%-12s' % (self.packagename,
-                         self.version_to_string(self._parse_installed_db_version()))
+                         self.version_to_string(self._get_installed_db_version()))
     
         
     def get_new(self):
         lst = []
         for self.packagename in self.installed[0].keys():
             new = self.get_version()
-            ins = self._parse_installed_db_version()
+            ins = self._get_installed_db_version()
             if new > ins:
                 self.debug(" %s > %s" % (new, ins))
                 lst.append(self.packagename)
@@ -982,7 +999,7 @@ class CygApt:
                 print "[%s]" % dist
                 print "install: %s" % package['install']
                 print "local:   %s" % (self.downloads[package['mirror']] \
-                                           + package['install'])
+                                           + '/' + package['install'])
 
     
     def get_missing(self):
@@ -994,7 +1011,7 @@ class CygApt:
         if lst and self.packagename not in lst:
             sys.stderr.write('warning: missing packages: %s\n' % string.join(lst))
         elif self.installed[0].has_key(self.packagename):
-            ins = self._parse_installed_db_version()
+            ins = self._get_installed_db_version()
             new = self.get_version()
             if ins >= new:
                 sys.stderr.write('%s is already the newest version\n' % self.packagename)
@@ -1253,7 +1270,7 @@ class CygApt:
                 continue
             sys.stderr.write('uninstalling %s %s\n' \
                       % (self.packagename,
-                         self.version_to_string(self._parse_installed_db_version())))
+                         self.version_to_string(self._get_installed_db_version())))
             self.do_uninstall()
         self.barred_warn_if_need(barred, "removing")
     
@@ -1270,7 +1287,7 @@ class CygApt:
                         continue
                     sys.stderr.write('uninstalling %s %s\n' \
                         % (self.packagename,
-                        self.version_to_string(self._parse_installed_db_version())))
+                        self.version_to_string(self._get_installed_db_version())))
                     self.do_uninstall()
                 scripts = [self.postinstall_dir + "/%s.sh.done",\
                     self.preremove_dir + "/%s.sh.done",\
@@ -1336,7 +1353,7 @@ class CygApt:
         for self.packagename in missing.keys():            
             if self.installed[0].has_key(self.packagename):
                 sys.stderr.write('preparing to replace %s %s\n' \
-                    % (self.packagename, self.version_to_string(self._parse_installed_db_version())))
+                    % (self.packagename, self.version_to_string(self._get_installed_db_version())))
                 self.do_uninstall()
             sys.stderr.write('installing %s %s\n' \
                   % (self.packagename, self.version_to_string(self.get_version())))
