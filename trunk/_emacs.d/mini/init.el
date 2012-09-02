@@ -4,6 +4,7 @@
     (highlight-lines-matching-regexp "^;;\\* "    'org-level-1)
     (highlight-lines-matching-regexp "^;;\\*\\* " 'org-level-2)
     (highlight-lines-matching-regexp "^;;\\*\\*\\* " 'org-level-3)
+    (setq outline-regexp "^;;[\*]+ ")
     )    ;;<- put cursor here, press C-x C-e
   )
 
@@ -23,6 +24,14 @@
 ;;***  key modifiers and prefix keys
 
 ;;***  <f1> .. <f12> as prefix key
+(global-unset-key (kbd "<f10>"))
+(global-set-key (kbd "<f10>") 'menu-bar-open)
+
+;;** emacs enviroment
+(global-set-key (kbd "ESC ESC e r") 'eval-region)
+(global-set-key (kbd "ESC ESC e b") 'eval-buffer)
+(global-set-key (kbd "ESC ESC l l") 'load-library)
+(global-set-key (kbd "ESC ESC f l") 'find-library)
 
 ;;** gui options
 
@@ -42,8 +51,11 @@
 
 ;;** files & buffers
 (global-set-key (kbd "C-c C-b") 'ibuffer)
+
 (global-set-key (kbd "<C-tab>") 'previous-buffer)
 (global-set-key (kbd "<C-S-tab>") 'next-buffer)
+(global-set-key (kbd "<f12> <left>")    'previous-buffer)
+(global-set-key (kbd "<f12> <right>")   'next-buffer)
 
 ;;***  recentf
 (require 'recentf)
@@ -54,12 +66,29 @@
 ;;*** vc
 ;;...
 
+;;*** dired
+(define-key goto-map "d" 'dired-jump) ;;C-x C-j
+
+;;*** nav.el
+(autoload 'nav "nav" "Emacs mode for filesystem navigation." t)
+(autoload 'nav-toggle "nav"
+  "Opens Nav in a new window to the left of the current one." t)
+
 ;;** windows
 ;;***  winner-mode
 (setq winner-dont-bind-my-keys t)
 (winner-mode t)
-;;(global-set-key (kbd "<f11> C-z") 'winner-undo)
-;;(global-set-key (kbd "<f11> C-y") 'winner-redo)
+(global-set-key (kbd "<f11> C-z") 'winner-undo)
+(global-set-key (kbd "<f11> C-y") 'winner-redo)
+
+;;*** windmove
+(require 'windmove)
+(progn
+  (define-key global-map (kbd "<f11> <up>")    'windmove-up)
+  (define-key global-map (kbd "<f11> <down>")  'windmove-down)
+  (define-key global-map (kbd "<f11> <left>")  'windmove-left)
+  (define-key global-map (kbd "<f11> <right>") 'windmove-right)
+  )
 
 ;;*** windresize
 (autoload 'windresize "windresize" "Resize windows interactively." t)
@@ -74,6 +103,12 @@
      (define-key tabbar-mode-map (kbd "<C-S-tab>")   'tabbar-backward)
      (define-key tabbar-mode-map (kbd "<C-M-tab>")   'tabbar-forward-group)
      (define-key tabbar-mode-map (kbd "<C-S-M-tab>") 'tabbar-backward-group)
+
+     (define-key tabbar-mode-map (kbd "<f12> <up>")      'tabbar-press-home)
+     (define-key tabbar-mode-map (kbd "<f12> <left>")    'tabbar-backward-tab)
+     (define-key tabbar-mode-map (kbd "<f12> <right>")   'tabbar-forward-tab)
+     (define-key tabbar-mode-map (kbd "<f12> <M-left>")  'tabbar-backward-group)
+     (define-key tabbar-mode-map (kbd "<f12> <M-right>") 'tabbar-forward-group)
      ))
 
 (require 'tabbar nil t)
@@ -91,7 +126,7 @@
 ;;(setq cua-rectangle-modifier-key 'hyper)  ;;leave C-RET
 (cua-mode t)
 
-(global-set-key (kbd "C-c RET") 'cua-set-rectangle-mark)
+(global-set-key (kbd "C-x r RET") 'cua-set-rectangle-mark)
 
 (when (eq window-system 'x)
     (setq x-select-enable-clipboard t)
@@ -130,11 +165,12 @@
       (global-undo-tree-mode t)
       (global-set-key (kbd "C-c C-z") 'undo-tree-undo)
       (global-set-key (kbd "C-c C-y") 'undo-tree-redo)
-      )
-  (message "%s: failed to load `undo-tree'."  load-file-name))
+      ))
 
 (setq highlight-changes-visibility-initial-state nil)
 (global-highlight-changes-mode t)
+
+(define-key global-map (kbd "<f10> h c") 'highlight-changes-visible-mode)
 
 (setq diff-switches "-u")    ;;I prefer the unified format
 (global-set-key (kbd "C-c d") 'diff-buffer-with-file)
@@ -183,13 +219,15 @@
 
 (eval-after-load "anything-config"    
     `(progn
-       (global-set-key ("<f5> a") anything-command-map)
+       (global-set-key (kbd "<f5> a") anything-command-map)
 
+       (define-key global-map (kbd "<f5> |") 'anything-toggle-resplit-window)
+       
        ;;enable multiple keyword/regexp match
        ;;(load "anything-match-plugin" t) ;;FIXME: would cause crash?
        ;;(global-set-key (kbd "M-x") 'anything-M-x)
 
-       (define-key minibuffer-local-map (kbd "<f5>") 'anything-minibuffer-history)
+       (define-key minibuffer-local-map (kbd "<f5> <f5>") 'anything-minibuffer-history)
       ))
 
 (unless (require 'anything-config nil t)
@@ -220,6 +258,8 @@
         (message "%s: failed to load `auto-complete-scite-api'." load-file-name)))
   )
 
+(define-key global-map (kbd "<f10> a c") 'auto-complete-mode)
+
 (unless (and (load "auto-complete" t)
              (load "auto-complete-config" t))
   (message "%s: failed to load `auto-complete'." load-file-name))
@@ -234,6 +274,15 @@
      (define-key hs-minor-mode-map (kbd "<C-mouse-1>") 'hs-mouse-toggle-hiding)
      ))
 
+(define-key global-map (kbd "<f10> h s") 'hs-minor-mode)
+
+(if (display-graphic-p)
+    (if (and (require 'hideshowvis nil t)
+             (require 'hideshow-fringe nil t))
+        (define-key global-map (kbd "<f10> h s") 'hideshowvis-minor-mode)))
+             
+
+
 ;;***  outline
 (require 'outline)
 (eval-after-load "outline"
@@ -246,7 +295,8 @@
      (define-key outline-mode-prefix-map (kbd "<left>")  'hide-subtree)
      (define-key outline-mode-prefix-map (kbd "<right>") 'show-subtree)
 
-     (global-set-key (kbd "M-+")   'outline-toggle-children)
+     (global-set-key (kbd "M-+")          'outline-toggle-children)
+     
      (global-set-key (kbd "<C-wheel-up>") 'outline-previous-visible-heading)
      (global-set-key (kbd "<C-wheel-down>") 'outline-next-visible-heading)
      (global-set-key (kbd "<C-mouse-1>")  'outline-toggle-children)
@@ -254,15 +304,16 @@
      (global-set-key (kbd "<C-mouse-2>")  'show-all)
   ))
 
+(define-key global-map (kbd "<f10> o l") 'outline-minor-mode)
+
 ;;** some visual effect
 
 ;;***  highlight-symbol
 (require 'highlight-symbol nil t)
 
-(global-set-key (kbd "C-c j")          'highlight-symbol-at-point)
-(define-key search-map (kbd "j")       'highlight-symbol-at-point)
-(define-key search-map (kbd "#")    'highlight-symbol-prev)
-(define-key search-map (kbd "*")  'highlight-symbol-next)
+(define-key search-map (kbd "j")     'highlight-symbol-at-point)
+(define-key search-map (kbd "#")     'highlight-symbol-prev)
+(define-key search-map (kbd "*")     'highlight-symbol-next)
 
 (global-set-key (kbd "<double-mouse-1>")  'highlight-symbol-at-point)
 (global-set-key (kbd "<S-wheel-up>")      'highlight-symbol-prev)
@@ -278,7 +329,7 @@
 (require 'bm nil t)
 
 (progn
-  (global-set-key (kbd "<f2> <f2>")    'bm-toggle)
+  (global-set-key (kbd "<f2> <f2>") 'bm-toggle)
   (global-set-key (kbd "<f2> n")    'bm-next)
   (global-set-key (kbd "<f2> p")    'bm-previous)
   (global-set-key (kbd "<f2> l")    'bm-show)
@@ -302,19 +353,37 @@
 
 (require 'idle-highlight nil t)
 
+(define-key global-map (kbd "<f10> i h") 'idle-highlight)
+
 ;;** programming
 
-;;(add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
+(global-set-key (kbd "C-c ;") 'comment-or-uncomment-region)
 
+
+(define-key global-map (kbd "<f10> w f") 'which-func-mode)
 (which-func-mode t)
+;; move which-func indicator to the start of mode line
 (setcar mode-line-format '(which-func-mode which-func-format))
 
-(global-set-key (kbd "C-c ;") 'comment-or-uncomment-region)
 
 ;;***  imenu
 (define-key goto-map "i" 'imenu)
 
+(defun anything-goto-symbol ()
+  "Show anything list, using current symbol as input to narrow the choices."
+  (interactive)
+  (anything
+   :prompt "Go to:"
+   :candidate-number-limit 10
+   :input (thing-at-point 'symbol)
+   :sources
+      '( anything-c-source-imenu
+         anything-c-source-browse-code
+         anything-c-source-semantic
+;;         anything-c-source-etags-select
+         )))
 
+(define-key goto-map "s" 'anything-goto-symbol)
 
 ;;*** tags
 (define-key goto-map "e" 'find-tag)
@@ -366,6 +435,8 @@
 (require 'eldoc-extension nil t)
 (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
 
+;;*** python
+
 ;;***  org-mode
 
 (setq org-CUA-compatible t)
@@ -386,8 +457,7 @@
 
 
 ;;** utils
-;;*** dired
-(define-key goto-map "d" 'dired-jump) ;;C-x C-j
+
 
 ;;*** eshell
 ;;FIXME:
@@ -401,6 +471,9 @@
 ;;*** terminal
 ;;FIXME:
 
-
+;;*** iedit
+(autoload 'iedit-mode "iedit"
+  "Edit multiple regions in the same way simultaneously." t)
 	 
   
+(put 'set-goal-column 'disabled nil)
