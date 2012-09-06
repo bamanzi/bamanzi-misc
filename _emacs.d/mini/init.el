@@ -33,6 +33,22 @@
 (global-set-key (kbd "ESC ESC l l") 'load-library)
 (global-set-key (kbd "ESC ESC f l") 'find-library)
 
+
+;;** emacs environmen
+(defun describe-keymap (keymap)
+    (interactive
+     (list (intern (completing-read "Keymap: " obarray
+                                    (lambda (m) (and (boundp m) (keymapp (symbol-value m))))
+                                    t nil 'variable-name-history))))
+    (with-output-to-temp-buffer "*Help*"
+      (princ (substitute-command-keys (concat "\\{" (symbol-name keymap) "}")))
+      ))
+(define-key help-map (kbd "M-k") 'describe-keymap)
+
+(define-key global-map (kbd "<C-f10> g") 'customize-group)
+(define-key global-map (kbd "<C-f10> v") 'customize-variable)
+(define-key global-map (kbd "<C-f10> f") 'customize-face)
+
 ;;** gui options
 
 (if (fboundp 'tool-bar-mode)
@@ -46,8 +62,9 @@
                                       (format " - [%s]" buffer-file-name)
                                     ""))))
 
-(global-set-key (kbd "<C-M-wheel-up>")    'text-scale-increase)
-(global-set-key (kbd "<C-M-wheel-down>")  'text-scale-decrease)
+(global-set-key (kbd "<C-M-wheel-up>") 'text-scale-increase)
+(global-set-key (kbd "<C-M-wheel-down>") 'text-scale-decrease)
+
 
 ;;** files & buffers
 (global-set-key (kbd "C-c C-b") 'ibuffer)
@@ -64,15 +81,9 @@
 (recentf-mode t)
 
 ;;*** vc
-;;...
-
-;;*** dired
-(define-key goto-map "d" 'dired-jump) ;;C-x C-j
-
-;;*** nav.el
-(autoload 'nav "nav" "Emacs mode for filesystem navigation." t)
-(autoload 'nav-toggle "nav"
-  "Opens Nav in a new window to the left of the current one." t)
+(unless (fboundp 'vc-svn-root)  ;;fix emacs-23's svn support
+  (defun vc-svn-root (file)
+    (vc-find-root file vc-svn-admin-directory)))
 
 ;;** windows
 ;;***  winner-mode
@@ -84,16 +95,17 @@
 ;;*** windmove
 (require 'windmove)
 (progn
-  (define-key global-map (kbd "<f11> <up>")    'windmove-up)
-  (define-key global-map (kbd "<f11> <down>")  'windmove-down)
-  (define-key global-map (kbd "<f11> <left>")  'windmove-left)
-  (define-key global-map (kbd "<f11> <right>") 'windmove-right)
+  (global-set-key (kbd "<f11> <up>")    'windmove-up)
+  (global-set-key (kbd "<f11> <down>")  'windmove-down)
+  (global-set-key (kbd "<f11> <left>")  'windmove-left)
+  (global-set-key (kbd "<f11> <right>") 'windmove-right)
   )
 
 ;;*** windresize
 (autoload 'windresize "windresize" "Resize windows interactively." t)
 (setq windresize-default-increment 4)
 (global-set-key (kbd "<f11> RET") 'windresize)
+
 
 ;;***  tabbar
 (eval-after-load "tabbar"
@@ -111,7 +123,15 @@
      (define-key tabbar-mode-map (kbd "<f12> <M-right>") 'tabbar-forward-group)
      ))
 
-(require 'tabbar nil t)
+  (define-key tabbar-mode-map (kbd "<f12> <right>") 'tabbar-forward-tab)
+  (define-key tabbar-mode-map (kbd "<f12> <left>")  'tabbar-backward-tab)  
+  (define-key tabbar-mode-map (kbd "<f12> <up>")    'tabbar-backward-group)
+  (define-key tabbar-mode-map (kbd "<f12> <down>")  'tabbar-forward-group)
+
+  (if (display-graphic-p)
+      (require 'tabbar-ruler nil t))  
+  )
+
 
 
 ;;** editing
@@ -186,6 +206,7 @@
 
 
 ;;***  misc
+
 (global-set-key (kbd "C-=") 'align-regexp)
 
 
@@ -276,11 +297,20 @@
 
 (define-key global-map (kbd "<f10> h s") 'hs-minor-mode)
 
-(if (display-graphic-p)
-    (if (and (require 'hideshowvis nil t)
-             (require 'hideshow-fringe nil t))
-        (define-key global-map (kbd "<f10> h s") 'hideshowvis-minor-mode)))
-             
+(defun bmz/turn-on-hideshow ()
+  (interactive)
+  (if (display-graphic-p)
+      (if (and (require 'hideshowvis nil t)
+              (require 'hideshow-fringe nil t))
+          (progn
+            (hs-minor-mode t)
+            (hideshowvis-enable))
+        (hs-minor-mode t)        
+     )))
+
+(eval-after-load "hideshowvis"
+  ` (define-key global-map (kbd "<f10> h s") 'hideshowvis-minor-mode)
+  )
 
 
 ;;***  outline
@@ -295,16 +325,20 @@
      (define-key outline-mode-prefix-map (kbd "<left>")  'hide-subtree)
      (define-key outline-mode-prefix-map (kbd "<right>") 'show-subtree)
 
-     (global-set-key (kbd "M-+")          'outline-toggle-children)
-     
-     (global-set-key (kbd "<C-wheel-up>") 'outline-previous-visible-heading)
+     (global-set-key (kbd "M-+")            'outline-toggle-children)
+     (global-set-key (kbd "<C-wheel-up>")   'outline-previous-visible-heading)
      (global-set-key (kbd "<C-wheel-down>") 'outline-next-visible-heading)
-     (global-set-key (kbd "<C-mouse-1>")  'outline-toggle-children)
-     (global-set-key (kbd "<C-mouse-3>")  'hide-sublevels)
-     (global-set-key (kbd "<C-mouse-2>")  'show-all)
+     (global-set-key (kbd "<C-mouse-1>")    'outline-toggle-children)
+     (global-set-key (kbd "<C-mouse-3>")    'show-subtree)
+     (global-set-key (kbd "<C-mouse-2>")    'show-all)
   ))
 
 (define-key global-map (kbd "<f10> o l") 'outline-minor-mode)
+
+(autoload 'qtmstr-outline-mode "qtmstr-outline"
+  "Add left-fringe +/- icons and line overlays for outline-sections." t)
+
+(define-key global-map (kbd "<f10> q o") 'qtmstr-outline-mode)
 
 ;;** some visual effect
 
@@ -334,11 +368,10 @@
   (global-set-key (kbd "<f2> p")    'bm-previous)
   (global-set-key (kbd "<f2> l")    'bm-show)
 
-  (global-set-key (kbd "<left-fringe> <C-mouse-1>")     'bm-toggle-mouse)
-  (global-set-key (kbd "<left-fringe> <C-wheel-up>")    'bm-previous-mouse)
-  (global-set-key (kbd "<left-fringe> <C-wheel-down>")  'bm-next-mouse)
-  (global-set-key (kbd "<left-fringe> <C-mouse-2>")     'bm-show)
-  )
+(global-set-key (kbd "<left-fringe> <C-mouse-1>")     'bm-toggle-mouse)
+(global-set-key (kbd "<left-fringe> <C-wheel-up>")    'bm-previous-mouse)
+(global-set-key (kbd "<left-fringe> <C-wheel-down>")  'bm-next-mouse)
+(global-set-key (kbd "<left-fringe> <C-mouse-2>")     'bm-show)
 
 ;;*** idle-highlight
 (autoload 'idle-highlight "idle-highlight"
@@ -361,10 +394,16 @@
 
 
 (define-key global-map (kbd "<f10> w f") 'which-func-mode)
+
 (which-func-mode t)
+
 ;; move which-func indicator to the start of mode line
 (setcar mode-line-format '(which-func-mode which-func-format))
 
+(eval-after-load "which-func"
+  `(progn
+     (define-key which-func-keymap (kbd "<mode-line> <C-mouse-1>") 'imenu)
+     ))
 
 ;;***  imenu
 (define-key goto-map "i" 'imenu)
@@ -435,7 +474,25 @@
 (require 'eldoc-extension nil t)
 (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
 
-;;*** python
+;;*** python mode
+
+(eval-after-load "python"
+  `(progn
+     (remove-hook 'python-mode-hook 'wisent-python-default-setup)     
+     ))
+  
+(defun python-reset-imenu ()
+  (interactive)
+  (if (fboundp 'setq-mode-local)
+      (setq-mode-local python-mode
+                       imenu-create-index-function 'python-imenu-create-index))
+;;  (remove-hook 'python-mode-hook 'semantic-python-setup)
+  (setq imenu-create-index-function 'python-imenu-create-index))
+
+(autoload 'highlight-indentation-mode "highlight-indentation"
+  "Highlight indentation minor mode, highlights indentation based" t)
+
+(global-set-key (kbd "<f10> h i") 'highlight-indentation-mode)
 
 ;;***  org-mode
 
@@ -456,8 +513,8 @@
 (global-set-key (kbd "C-c o c") 'org-capture)
 
 
-;;** utils
 
+;;** utils
 
 ;;*** eshell
 ;;FIXME:
@@ -468,12 +525,16 @@
 ;;*** color-theme
 ;;FIXME:
 
-;;*** terminal
-;;FIXME:
-
 ;;*** iedit
 (autoload 'iedit-mode "iedit"
   "Edit multiple regions in the same way simultaneously." t)
+
+;;*** terminal
+;;FIXME:
+
+(autoload 'lacarte-execute-menu-command "lacarte"
+  "Execute a menu-bar menu command in an alternative way." t)
+
+(define-key global-map (kbd "ESC <f10>") 'lacarte-execute-menu-command)
 	 
   
-(put 'set-goal-column 'disabled nil)
