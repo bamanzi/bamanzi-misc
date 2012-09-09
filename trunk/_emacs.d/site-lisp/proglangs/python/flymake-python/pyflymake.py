@@ -207,7 +207,7 @@ class Pep8Runner(LintRunner):
       spiders/structs.py:25:33: W602 deprecated form of raising exception
       spiders/structs.py:51:9: E301 expected 1 blank line, found 0 """
 
-    command = 'pep8'
+    command = 'python'
     # sane_default_ignore_codes = set([
     #     'RW29', 'W391',
     #     'W291', 'WO232'])
@@ -230,7 +230,7 @@ class Pep8Runner(LintRunner):
 
     @property
     def run_flags(self):
-        return '--repeat', '--ignore=' + ','.join(self.config.IGNORE_CODES)
+        return '-mpep8', '--repeat', '--ignore=' + ','.join(self.config.IGNORE_CODES)
 
 
 class TestRunner(LintRunner):
@@ -265,19 +265,29 @@ class TestRunner(LintRunner):
 
 
 def find_config(path, trigger_type):
-    if path in ('', '/'):
-        module = DefaultConfig()
-    else:
-        try:
-            parent_dir = os.path.join(path, '.pyflymakerc')
-            # dirtiest trick ever:
-            __builtins__.TRIGGER_TYPE = trigger_type
-            module = imp.load_source('config', parent_dir)
-            del __builtins__.TRIGGER_TYPE
-        except IOError:
-            module = find_config(os.path.split(path)[0], trigger_type)
-    return module
+    def read_config(rcpath, trigger_type):
+        import __builtin__
+        # dirtiest trick ever:
+        __builtin__.TRIGGER_TYPE = trigger_type
+        module = imp.load_source('config', rcpath)
+        del __builtin__.TRIGGER_TYPE
+        logging.debug("Found config from %s" % rcpath)
+        return module
 
+    try:
+      rcpath = os.path.join(path, '.pyflymakerc')
+      module = read_config(rcpath, trigger_type)
+    except IOError:
+        parent_dir, this_dir = os.path.split(path)
+        if this_dir:
+            module = find_config(os.path.split(path)[0], trigger_type)
+        else:
+            rcpath = os.path.expanduser("~/.pyflymakerc")
+            try:
+                module = read_config(rcpath, trigger_type)
+            except:
+                module = DefaultConfig
+    return module
 
 class DefaultConfig(object):
     def __init__(self):
