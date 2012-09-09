@@ -174,28 +174,37 @@
 (put 'python-dotexpr 'end-op 'py-complete-python-dotexpr-end)
 
 
-(defun py-complete-show (string)
-  (display-message-or-buffer string "*PythonHelp*"))
+(defun py-complete-show (string &optional notip)
+  (if (and (not notip)
+           (require 'popup nil t))
+      (progn
+        (if (> (length string) 300)
+            (setq string (substring string 0 300)))
+        (if (and window-system (require 'popup-pos-tip nil t))
+            (popup-pos-tip string)
+          (popup-tip string)))
+    (display-message-or-buffer string "*PythonHelp*")))
 
 
-(defun py-complete-help (str1)
+(defun py-complete-get-help (str1)
+  (pycomplete-pyhelp str1 (py-find-global-imports) default-directory))
+
+(defun py-complete-help (str1 &optional usetip)
   "get help on a python expression"
-  (interactive "sHelp: ")
+  (interactive "sHelp: \nP")
   (let ((help-string
-         (pycomplete-pyhelp str1 (py-find-global-imports))))
-    (if (and help-string (> (length help-string) 300))
-        (with-output-to-temp-buffer "*Python Help*"
-          (print help-string))
-      (py-complete-show help-string))))
-
+         (pycomplete-pyhelp str1 (py-find-global-imports) default-directory)))
+    ;; (if (and help-string (> (length help-string) 300))
+    ;;     (with-output-to-temp-buffer "*Python Help*"
+    ;;       (print help-string))
+      (py-complete-show help-string (not usetip))))
 
 (defun py-complete-help-thing-at-point nil
   (interactive)
   (require 'thingatpt)
   (let ((sym (thing-at-point 'python-dotexpr)))
     (if sym
-        (py-complete-help sym))))
-
+        (py-complete-help sym 'usetip))))
 
 (set 'py-complete-current-signature nil)
 
@@ -210,7 +219,7 @@
   (let ((sym (thing-at-point 'python-dotexpr)))
     (if sym
         (progn
-          (py-complete-show (py-complete-signature sym))))))
+          (py-complete-show (py-complete-signature sym) 'notip)))))
 
 
 (defun py-complete-signature-expr nil
@@ -219,14 +228,14 @@
   (let ((dotexpr (read-string "signature on: "
                               (thing-at-point 'python-dotexpr))))
     (if dotexpr
-        (py-complete-show
-         (py-complete-signature dotexpr)))))
+        (py-complete-show (py-complete-signature dotexpr) 'notip))))
 
 
 (defun py-complete-electric-lparen nil
   "electricly insert '(', and try to get a signature for the stuff to the left"
   (interactive)
-  (py-complete-signature-show)
+  (ignore-errors
+    (py-complete-signature-show))
   (self-insert-command 1))
 
 
@@ -235,13 +244,13 @@
   (interactive)
   (self-insert-command 1)
   (if py-complete-current-signature
-      (py-complete-show (format "%s" py-complete-current-signature))))
+      (py-complete-show (format "%s" py-complete-current-signature) 'notip)))
 
 
 (defun py-complete-init-keys (map)
   (define-key map [M-f1] 'py-complete-help-thing-at-point)
-  (define-key map "("  'py-complete-electric-lparen)
-  (define-key map ","  'py-complete-electric-comma)
+  (define-key map "("    'py-complete-electric-lparen)
+  (define-key map ","    'py-complete-electric-comma)
   (define-key map [M-f2] 'py-complete-signature-expr)
   (define-key map [M-f3] 'py-complete-help)
   ;;(define-key map "\M-\C-i"  'py-complete)
