@@ -36,6 +36,7 @@ See pycomplete.el for the Emacs Lisp side of things.
 # symbols within the current buffer.
 
 import sys
+import os
 import os.path
 
 try:
@@ -57,6 +58,8 @@ def get_all_completions(s, imports=None):
                 exec stmt in globals(), locald
             except TypeError:
                 raise TypeError, "invalid type: %s" % stmt
+            except Exception:
+                continue
 
     dots = s.split(".")
     if not s or len(dots) == 1:
@@ -75,6 +78,8 @@ def get_all_completions(s, imports=None):
     sym = None
     for i in range(1, len(dots)):
         s = ".".join(dots[:i])
+        if not s:
+            continue
         try:
             sym = eval(s, globals(), locald)
         except NameError:
@@ -82,6 +87,11 @@ def get_all_completions(s, imports=None):
                 sym = __import__(s, globals(), locald, [])
             except ImportError:
                 return []
+            except AttributeError:
+                try:
+                    sym = __import__(s, globals(), locald, [])
+                except ImportError:
+                    pass            
     if sym is not None:
         s = dots[-1]
         return [k for k in dir(sym) if k.startswith(s)]
@@ -102,7 +112,11 @@ def get_all_completions_for_ac(s, imports=None):
     return [ (prefix + "." + k) for k in completions] #modified by EEPY
     
     
-def pycomplete(s, imports=None):
+def pycomplete(s, imports=None, cwd=None):
+    if not s:
+        return ''
+    if cwd and os.path.isdir(cwd):
+        os.chdir(cwd)
     completions = get_all_completions(s, imports)
     dots = s.split(".")
     result = os.path.commonprefix([k[len(dots[-1]):] for k in completions])
@@ -131,8 +145,12 @@ from StringIO import StringIO
 from Pymacs import lisp
 sys.path.append('.')
 
-def pyhelp(s, imports=None):
+def pyhelp(s, imports=None, cwd=None):
     """Return object description"""
+    if not s:
+        return ''
+    if cwd and os.path.isdir(cwd):
+        os.chdir(cwd)
     _import_modules(imports, globals(), None)
     return _getdoc(s)
 

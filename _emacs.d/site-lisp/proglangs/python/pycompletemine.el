@@ -57,7 +57,7 @@
       (goto-char (point-min))
       (setq imports nil)
       (while (re-search-forward
-	      "^\\(import \\|from \\([A-Za-z_][A-Za-z_0-9]*\\) import \\).*"
+	      "\\(import \\|from \\([A-Za-z_\\.][A-Za-z_0-9\\.]*\\) import \\).*"
 	      nil t)
 	(setq imports (append imports
 			      (list (buffer-substring
@@ -71,7 +71,8 @@
          (symbol (py-symbol-near-point))
          (completions
           (pycomplete-pycomplete symbol
-                                 (py-find-global-imports))))
+                                 (py-find-global-imports)
+                                 default-directory)))
     (cond  ((null completions) ; no matching symbol
            (message "Can't find completion for \"%s\"" symbol)
            (ding))
@@ -173,7 +174,6 @@
 (put 'python-dotexpr 'beginning-op 'py-complete-python-dotexpr-begin)
 (put 'python-dotexpr 'end-op 'py-complete-python-dotexpr-end)
 
-
 (defun py-complete-show (string &optional notip)
   (if (and (not notip)
            (require 'popup nil t))
@@ -183,7 +183,13 @@
         (if (and window-system (require 'popup-pos-tip nil t))
             (popup-pos-tip string)
           (popup-tip string)))
-    (display-message-or-buffer string "*PythonHelp*")))
+    (display-message-or-buffer string "*PythonHelp*")
+
+    ;;FIXME: what if display-message-buffer not use buffer to show help?
+    (with-current-buffer "*PythonHelp*"
+      (setq buffer-read-only nil)
+      (require 'woman)
+      (woman-man-buffer))))
 
 
 (defun py-complete-get-help (str1)
@@ -192,8 +198,7 @@
 (defun py-complete-help (str1 &optional usetip)
   "get help on a python expression"
   (interactive "sHelp: \nP")
-  (let ((help-string
-         (pycomplete-pyhelp str1 (py-find-global-imports) default-directory)))
+  (let ((help-string (pycomplete-get-help str1)))
     ;; (if (and help-string (> (length help-string) 300))
     ;;     (with-output-to-temp-buffer "*Python Help*"
     ;;       (print help-string))
@@ -202,9 +207,11 @@
 (defun py-complete-help-thing-at-point nil
   (interactive)
   (require 'thingatpt)
-  (let ((sym (thing-at-point 'python-dotexpr)))
-    (if sym
-        (py-complete-help sym 'usetip))))
+  (save-excursion
+    (backward-char 1)
+    (let ((sym (thing-at-point 'python-dotexpr)))
+      (if sym
+          (py-complete-help sym 'usetip)))))
 
 (set 'py-complete-current-signature nil)
 
