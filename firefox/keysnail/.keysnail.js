@@ -97,6 +97,24 @@ ext.add("google-translate-cn-in-split-panel", function () {
     splitpannel.toggle("http://translate.google.com/m?hl=zh-CN&sl=auto&tl=zh-CN&ie=UTF-8", true, 'right');
 }, 'Open Split Panel and load Google Translate (any->zh-CN) in it .');
 
+ext.add("read-it-later-list-in-split-panel", function() {    
+    splitpannel.toggle("http://readitlaterlist.com/unread", true, 'right');
+}, 'Show Read It Later list Split Panel');
+
+
+ext.add("view-in-sidebar", function() {
+    toggleSidebar('', false);
+
+    var sidebarcmd = document.getElementById('viewURISidebar');
+    //print(sidebarcmd.getAttribute("sidebarurl"))
+    //print(sidebarcmd.getAttribute("checked"))
+    sidebarcmd.removeAttribute("checked");
+    sidebarcmd.setAttribute("sidebarurl",   content.location.href);
+    sidebarcmd.setAttribute("sidebartitle", content.document.title);
+
+    toggleSidebar('viewURISidebar', true);
+}, "Load current URL in sidebar");
+
 //toggle sidebar
 ext.add("toggle-sidebar", function () {
     toggleSidebar("");
@@ -151,8 +169,13 @@ ext.add("goo.gl", function () {
     let endpoint = "https://www.googleapis.com/urlshortener/v1/url";
     let params = { "longUrl": window._content.document.location.href };
     let result = util.httpPostJSON(endpoint, params, function (xhr) {
-        var ret = JSON.parse(xhr.responseText);
-        display.echoStatusBar("Short URL copied into clipboard: " + ret.id, 3000);
+        if (xhr.status == 200) {        
+            var ret = JSON.parse(xhr.responseText);
+            command.setClipboardText(ret.id);        
+            display.echoStatusBar("Short URL copied into clipboard: " + ret.id, 3000);
+        } else {
+            display.echoStatusBar("goo.gl service failed: " + xhr.statusText, 3000);
+        }
     });
 }, "Shorten URL with http://goo.gl service");
  
@@ -295,13 +318,17 @@ ext.add("paste-to-tab-and-go", function() {
     }
 }, "Paste the URL or keyword from clipboard to a new tab and Go");
 
-
-
 // selection
 ext.add("search-selection", function() {
     if(!getBrowserSelection()) return;
     BrowserSearch.loadSearch(getBrowserSelection(), true);
 }, "Use the default search engine to search the phrase currently selected");
+
+ext.add("go-to-selected-url", function() {
+    if(!getBrowserSelection()) return;
+    gBrowser.loadOneTab(getBrowserSelection(), null, null, null, true);
+}, "Open selected text as an URL and go to it.");
+
 
 ext.add("next-occur", function() {
     var word = getBrowserSelection();
@@ -682,7 +709,7 @@ key.setGlobalKey(['C-x', '3'], function (ev, arg) {
     ext.exec("split-window-horizontally", arg, ev);
 }, 'split-window-horizontally (Fox Splitter addon)');
 
-key.setGlobalKey(['C-x', 'k'], function (ev) {
+key.setGlobalKey([['C-x', 'k'], ['C-c', 'x']], function (ev) {
     ext.exec("delete-window", arg, ev);
 }, 'Close tab (or \'window\', if Fox Splitter addon installed)');
 
