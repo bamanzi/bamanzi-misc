@@ -102,7 +102,6 @@ def get_all_completions_for_ac(s, imports=None):
     return [ (prefix + "." + k) for k in completions] #modified by EEPY
     
     
-    
 def pycomplete(s, imports=None):
     completions = get_all_completions(s, imports)
     dots = s.split(".")
@@ -136,6 +135,7 @@ def pyhelp(s, imports=None):
     """Return object description"""
     _import_modules(imports, globals(), None)
     return _getdoc(s)
+
 def pysignature(s):
     """Return info about function parameters"""
     f = None
@@ -145,11 +145,18 @@ def pysignature(s):
         return "%s" % ex
     if inspect.ismethod(f):
         f = f.im_func
-    if not inspect.isfunction(f):
+    if not inspect.isroutine(f):
         return ''
-    (args, varargs, varkw, defaults) = inspect.getargspec(f)
-    return('%s: %s'
-           % (f.__name__, inspect.formatargspec(args,varargs,varkw,defaults)))
+    doc = inspect.getdoc(f)
+    if doc:
+        doc = doc.splitlines()[0]
+    if inspect.isfunction(f):
+        (args, varargs, varkw, defaults) = inspect.getargspec(f)
+        spec = inspect.formatargspec(args,varargs,varkw,defaults)
+        return ('%s %s: %s' % (f.__name__, spec, doc))
+    else:
+        return ('%s: %s' % (f.__name__, doc))
+
 def _getdoc(s):
     """Return string printed by `help` function"""
     obj = None
@@ -163,6 +170,7 @@ def _getdoc(s):
     help(obj)
     sys.stdout = old
     return out.getvalue()
+
 def _import_modules(imports, dglobals, dlocals):
     """If given, execute import statements"""
     if imports is not None:
