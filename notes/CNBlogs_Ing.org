@@ -3836,3 +3836,491 @@
     程git仓库交互了——而且还不用安装git，感觉倒是很神啊 https://github.com/schacon/hg-git
     [2012-06-30 09:52:17]
 
+* 2012-07
+1. 每次开机Flash更新程序都会蹦出来，今天看见一个叫做的Update Freezer的工具说是可以“一键开启/关闭常用
+   软件的自动更新功能”，我一启动，它说：请升级你的IE，否则我无法工作 [2012-07-03 17:28:02]
+2. 请教一下大家，在不改源代码的前提下，qt程序在windows下有没有修改界面缺省字体的人方法? tortoisehg界
+   面上的文字实在看不清啊 [2012-07-04 08:52:21]
+3. [qt] 续: 找到这样一篇文章: 『谷歌地球(google earth/GE) 中文版界面默认字体太丑陋？ 那就改成自己喜欢
+   的吧！』 http://www.cnblogs.com/agateriver/archive/2010/05/16/1736626.html 但对kdiff3试验了一下，
+   不好使；而且tortoisehg这种，也不知道在哪里传参数啊 [2012-07-04 09:04:36]
+4. "有些人拒绝分布式工具因为他们想保持对项目的控制，他们相信集中式工具会给他们这种控制。如果你这种想
+   法，并你将CVS或者Subversion版本库向大众发布了，那么别人可用现有的很多工具将整个项目的历史抓取出来
+   （可能很慢），在其它你控制不了的地方重建版本库。这时你的控制只不过是一种幻觉罢了，一些人被迫从你的
+   版本库创建映像和分支，而你失去了和他们协作的机会。 " (hgbook) http://is. [2012-07-04 09:46:20]
+5. Configure Mercurial (hg) to Use a Proxy Server http://is.gd/kFdSVF (如果要全局配置，应该放
+   在~/.hgrc) [2012-07-04 10:11:44]
+6. [tip] 如何让http_proxy环境变量能透过sudo传递给apt-get? 答: 编辑/etc/sudoers，添加一行Defaults
+   env_keep = "http_proxy ftp_proxy" http://is.gd/owgmpk (askubuntu.com) [2012-07-05
+   08:36:06]
+7. [gfw] 『书仓日前紧急启用备用域名 www.shucang.org，无法正常访问shucang.com的朋友可以通过
+   shucang.org域名访问。书仓是提供私人云端书柜和分享社区服务的平台，其高质量的内容覆盖并吸引了数百万
+   主流移动阅读人群，欢迎更多主流阅读人士通过书仓加入数字阅读的行列，你不会失望。』 [2012-07-05
+   08:41:25]
+8. 桌面便签软件中ATnotes(>7.0), Knot, PNotes和Stickies都支持网络传送，但只有后面两个支持富文本。
+   PNotes虽然是开源软件http://pnotes.sf.net ，但我还是更倾向于Stickies，因为前者的界面做得太复杂了
+   http://www.zhornsoftware.co.uk/stickies/ [2012-07-06 09:46:54]
+9. diffuse可以与版本控制工具相配合，与指定revision比较: diffuse -r 123 foo.C 不指定revision但只给出一
+   个文件名时，尝试跟最后一个revision进行比较
+   http://diffuse.sourceforge.net/manual.html#version-control [2012-07-06 10:41:51]
+10. 在Windows上，diffuse还考虑了用户Cygwin的情况，可以调用Cygwin里面的版本控制工具
+    http://diffuse.sourceforge.net/manual.html#version-control [2012-07-06 10:50:07]
+11. Emacs缺省的鼠标操作: C-down-mouse-1: mouse-buffer-menu, C-down-mouse-3: mouse-major-mode-menu,
+    S-down-mouse-1: mouse-appearance-menu (mouse.el) / C-down-mouse-2: facemenu-menu (facemenu.el)
+    [2012-07-06 16:54:07]
+12. hg里面跟git remote add类似的功能，居然是编辑repo/.hg/hgrc，在里面修改[paths]一节
+    http://stackoverflow.com/questions/4956346/how-can-i-add-remote-repositories-in-mercurial
+    [2012-07-06 17:48:36]
+13. 【5】我靠重庆: 利川与重庆地理位置相近，“紧 靠”重庆，为了在重庆宣传推介利川旅 游资源，利川市旅游
+    局在重庆做了公 交车车身广告。自6月以来，重庆多 条线路的公交车身上出现了“重庆 42℃，利川24℃”、
+    “我靠重庆，凉城 利川”、“热！到利川凉快去！”等广 告。 [2012-07-09 07:59:44]
+14. 补记: 上周五定位出我的emacs上老出现的一个问题：鼠标点击状态栏菜单，emacs老报告
+    "<mode-line> <down-mouse-1> <nil> not defined"，我一直以为是相关鼠标
+    事件绑定的问题，结果用二分法定位下来居然是menu-prompting，缺省值t就没有问题，我设置为nil就会出现
+    上面的错 [2012-07-09 15:15:45]
+15. vim的补全功能: Ctrl-X Ctrl-P或者Ctrl-X Ctrl-N: 当前文件内的单词, Ctrl-X Ctrl-K 字典文件里的单词,
+    Ctrl-X Ctrl-F 当前目录的文件, Ctrl-X Ctrl-] tags, Ctrl-X s 根据(vim自带的)拼写字典模糊查找
+    http://is.gd/8Z9P2W [2012-07-10 13:34:33]
+16. [todo][emacs] Info-other-frame http://dotat.at/prog/rcfiles/emacs [2012-07-11 15:17:55]
+17. 加载ropemacs的时候碰到这个错误好多次了:"Key sequence C-x p n d starts with non-prefix key
+    C-x p n" 每次都要折腾半天才能找到怎么解决，记录一下: ropemacs/__init__.py:
+    ropemacs-global-prefix [2012-07-11 16:58:30]
+18. 刚发现msysgit另外提供了一个cmd目录，里面只包含git.cmd和gitk.cmd两个文件，这样只要把这个目录加到
+    PATH，就可以命令行上调git了，其它程序(Emacs什么的)就可以读取到文件的VC状态了。否则bin目录里面有
+    70多个exe啊，跟我的ezwinports,gnuwin32,gow里面的程序冲突 [2012-07-12 11:05:31]
+19. git用了4种语言编写: c, perl, shell, tcl, 而tortoisegit还用了c++, gitextension则采用了dotNet和C#，
+    [2012-07-12 11:40:02]
+20. EverNote 中文版下载 3.0.0.594 汉化版下载 → 汉化新世纪
+    http://www.hanzify.org/software/12030.html [2012-07-12 20:10:42]
+21. [HKEY_CURRENT_USER\Software\Evernote\Evernote3\Recent Document List]"Document1"="D:\\My
+    Evernote Files\\DataBases3\\nomal.exb" [2012-07-12 20:12:09]
+22. 评论《Mercurial和Git的主要区别》: 第4条已经过时，现在hg也支持repo内的分支。第5条也过时了，现在
+    hgsubversion插件可以跟svn repo很好的配合
+    http://weavesky.com/2008/08/17/difference-between-mercurial-git/ [2012-07-13 17:28:18]
+23. 『其實單就功能性和理念上來說，我是比較喜歡Mercurial的一些特點，包括commit history不能改變，比較平
+    緩的學習曲線，使用跨平台的Python，user容易寫自己的extension，還有對http的高度整合』 - 個人對
+    Mercurial和Git的不同感想 http://tyshenblog.blogspot.com/2010/03/mercurialgit.html [2012-07-13
+    17:54:16]
+24. 试用了一下zim的firefox扩展，只能捕捉纯文本，我觉得起码应该heading和链接转换吧
+    http://www.zim-wiki.org/extras.html [2012-07-14 21:07:58]
+25. RT @PreKingz: Sublime.Text.v2.0.1.2217.Incl.Keygen.and.Patch-Lz0 http://233.im/t.co/DVECRotg
+    [2012-07-15 08:46:20]
+26. FileHippo这个网站不错，可以下载到很多软件的老版本 http://www.filehippo.com [2012-07-15
+    21:21:26]
+27. [emacs][tips] tabs to spaces or vice versa: M-x tabify 将连续多个空格(个数由tab-width确定）使用
+    TAB替换掉; M-x untabify 将所有TAB使用多个空格替换掉 [2012-07-16 13:54:06]
+28. 补记: 新版texi2html下生成emacs.chm的方法: texi2html-1.82/texi2html --init ../chm.init --menu
+    --header emacs.texi 注意chm.init里面关闭了header功能，如果需要header则需要修改一下 [2012-07-16
+    13:57:02]
+29. python有一个比较烦的问题是，直接print到控制台时没有问题，一旦调用时设了个重定向，这个脚本就不正常
+    了，报告UnicodeEncodeError 解决办法是shell里设置环境变量PYTHONIOENCODING，设成utf_8或者gbk都可以
+    （只要字符集够) http://wiki.python.org/moin/PrintFails [2012-07-16 17:06:59]
+30. vim/emacs's equivalent of tail -f: vim: set autoread; emacs: M-x auto-revert-tail-mode
+    [2012-07-16 17:19:37]
+31. 续: python UnicodeEncodeError问题: 其原因是重定向后Python程序无法得知写那个文件该用哪个编码（而控
+    制台就可以得到——不过为啥不用控制台的）, 缺省就用ascii (python3改为utf-8了)
+    http://stackoverflow.com/a/4551045 [2012-07-16 17:36:39]
+32. 小型XML编辑器里面firstobject xml editor (foxe)挺不错，至少支持不同encoding
+    http://www.firstobject.com/dn_editor.htm 而什么XMLEditPro, XML marker之类的都不行；微软的XML
+    Notepad强制到网上读取dtd/schema，读不到就不让打开， [2012-07-17 09:19:04]
+33. 我得是有多蛋疼啊，先是将临时笔记从minipad2转到cherrytree，再转到evernote3，现在又转到zim里去
+    [2012-07-17 16:10:44]
+34. 续：启用evernote3（而不是4.x）的原因是4.x都是跟evernote网站同步的数据，而公司proxy封了这个网站，
+    我只能从家里将整个数据库拷贝过来使用，所以有些在公司记录的笔记只能另外找个地方存放，免得下次还得
+    导出/导入 [2012-07-17 16:13:40]
+35. 续：为此还特意找来evernote 3.1，自己制作了一个便携、离线版本（主程序有3.1.0.1212英文版和
+    3.1.0.1139汉化版）——evernote 3.0/3.1占用内存倒是比v4小很多，但不支持搜索中文 [2012-07-17
+    16:16:28]
+36. 原来zim的导出里说的“markdown (with pandoc extensions)"是说支持pandoc扩展的markdown语法，我还一直
+    理解为需要pandoc这个程序 [2012-07-17 16:19:14]
+37. 试图直接从Downloads页面(https://bitbucket.org/haru_iida/redmine_code_review/downloads )下载
+    redmine_code_review-0.4.8.zip 一直不成功，老卡死在那个破cdn站点了，最后还是从下方的tags下载了对应
+    版本的snapshot [2012-07-18 16:36:24]
+38. [todo] epydoc, py-indent, https://github.com/tsgates/pylookup,
+    http://page.sourceforge.net/python-mode-extensions.html [ ] update ropemacs,
+    https://bitbucket.org/jonwaltman/pydoc-info/,
+    http://page.sourceforge.net/python-mode-extensions.html [2012-07-18 18:20:29]
+39. hgrc的路径居然是<repo>/.hg/hgrc，我说昨晚我在<repo>/.hgrc里面配置paths它老不认呢
+    [2012-07-19 11:37:20]
+40. chrome版的Evernote Clearly不能对本地文件起作用，Pocket扩展都只有bookmarklet类似的能力，唉，
+    chrome的扩展真是乏善可陈 [2012-07-19 16:40:05]
+41. Uploaded emacs-24.1, org-7.8.chm, cc-mode.chm(new) & tramp.chm(new)
+    http://code.google.com/p/emacs-manual-chm/downloads/list [2012-07-23 07:10:50]
+42. sugarsync警告说8G的额度快用完了，我粗略查了一下被它同步的目录，加起来也就3.5G左右（按dropbox报告
+    的用量也差不多是这个数），再sugarsync的帮助里面搜了一阵，找到两篇内容
+    http://www.sugarsync.com/online-help/Freeing_Up_Storage_Space.htm
+    http://www.sugarsync.com/online-hel [2012-07-24 09:00:48]
+43. sugarsync警告说8G的额度快用完了，我粗略查了一下被它同步的目录，加起来也就3.5G左右（按dropbox报告
+    的用量也差不多是这个数），再sugarsync的帮助里面搜了一阵，找到两篇内容http://is.gd/eoOchZ
+    http://is.gd/wnKHAE [2012-07-24 09:02:52]
+44. 很奇怪，在SugarSync的被删除区保留了很多原来的目录，很多文件也有多份拷贝，难道对于目录移动这种情况，
+    它每次都是重新传的？怪不得比dropbox慢那么多 [2012-07-24 09:04:19]
+45. 成都艺家风格酒店(成研&办事处宿舍)  联系电话 028-65526666 地址: 成都金牛区羊西线蜀汉路530号(
+    近一品天下大街) [2012-07-25 17:59:27]
+46. README.markdown里面我用了嵌套的列表，在Emacs里用preview生产HTML一点问题没有，提交到bitbucket上显
+    示就只有一级了，原来python-markdown里要求每级缩进4个空格，晕倒
+    http://freewisdom.org/projects/python-markdown/Tickets/000064 [2012-07-29 20:40:45]
+47. 这个帖子断了我转行做系统管理员/运维的念想，看来国内这个行当还没受重视啊
+    http://groups.google.com/group/gzlug/t/85ec5fe8b0e0694 [2012-07-30 16:22:18]
+
+* 2012-08
+1. 出差在外，没怎么留意新闻，居然MATE 1.4已经发布了。不过新东西不多啊，有吸引力的只有一个
+   caja-dropbox http://mate-desktop.org/2012/07/30/mate-1-4-released/ [2012-08-01 13:43:13]
+2. flymake-settings: fringe-helper,  emacs_data/python_lint.py; eshell: m-up/m-down;
+   file-name-basename = file-name-sans-extension [2012-08-01 19:01:27]
+3. 靠，最新一期Debian Project News http://www.debian.org/News/weekly/2012/15/ 居然不再列举New and
+   noteworthy packages，只是说了一句“34 个软件包最近已被加入到了非稳定版 Debian 档案里“
+   [2012-08-02 09:52:15]
+4. [debian] 好在有个“属于sid发行版的新进软件包”的单独页面 http://packages.debian.org/sid/newpkg 里
+   面还有RSS地址 [2012-08-02 09:54:43]
+5. 唉，公司的proxy居然把evernote封了，我只得把firefox/chrome里面的相关扩展都禁了 [2012-08-02
+   09:57:08]
+6. 好搞，这家伙以前都写简体博文，这篇吐槽GNOME 3的文章，突然发了两份，一份是用英文写的，一份是繁体的
+   文言文。英文版本没看，这文言文版本水平不怎样啊，念起来抑扬顿挫很不顺，“也”子也用得太多了，似乎是
+   故意掉书袋 http://ekd123.is-programmer.com/posts/34779.html [2012-08-02 10:41:36]
+7. bitbucket上想用yourusername.bitbucket.org来显示一些静态内容的话，需要创建一个名为
+   yourusername.bitbucket.org的repo, 将内容放在里面即可
+   http://hgtip.com/tips/beginner/2009-10-13-free-hosting-at-bitbucket/ [2012-08-07 13:24:46]
+8. 这个没看懂： Hosting Multiple Projects Under a Single Website (on bitbucket.org)
+   https://confluence.atlassian.com/display/BITBUCKET/Publishing+a+Website+on+bitbucket [2012-08-07
+   13:29:21]
+9. 从命令行打开Hg workbench的方法是： thgw -R /path/to/repo [2012-08-07 13:50:00]
+10. 我怎么觉得prosjket这个项目更像是eproject的重构成果，因为功能太雷同了 Prosjekt: an emacs package
+    for managing software projects http://is.gd/JeLPjw [2012-08-07 14:33:38]
+11. 【唐代商人为何罢市？】凤凰网：“安史之乱”后，德宗皇帝决定以武力削藩。无奈国库空虚，于是“搜人财
+    货，意其不实，即以搒捶”，以致“京师嚣然，如被盗贼”。“长安为之罢市，百姓相率千万众邀宰相（卢杞）
+    于道诉之”。最后德宗迫于群众压力，下诏废罢这次所谓的“借商”活动。http://t.cn/zWOICTH
+    [2012-08-07 15:42:26]
+12. 仅仅这一个问题，就让我对Java里面的并发机制感到绝望 《代码之丑12－SimpleDateFormat不是线程安全的》
+    http://gxc.google.com/gwt/x?u=http://dreamhead.blogbus.com/logs/215637834.html [2012-08-07
+    17:05:03]
+13. 收到ifttt发来的一封邮件，标题是Have you called your mother lately?  :-) [2012-08-08 11:46:20]
+14. @程序员的那些事: 《碉堡了，德国联邦法律法规托管 Github 了，可以 Fork 啦！》为什么 Git？看看他们的
+    给出的理由：所有德国公民可以轻松在线查看最新版的法律法规，但立法过程、法律演变和法律更新则不容易
+    追查。因为法律只是公布了最新版，且法律变更没有提供机器可读格式。这应当做出改
+    变……http://t.cn/zWWqTQA [2012-08-08 21:59:05]
+15. Nio trick and trap http://www.slideshare.net/killme2008/nio-trick-and-trap-8464155 [2012-08-09
+    15:38:17]
+16. Total Commander配色工具：Aezay TC Color Presets
+    http://www.totalcmd.net/plugring/colorpresets.html 这个工具有导入现有配色的功能，但不能预览； 而
+    IMPOMEZIA TC Color Presets http://impomezia.com/projects/colors 正相反 [2012-08-14 17:38:53]
+17. [python] pip的各种用法: http://www.pip-installer.org/en/latest/usage.html 比如: 从hg仓库安装一个
+    包: pip install -e hg+https://bitbucket.org/agr/rope#egg=rope [2012-08-14 21:12:47]
+18. Atlassian为了做Stash（一个类似github但面向企业的产品), 给出了Mercurial和Git对比的文章，不过Why
+    Mercurial里列的优势都是易懂的，而Why Git里列的都很晦涩
+    http://blogs.atlassian.com/2012/02/mercurial-vs-git-why-mercurial/
+    http://blogs.atlassian.com/201 [2012-08-15 11:56:50]
+19. [python] 随便写几行subprocess的代码，就碰到两个bug，一个是subprocess.Popen不认.bat文件，一个是
+    shlex.split不支持windows的路径分隔符，会把路径中的'\'都干掉 http://bugs.python.org/issue1724822
+    [2012-08-15 15:35:41]
+20. 有意思的是，看起来挺重的EverNote3在wine下运行得3挺好，即使是Evernote4也没有大问题，但"轻量级
+    "的CintaNotes却不行(主要问题在richedit上) [2012-08-15 21:17:05]
+21. 我对python-mode-el越来越失望了: python-mode.el越来越臃肿(已经675k了)，但发布包里面还缺东少西（这
+    次6.0.11里面至少缺少了pymacs和autopair），而且代码补全这种基本的功能也不能工作 [2012-08-16
+    11:53:06]
+22. 为什么到处都推荐写小函数呢？ 函数太小了，整个文件的函数就太多了，对看代码的人是种干扰，哪些是主要
+    功能，哪些是辅助函数，并不是那么一目了然了 [2012-08-16 17:27:27]
+23. 真要提倡一个函数不超过10行的话，我就提倡一个文件不超过10个函数，一个包不超过10个类，一个模块不超
+    过10个包。。。评《函数要多小才够好——谈小函数之道》 http://kb.cnblogs.com/page/154245/
+    [2012-08-17 16:00:19]
+24. 刚发现kitty有个隐藏的功能: 安装Ctrl时点击鼠标左键，可以逐个切换主程序的图标。这个功能可真有点蛋疼，
+    找不到地方关掉——难道是欺负俺们说本来这个组合键也没法用上? [2012-08-17 17:37:08]
+25. 换了mintty到1.1.1之后，突然发现emacs里面不认鼠标事件了，换回老版本1.0.3，居然还是不行，最后才发现
+    是从emacs-X11切换到了emacs-nox，后者不认鼠标 [2012-08-20 11:00:02]
+26. futty的鼠标滚轮支持有点问题，不能将事件正确传递给应用程序，而putty和kitty都可以。验证: 链接远程主
+    机，打开emacs -q，然后M-x xterm-mouse-mode，用一个较长的文件(比如C-h C-w显示的版权申明)即可验证鼠
+    标滚轮是否正常工作（futty只卷动自己的屏幕缓冲区，没传递给emacs) [2012-08-20 14:02:33]
+27. [TODO] "巴老大,能把cygwin/x下的输入法源码分享一下吗?二进制包也成~ cygwin/x下在本机没法输入中
+    文,弄的挺郁闷,能分享一下吗?多谢了~~" [2012-08-21 08:44:13]
+28. 昨晚在家修改的代码忘记push了 [2012-08-21 08:44:32]
+29. 大家是多期望有一个apt-get for cygwin啊，在google code上就有cyg-apt, cyg-get, apt-cyg,
+    apt-cyg-multi, apt-get-cygwin这多项目 [2012-08-21 09:52:54]
+30. 上班日的中午这地铁也这么多人啊 [2012-08-21 13:39:33]
+31. 下了个Chromium Portable，奇怪的是，怎么都没法设定界面语言，我都将简体中文拖到最上方并点了Display
+    Chromium Portable in this language，重启程序，还是老样子——算了，凑合着用吧 [2012-08-22
+    14:35:36]
+32. 最近人品不错啊，连着得星星 [2012-08-22 14:36:08]
+33. 刚才在通讯录里面找同学电话号码，一不小心点到ex那里，电话就拨出去了，我靠，破安卓点半天不能中断拨
+    号啊——我还保留着她号码这事儿我能让ex知道么，这多年了 [2012-08-22 16:17:36]
+34. RT @dleecn: 晒一下我们所使用的Redmine插件：1. redmine_gitosis 用来集成Git版本库管理工具Gitosis
+    ; 2. redmine_sprints 用来管理用户故事和迭代；3. redcase 用来管理测试用例； 4. redmine_hudson 用来开
+    展持续集成。 [2012-08-22 18:56:33]
+35. 关于昨天误拨ex电话这事儿，今早上想到的一个问题让我释然了：我两年前换了手机号，所以那边即使响铃了，
+    也不知道是我打的 [2012-08-23 09:51:30]
+36. 终于找到一份 fcitx-1.8.5 的源代码 http://mirrors.redv.com/pub/fcitx/ [2012-08-24 09:57:43]
+37. pandoc这个工具可以将markdown, rst转换成markdown, rst, html, man, org, texinfo, docbook, epub, s5
+    http://johnmacfarlane.net/pandoc/ [2012-08-25 09:00:06]
+38. 在putty的选项里选择Function keys & keypad的工作模式为SCO，就可以使用C-F1, M-F1, C-M-F1这些键
+    了，不过emacs里面要映射一下 http://emacswiki.org/emacs/PuTTY#toc9 [2012-08-25 10:10:06]
+39. futty对鼠标滚轮的支持有问题，kitty又自己用掉了好多C-Fn的快捷键，看来要在远端跑emacs的话，我还是只
+    有老老实实用原版putty了 [2012-08-25 10:14:46]
+40. 本来觉得putty-nd这个fork不错，多标签页，还有一个工具栏（尤其复制、粘贴很有用，因为有的情况下鼠标
+    事件会被里面跑的程序捕捉到），但鼠标功能不太稳定，开始时没问题，过一会儿emacs就不认鼠标事件了，会
+    导致输入乱七八糟的字符 http://sourceforge.net/projects/putty-nd/ [2012-08-25 13:10:28]
+41. 刚才说putty-nd突然开始不能正确识别鼠标事件，是错怪它了，在原版putty上也出现了，emacs -q时又没有，
+    定位了半天，是早上那个sco风格的设置有点问题，取消F1那个映射就好了——因为emacs xterm-mouse-mode将
+    \e[M 映射到了xterm-mouse-translate，再映射成别的就乱了 [2012-08-25 14:07:49]
+42. putty的多tab工具有好几个，mremote还支持vnc,rdp协议；puttycm支持分屏和自动登录，不过这两个都是用
+    dotnet写的；mtputty其实是个外挂，putty升级了它不受影响；putty-nd是个fork，多tab界面比较简洁、直观，
+    也支持自动登录 [2012-08-25 15:09:23]
+43. tnnd， 不知道怎么搞的，今天开机后启动任何程序都慢得要命，都要20秒之后才能出来，程序里面倒是不慢。
+    不知道是不是上周末下班时那几个Windows更新包搞的。 [2012-08-27 09:14:42]
+44. 新发现一个Putty Manager，也是putty外挂（这点跟mtputty），支持多tab、分屏和undock方式，用qt写的
+    http://sourceforge.net/projects/puttymanager/ [2012-08-27 10:52:13]
+45. GraphTerm is a browser-based graphical terminal interface. 用python写的，不用羡慕TermKit了
+    http://info.mindmeldr.com/code/graphterm/graphterm-readme [2012-08-28 10:11:33]
+46. redhat的rpm -qa不显示包的arch信息，可以改用这个方式: rpm -qa
+    --queryformat='%{n}-%{v}-%{r}.%{arch}\n' [2012-08-28 16:00:29]
+47. rpm系里，如果同名的i386和x86_64包都装了，要删除其中一个可以用如下方式: rpm -e this_package.i386
+    或者 rpm -q this_package.x86_64 [2012-08-28 16:02:26]
+48. Redmine这个SCM Creator我配了之后，总是一直报告installed but not configured，查来查去，最后才从日
+    志里发现配置文件应该在{RAILS_ROOT}/config/scm.yml，而不是插件里缺省放的那个位置——居然也不在文件里
+    提醒一下，靠 [2012-08-29 11:06:46]
+49. apt-cyg-multi勉强可以用，但有个比较烦人的缺陷: 解决依赖问题时不能跨仓库，也即：如果cygwinports里
+    面的包依赖了cygwin官方仓库的包，后者又没有安装的话，它就报错，不会自动安装 [2012-08-30
+    15:04:43]
+50. 哈哈，搞了个中移动的3G上网机，TD-SCDMA转wifi，全年360元，每个月包3G流量，爽，上班也可以尽情刷微博
+    图片了 [2012-08-31 13:00:24]
+51. 昨天为了安装deepgrep，发现cygwinports里面有，但依赖包太多了，镜像网站又卡得不行，cygwin
+    setup.exe相当不给力啊。然后用apt-cyg-multi又不能很好地支持跨repo的依赖... [2012-08-31 15:10:19]
+52. ...于是自己来改写那个python版本的cyg-apt，用了一个晚上加今天大半天，终于搞定了，回头再测试一下，
+    放到版本库去 [2012-08-31 15:11:35]
+53. python里面的版本号比较: from distutils.version import LooseVersion if
+    LooseVersion("1.10.1-2") > LooseVersion("1.09.2-1") ...
+    http://stackoverflow.com/questions/1714027/version-number-comparison [2012-08-31 15:15:27]
+
+* 2012-09
+# <<2012-09>>
+1. bug of cyg-apt: # cyg-apt -d install cygwin\nwarning: missing packages:
+   _autorebase\n/setup/http%3a%2f%2fmirrors.163.com%2fcygwin/release/_autorebase/_autorebase-000121-1.tar.bz2\n1391f0a95b718dabffa2dbeb03e4b948
+   _autorebase-000121-1.tar.bz2\n1391f0a95b718dabffa2dbeb03e4b948 _autorebase-000121-1.tar.bz2
+   [2012-09-02 22:20:38]
+2. 领导老问我们”你们做这个架构，有什么能说明是缺了你不行的？“，刚才看见【外刊IT评论网】这篇《超级程
+   序员神话》说到这个问题：只有编写真正有难度东西的才是“真正的程序员”吗? "当问题被分解成更小的
+   问题后，所有的问题都变得如此简单，而且所有的问题都能这样去分解"
+   http://www.aqee.net/the-myth-of-the-super-programmer/ [2012-09-03 10:35:48]
+3. [todo] python-mode邮件列表里有人贴出了对pycomplete的改进，嗯，我得把它合入eepy里面去
+   http://is.gd/MrQaqA http://is.gd/bcXBTc [2012-09-03 11:20:34]
+4. RT @cuixueqin: 方校长罹患直肠癌，就相当于正常的直肠肛门排便＂连接被重置＂，只好通过人工造瘘的方式
+   走代理了。真心祝愿像网友们体验过的VPN挂掉一样，方校长以后也有机会尝到关键时刻代理失效的滋味。
+   [2012-09-05 11:50:28]
+5. 这东西不错：python-mode for vim, 集成了pylint/pyflakes、rope等诸多功能，算是把vim变成个python ide
+   了 https://github.com/klen/python-mode [2012-09-05 11:51:38]
+6. "当前的包管理工具链是 easy_install/pip + distribute/setuptools + distutils, 显得较为混乱。而
+   将来的工具链组合非常简单：pip + distutils2 " - Python 包工具之间的关系
+   http://blog.yangyubo.com/2012/07/27/python-packaging/ [2012-09-05 15:44:11]
+7. pyflymake.bat欲调用其所在目录下的pyflymake.py，里面得这么写: @python %~dpn0.py %* 这个~dpn0太难记
+   了 [2012-09-05 17:46:56]
+8. RT @ Funpea : 每次按下电脑的开机键后，会有足够的时间去泡一杯咖啡，咖啡泡好了，Windows也差不懂启动
+   完成了。这就是微软的人性化之处了，其实这是让我们要懂得抓紧时间享受生活，不像苹果那些快速启动的设计，
+   连泡杯咖啡的时间都没有，实在是很没品位的设计。 [2012-09-06 13:13:15]
+9. evernote web clipper越来越鸡肋了，老是报告说我没登录，又不自动跳出登录界面——我也找不到在哪里登录，
+   转到网站去登录还会导航到那个死慢的主界面。总之不如那个bookmarklet，轻量级，还跨浏览器、跨平台
+   [2012-09-10 13:42:26]
+10. 用暴力法+手工操作数据库的方法，终于在Redmine-1.4上搞定了checkout插件 [2012-09-11 09:31:39]
+11. Another alternative is to use mingw-get to install "the console2 installer"
+    msys-console.  Then, you run the /usr/bin/console-config script and it will download, configure,
+    install (and, if [2012-09-11 09:50:52]
+12. mintty is great, and I use it all the time with cygwin. But there is one big drawback (google
+    "cygwin pty native applications" for an explanation).  console2 doesn't have that
+    problem, [2012-09-11 09:51:27]
+13. Another alternative is to use mingw-get to install "the console2 installer"
+    msys-console.  Then, you run the /usr/bin/console-config script and it will download, configure,
+    install (and, if all goes well) create a shortcut for you all in one step... [2012-09-11
+    09:52:09]
+14. mintty is great, and I use it all the time with cygwin. But there is one big drawback (google
+    "cygwin pty native applications" for an explanation).  console2 doesn't have that
+    problem, which is far more prevalent in the msys/mingw milieu than in cygwin.
+    http://is.gd/DdAQdH [2012-09-11 09:52:35]
+15. RT @郭敬明: 你们就当我是中国的脑残粉好了。我就是曾经在天安门看升国旗哭了的人，我就是每次看奥运听
+    见国歌就眼红哽咽的人，我就是曾经半夜看网上北京奥运圣火传递时，中国人保护火炬的图片，看得嚎啕大哭
+    的人。你们不用怀疑，这种人是存在的。我的祖国确实有很多问题，但这并不影响我毫无保留地爱它，为它自
+    豪。 [2012-09-11 11:48:58]
+16. github这种network graph功能真是好啊，一看就可以看出有人对bartab做了一些改进:
+    https://github.com/fhoech/BarTab/network [2012-09-11 18:00:50]
+17. PuTTY as local MSYS terminal? http://is.gd/DdAQdH 在ConEmu的作者冒出来之后，这个帖子歪楼了。
+    ConEmu的作者很热心这个啊，从Whats New里面能看出来针对这个做了改进，好事
+    http://code.google.com/p/conemu-maximus5/wiki/Whats_New [2012-09-12 09:09:38]
+18. RT @EnzorZ: 上海将排查疑似精神病患者“无故不上学、不上班、不出家门、不和任何人接触”、“对人过分
+    冷淡，寡言少语、动作慢、什么事情都不做，甚至整天躺在床上”、“过分话多、活动多，到处乱跑，乱管闲
+    事等”。神回复是：第一条说的She，第二条说的who，第三条说的when [2012-09-14 08:07:35]
+19. 用vnc访问debian里面的xfce桌面，发现终端里不能用tab键补全，敲了之后窗口只是会闪一下，我只能用
+    Ctrl-I来替代。最后实在不爽了，谷歌了一下，居然说是xfwm里面默认将<super>Tab占用了
+    http://blog.zerosum42.com/2011/10/tech-fixing-tab-key-in-vnc.html [2012-09-17 10:17:35]
+20. 在putty里跑emacs时如何得到更多颜色: 1)putty里面设置Allow terminal to use xterm 256-colour mode
+    2)export TERM=xterm-256color 3)启动emacs后用M-x list-color-display检查。 如果不成功，按EmacsWiki
+    上的描述排查一下吧 http://emacswiki.org/emacs/PuTTY#toc2 [2012-09-17 12:10:11]
+21. RT @ruffchen: 家住朝阳区的郝先生近来迷上了陌陌交友。不久前的一个深夜，他在陌陌上发现了一位附近的
+    女网友。短暂交谈后，他发现这是一个善良美丽的女孩。更难能可贵的是，女孩十分纯洁，对约炮、一夜情、
+    包养等话题毫无兴趣。郝先生不由得暗自赞叹“这样的好女孩太少了！”，并最终鼓起勇气，果断…
+    [2012-09-18 08:36:24]
+22. 让nginx重新加载配置文件: /opt/nginx/sbin/nginx -s reload [2012-09-18 16:01:35]
+23. git protocol(git://...)是只读的?  (BTW: 这篇博客是在乱说，其实他把协议换成ssh了:
+    http://is.gd/ku6dAr ) [2012-09-19 11:55:17]
+24. `screen -U` runs in UTF-8 mode. This option tells screen that your terminal sends and
+    understands UTF-8 encoded characters. It also sets the default encoding for new windows to
+    `utf8'. [2012-09-20 14:42:40]
+25. Don’t Like Firefox’s Save Per Site Download Feature? Fix It:
+    user_pref("browser.download.lastDir.savePerSite", false) http://is.gd/LF23K7
+    [2012-09-20 15:24:19]
+26. 前两天刚将Debian New Packages http://packages.debian.org/sid/newpkg 订阅到了Google Reader, 还是怎
+    么没什么新软进入Debian 呢，结果今天kernel 3.2.0-4进来，一下800多个包，GR被刷屏了 :-( [2012-09-21
+    13:07:00]
+27. Gitorious 2.3 released: Repository paths are no longer hashed/sharded by default, but stored in
+    plaintext format. TNND, 前几天白研究了
+    http://blog.gitorious.org/2012/09/20/gitorious-2-3-released/ [2012-09-21 13:48:53]
+28. 将firefox升到v15之后，书签那个星星不能打开编辑对话框了（用来编辑书签详细内容），通过二分法定位，
+    居然是Compact Menu 2这个扩展导致的，AMO网站上说 Yes, this extension on AMO currently breaks a
+    number of basic bookmarking features. [2012-09-22 11:47:19]
+29. 续: 装这个版本的Compact Menu 3可以解决上述问题 http://franklion.co.uk/CMB.html [2012-09-22
+    11:50:34]
+30. The interesting part is that these systems (git/hg) think in terms of changes, not in terms of
+    versions.That’s a very zen-like thing to say, I
+    know... http://www.joelonsoftware.com/items/2010/03/17.ht [2012-09-22 13:13:38]
+31. ... Traditional version control thinks: OK, I have version 1. And now I have version 2. And now
+    I have version 3. And distributed version control thinks, I had nothing. And then I got these
+    changes. A [2012-09-22 13:14:16]
+32. Joel Spolsky选择了使用mercurial（而不是git），这是他写的教程: Hg Init: a Mercurial tutorial
+    http://hginit.com/ [2012-09-22 13:18:52]
+33. Joel Spolsky在twitter上说了一句: religious git/mercurial arguments never get anywhere, and
+    they're dumb. 嗯，说得对，我不要再纠结这个问题了。 [2012-09-22 13:31:00]
+34. RT @elaoda 如果你非得使用QQ，那么安装完QQ必须要删除掉的几个恐怖文件 ： QQExternal、XPlatform、
+    TXPFProxy.dll 这三个文件（直接Shift + Delete 键删除，不必入回收站） [2012-09-22 14:59:35]
+35. 每次VirtualBox出新版本，我都要下载下来，把我那几个linux虚拟机跑一下，看还能起来不（原来老卡在启动
+    上，报kernel panic）。这次4.2上面终于能跑了，搜了一下闪存，出现问题是在2011-09-15，然后就一直不能
+    用，都一年了，吐血 [2012-09-22 16:37:19]
+36. 想查查我的evernote3里面的数据是不是都迁移到evernote4了（因为原来迁移后又在v3上加了些笔记），一个
+    个比对太累了，鉴于它的数据库是sqlite，于是简单写个python脚本来搞 https://gist.github.com/3774144
+    [2012-09-24 12:07:23]
+37. evernote 4.x的数据库里，笔记是直接存放在note_attr里面的，笔记的各个属性都有对应字段；而evernote
+    3.x不是，网上看到evernote论坛一个帖子里面透露了些信息: http://is.gd/APBd31 [2012-09-24
+    12:13:36]
+38. 简单地说，evernote3里，笔记信息是存放在attrs表里的，uid为笔记id，而一则笔记的多个属性分存在attrs
+    多条记录里，aid=0的记录其data中存放的是笔记标题, aid=15则data中存放的是笔记正文，aid=44则data中存
+    放的是source url ，而tag还不知道在哪里 [2012-09-24 12:16:23]
+39. gedit的windows版本缺少一个libglade2.0-0.dll，导致grep插件不能用，可从这里下载一份(gedit-2.30需要
+    的是libglade-2.6) http://ftp.gnome.org/pub/GNOME/binaries/win32/libglade [2012-09-24 15:57:38]
+40. gedit的windows版本带了ipython插件，但还得自己安装ipython才行，从其它地方拷贝python26.exe,
+    pythonw26.exe到gedit/bin目录，注册表里添加 HKLM\SOFTWARE\Python\PythonCore\2.6\InstallPath
+    @="{path\to\gedit\bin}" 然后就可以运行ipython安装程序来安装了 [2012-09-24 16:00:38]
+41. 续: gedit的ipython插件里调了import gconf，但gedit的win32安装包并没有包含python-gconf，我没有找到
+    python-gconf的win32二进制包，于是把该插件里面的gconf相关代码注释了（其实只用来取了一下gedit或
+    gnome的字体设置） [2012-09-24 16:05:02]
+42. gedit才是linux上的notepad++啊 https://live.gnome.org/Gedit/Plugins [2012-09-25 08:59:33]
+43. gedit(2.30)的win32版本是从 %APPDATA%/gedit/plugins 目录加载用户的插件，但配置数据却写到
+    ~/.gnome2/gedit 这个目录——有的第三方插件还写到别的目录 [2012-09-25 12:04:05]
+44. 【A股与A片的9个共同点】1、都令人亢奋；2、上下幅度都很大；3、对大多数人有害；4、必要时都用嘴来吹捧；
+    5、诱人达到高潮后一泻千里；6、都会做俯卧撑；7、长阳时间都很短；8、搞来搞去都是为了出货；9、多数人
+    不喜欢带套，但还是都套上了！和谐一下！ [2012-09-26 06:10:28]
+45. 1785楼左三，好像我儿子 http://is.gd/g6s8qJ :-) [2012-09-26 13:16:23]
+46. MongoDB 吐槽汇总贴 Does everyone hate MongoDB?  http://is.gd/G5ZNu5 (serverdensity.com)
+    [2012-09-27 09:33:39]
+
+* 2012-10
+# <<2012-10>>
+1. Advanced find / replace plugin for gedit http://code.google.com/p/advanced-find/ （比
+   file-search, findinfiles, grep, gdpfind等插件都要好用一些) [2012-10-05 21:35:05]
+2. 将机器上python从2.7.1升级到2.7.3之后，原来安装的ipython-0.11不能跑了，
+   IPython\utils\pickleshare.py", line 52报错说TypeError: _isdir() takes exactly 1 argument (0
+   given) 解决方法是修改IPython\external\path\_path.py，将isdir=os.pa [2012-10-08 17:08:38]
+3. TODO: gedittools, SplitView(fork?), tabTweaks? [2012-10-08 18:13:27]
+4. 办公电脑升到了win 7(其实是国庆前突然坏掉了，而联想提供的驱动盘在winxp上搞不定网络），发现ConEmu不
+   支持win7啊，一跑就异常，只能先用console2凑合一下了 [2012-10-09 10:35:58]
+5. FavMenu2 patch for windows 7 open/save dialog
+   http://www.autohotkey.com/community/viewtopic.php?p=322261 (简单试了一下，好像还是不好使)
+   [2012-10-09 11:33:38]
+6. 平日尽量使用portable版本就是好啊，这次系统坏掉后换成win7，只用重装了10来个程序 [2012-10-09
+   13:06:30]
+7. bitbucket改版了，界面比以前清晰了好多，很多地方都比以前易用了。而且现在支持无限个私有仓库（包括
+   git和hg） http://blog.bitbucket.org/2012/10/09/introducing-the-redesigned-bitbucket/ [2012-10-10
+   13:20:00]
+8. gedit todo: * [[auto_completion]] or [[tm_autocomplete]] (i.e. TAB or ESC key) * ++
+   [[intelligent_text_completion]] = [[bracketcompletion]] + [[gemini]] + filladapt + ? * pythonkit (for
+   completion?)  [2012-10-11 20:32:02]
+9. 在网上搜pygtk文档的chm版本,搜到我当年写的一个小脚本devhelp2chm.sh — 我自己放在那台老HP笔记本里面
+   了两年没开机了，原来放置的的网站oliwen.com也早不能访问了，没想到还有其它地方可以找到
+   http://code.google.com/p/htmlhelp/wiki/DevHelp [2012-10-13 10:48:41]
+10. 想要获得比gzip,bzip2更高的压缩率的话，可以用xz。用法差不多: xz <filename>, unxz
+    <filename> http://xahlee.info/linux/linux_gzip_bzip2_xz_7zip.html [2012-10-15 10:16:37]
+11. p7zip这个命令也是跟gzip, bzip2, xz类似，用来压缩单一文件的（虽然.7z格式本质上支持多个文件。其实
+    p7zip命令只是7zr命令的一个wrapper) http://packages.debian.org/wheezy/p7zip-full [2012-10-15
+    11:30:58]
+12. p7zip-full这个包提供了7z, 7za, 7zr三个命令，有什么区别？用--help显示的帮助居然都一样（至少肉眼没
+    看出差别来）, man的内容也非常类似，晕了 [2012-10-15 11:40:47]
+13. 关于7z/7za/7zr搜到一个说明（其实内容在man里面都有，只是分散在三个里面，没有并列出来说)，说7zr只能
+    处理.7z文件，而7za支持多种格式(包括7z, zip, gzip, bzip2, tar，应该还有xz)，而7z还通过插件支持了其
+    它很多格式: https://wiki.archlinux.org/index.php/P7zip#Differences_between_7z.2C_ [2012-10-15
+    11:45:09]
+14. 关于7z/7za/7zr搜到一个说明（其实内容在man里面都有，只是分散在三个里面，没有并列出来说)，说7zr只能
+    处理.7z文件，而7za支持多种格式(包括7z, zip, gzip, bzip2, tar，应该还有xz)，而7z还通过插件支持了其
+    它很多格式. http://is.gd/YRen8n [2012-10-15 11:45:43]
+15. 7z这个命令支持用zip/tar/7z格式打包，支持用gzip/bzip2/xz格式压缩，还支持解压
+    cab,chm,cpio,deb,iso,lzma,msi,nsis,rar,rpm,xar,z格式的包
+    http://packages.debian.org/wheezy/p7zip-full [2012-10-15 11:54:20]
+16. FavMenu2 针对Vista/Win7 explorer的补丁:
+    http://www.autohotkey.com/community/viewtopic.php?t=12412&start=75#p216232 在win7上试了一下，
+    OK [2012-10-16 10:41:09]
+17. favmenu2: win7里面的explorer和open/save对话框里路径控件层次是一致的，都是WorkerW >
+    ReBarWindow32 > Address Band Root > msctls_progress32 > Breadcrumb Parent >
+    ToolbarWindow32，点击路径栏后msctls_progress32下变成了一个Co [2012-10-16 13:03:13]
+18. [favmenu2] 刚才说的内容可用这个winspy查看到 http://www.torry.net/authorsmore.php?id=5786
+    [2012-10-16 13:12:57]
+19. [favmenu2] 两个winspy类似的东: Window Detective http://windowdetective.sourceforge.net/ WinCheat
+    http://alinconstantin.dtdns.net/Download/WinCheat/ [2012-10-16 13:34:55]
+20. 说起spy++类似的工具，以前还有国产的llyfspy, winspy和myspy 但都不太容易下载到了
+    http://blog.csdn.net/missdeer/article/details/1396409 http://www.ccrun.com/spy4win
+    http://siney.yeah.net [2012-10-16 14:09:55]
+21. hg里面将named-branch的名称放在log里面这事儿，知晓了之后，对我也没有造成太大困扰，但我相当不习惯的
+    是，我用hg branch branch_a命名之后，居然要commit才能生效 『Mercurial (Hg)的named branch與
+    bookmark』 http://is.gd/0Xi3YF [2012-10-16 14:42:23]
+22. 昨天下载gitorious的vmware镜像，下载之后解压时居然说有错误，用md5验证果然跟服务器上说的不一样，怎
+    么办？要再下一遍又有错误怎么办？于是祭出curl -r xxx-xxx分段下载方法，再将原来的文件分成10段，每段
+    进行md5比对，妥妥地 [2012-10-17 09:43:46]
+23. wxpython写的程序，到了win7下面，任务栏上都是python.exe的图标，并且还都堆在一起，解决办法是要重新
+    指定一个AppUserModelID http://is.gd/6FAXzq [2012-10-17 09:47:44]
+24. cygpath for msys:
+    http://sourceforge.net/projects/cbadvanced/files/Msys%20Specific/cygpath-enhanced.7z/download
+    [2012-10-17 16:35:15]
+25. RT @企业存储观察: 【openstack】openstack网络详解（Essex版）】 openstack网络详解 这篇文章基本是参
+    考了http://t.cn/zlQIKk3 的几篇英文blog，进过翻译和整理，详细...http://t.cn/zlQ9AJQ [2012-10-17
+    22:17:55]
+26. devhelp的gedit插件被debian藏在了devhelp-common这个包里面
+    http://packages.debian.org/squeeze/all/devhelp-common/filelist [2012-10-18 10:01:22]
+27. Just FYI: gedit-devhelp以前有一个C语言版本的 https://github.com/nacho/devhelp 作者的说明:
+    http://is.gd/Ta8BTk (blogs.gnome.org) [2012-10-18 10:05:24]
+28. Universal Viewer的UVNav功能在5.7版本里免费了 http://www.uvviewsoft.com/img/UVNav.gif [2012-10-18
+    10:52:38]
+29. 我是有多么喜欢win7啊，只因为她把冗长而恶心的Documents and Settings变成了简洁的Users [2012-10-22
+    08:57:16]
+30. 升级到win7后的最大遗憾是colinux不能工作了，启动colinux就导致win7僵死了。也试了最后出的
+    snapshot(20110807)，还是不行 :-( [2012-10-24 10:17:50]
+31. [python] dreampie终于有新版本了，除了修复很多小问题之外，交互方面的变化是多了多标签栏支持(Ctrl-T
+    打开新标签)，另外可以用Tab/Shift-Tab来缩进输入区的代码块了 http://www.dreampie.org/whatsnew.html
+    [2012-10-24 10:27:39]
+32. [python] 试用dreampie的多标签页这个新功能，碰到问题了，新建的标签页里面没有输入框，原来那个标签页
+    里面也不见了，重启dreampie之后还不能输入了，得先切换到其它程序再切回来才行。 报了个问题单:
+    https://github.com/noamraph/dreampie/issues/3 [2012-10-24 10:59:25]
+33. Windows上如何找到一个窗口对应的进程并杀死？以前我都是用spy查出进程id，然后再到任务管理器里面查对
+    应进程，刚才从PortableApps看到的Daphne可以方便地干这个，拖一下就行了
+    http://portableapps.com/apps/utilities/daphne_portable [2012-10-25 11:44:33]
+34. 公司内论坛里有转暴走漫画的，总共160多页，我每天中午看几页，前后看了一个多月才看完 :-(
+    [2012-10-25 13:16:18]
+35. "and wanted to discuss whether it was possible to use their LDAP server for authorization
+    as well as authentication" 原来auth...是两个不同单词，以前只看前4个字母的 [2012-10-25
+    17:29:34]
+36. virtualbox的nat网络模式跟colinux一样可以配置端口转发（注意，源和目标IP都可以为空)，配上22端口你的
+    主机就似乎变成了一台linux，再通过vb的共享文件夹访问windows磁盘，嘿嘿
+    http://www.virtualbox.org/manual/ch06.html#natforward [2012-10-26 17:36:19]
+37. 终于发现了gedit windows版本的python代码不能补全的问题! 原来是get_mime_type()在windows下返回不是
+    'text/x-python'而是'text/plain' :-( http://is.gd/QmTr2O [2012-10-27 15:09:03]
+38. 而pythonkit插件其实也可以补全(修复那个file:///的问题后)，但代码里的设置是用户热键请求激活
+    COMPLETION_ACTIVATION_USER_REQUESTED (考虑到django，设置为自动补全不是太好），而悲剧的是这个软件
+    是Ctrl-space，我还找不到在哪里修改 [2012-10-27 15:40:51]
+39. 虽然pythoncompletion已经能工作，还想搞定 pythonkit这个插件的原因是它支持gedit-3，能加载
+    virtualenv和django，而前者不支持 [2012-10-27 16:59:45]
+40. “Arch Linux 提供的 Wiki 被认为是发行版 Wiki 中最丰富和易用的。Fedora wiki仅是开发者、测试和用户
+    间交流信息的平台。并不是和 Arch Wiki 一样为终端用户准备，而是更像一个问题追踪和合作开发 wiki。 ”
+    [2012-10-30 08:52:54]
+41. "xpra 这个东西类似一个 X-server + screen 的作用。xpra start :100 && DISPLAY=:100
+    xterm" ——不过这个跟Xnest相比的优势是什么呢？可以随时attach/detach?  http://xpra.org/
+    [2012-10-30 11:26:04]
