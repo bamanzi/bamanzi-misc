@@ -12,7 +12,7 @@ const PLUGIN_INFO =
     <name>Yet Another Twitter Client KeySnail</name>
     <description>Make KeySnail behave like Twitter client</description>
     <description lang="ja">KeySnail を Twitter クライアントに</description>
-    <version>3.0.9</version>
+    <version>3.1.5</version>
     <updateURL>https://github.com/mooz/keysnail/raw/master/plugins/yet-another-twitter-client-keysnail.ks.js</updateURL>
     <iconURL>https://github.com/mooz/keysnail/raw/master/plugins/icon/yet-another-twitter-client-keysnail.icon.png</iconURL>
     <author mail="stillpedant@gmail.com" homepage="http://d.hatena.ne.jp/mooz/">mooz</author>
@@ -1435,7 +1435,8 @@ var twitterClient =
                         lastIDHook : $U.bind(Notifier.updateAllListButtons, Notifier),
                         beginCount : gTimelineCountBeginning,
                         params     : {
-                            include_rts: !!pOptions["list_include_rts"]
+                            include_rts: !!pOptions["list_include_rts"],
+                            include_entities : true
                         }
                     }
                 );
@@ -1480,7 +1481,11 @@ var twitterClient =
                         persist.preserve(share.twitterTrackingInfo, "yatck_tracking_info");
                     },
                     lastIDHook   : $U.bind(Notifier.updateAllTrackingButtons, Notifier),
-                    beginCount   : gTimelineCountBeginning
+                    beginCount   : gTimelineCountBeginning,
+                    params : {
+                        include_rts: !!pOptions["list_include_rts"],
+                        include_entities : true
+                    }
                 }
             );
         }
@@ -1513,7 +1518,10 @@ var twitterClient =
                 lastKey    : "extensions.keysnail.plugins.twitter_client.last_status_id",
                 oauth      : gOAuth,
                 lastIDHook : $U.bind(Notifier.updateAllStatusbars, Notifier),
-                beginCount : gTimelineCountBeginning
+                beginCount : gTimelineCountBeginning,
+                params     : {
+                    include_entities : true
+                }
             }
         );
 
@@ -1525,7 +1533,10 @@ var twitterClient =
                 lastKey    : "extensions.keysnail.plugins.twitter_client.last_mention_id",
                 oauth      : gOAuth,
                 lastIDHook : $U.bind(Notifier.updateAllStatusbars, Notifier),
-                beginCount : gTimelineCountEveryUpdates
+                beginCount : gTimelineCountEveryUpdates,
+                params     : {
+                    include_entities : true
+                }
             }
         );
 
@@ -1538,7 +1549,10 @@ var twitterClient =
                 oauth      : gOAuth,
                 mapper     : function (statuses) statuses.map(function (status) (status.user = status.sender, status)),
                 lastIDHook : $U.bind(Notifier.updateAllStatusbars, Notifier),
-                beginCount : gTimelineCountEveryUpdates
+                beginCount : gTimelineCountEveryUpdates,
+                params     : {
+                    include_entities : true
+                }
             }
         );
 
@@ -1549,7 +1563,10 @@ var twitterClient =
                 interval   : pOptions["dm_update_interval"],
                 oauth      : gOAuth,
                 mapper     : function (statuses) statuses.map(function (status) (status.user = status.sender, status)),
-                beginCount : gTimelineCountEveryUpdates
+                beginCount : gTimelineCountEveryUpdates,
+                params     : {
+                    include_entities : true
+                }
             }
         );
 
@@ -1695,11 +1712,7 @@ var twitterClient =
              "search-word"],
             // ======================================== //
             [function (status) {
-                 if (status) {
-                     $U.extractLinks(status.text).forEach(function (url) {
-                         gBrowser.loadOneTab(url, null, null, null, false);
-                     });
-                 }
+                 if (status) openAllURLs(status.raw);
              }, M({ja: "メッセージ中の URL を開く : ", en: ""}) + "Visit URL in the message",
              "open-url,c"],
             // ======================================== //
@@ -2698,7 +2711,8 @@ var twitterClient =
                     params: {
                         rpp    : 100,
                         q      : word,
-                        max_id : opts.max_id
+                        max_id : opts.max_id,
+                        include_entities : true
                     },
                     ok: function (res, xhr) {
                         let results = ($U.decodeJSON( xhr.responseText) || {"results":[]}).results;
@@ -3099,7 +3113,7 @@ var twitterClient =
                     }
 
                     util.httpGet(
-                        "https://api.twitter.com/1/statuses/show/" + from + ".json",
+                        "https://api.twitter.com/1/statuses/show/" + from + ".json?include_entities=true",
                         false,
                         function (xhr) {
                             if (xhr.status === 200) {
@@ -3190,7 +3204,8 @@ var twitterClient =
                         screen_name : target,
                         count       : gTimelineCountEveryUpdates,
                         max_id      : opts.max_id,
-                        include_rts : !!pOptions["user_include_rts"]
+                        include_rts : !!pOptions["user_include_rts"],
+                        include_entities : true
                     },
                     ok: function (res, xhr) {
                         var statuses = $U.decodeJSON(xhr.responseText) || [];
@@ -3224,67 +3239,176 @@ var twitterClient =
             _content.focus();
         }
 
-        function createMessage(msg, status) {
-            let specialPattern = /(@[a-zA-Z0-9_]+|((http|ftp)s?\:\/\/|www\.)[^\s]+)|(#[a-zA-Z0-9_]+)/g;
+        function getEntitiesFromStatus(status) {
+            let entities = {};
 
-            let matched = msg.match(specialPattern);
-            let message = $U.createElement("description", {
-                style : "-moz-user-select : text !important;"
+            ["entities", "media"].forEach(function (entityContainerName) {
+                let entityContainer = status[entityContainerName];
+                if (status[entityContainerName]) {
+                    for (let [entityName, entity] in Iterator(entityContainer)) {
+                        entities[entityName] = entity;
+                    }
+                }
             });
 
-            if (matched)
-            {
-                for (let i = 0; i < matched.length; ++i)
-                {
-                    let pos   = msg.indexOf(matched[i]);
-                    let left  = msg.slice(0, pos);
-                    let right = msg.slice(pos + matched[i].length);
+            return entities;
+        }
 
-                    let url;
-                    let type =
-                        matched[i][0] === '@' ? "user" :
-                        matched[i][0] === '#' ? "hash" : "url";
+        function createMessageNode(messageText, status) {
+            let entities = getEntitiesFromStatus(status);
+            let messageNode = entities
+                    ? createMessageNodeFromEntities(messageText, entities)
+                    : createMessageNodeWithoutEntities(messageText);
 
-                    if (type === "user")
-                        url = "http://twitter.com/" + matched[i].slice(1);
-                    else if (type === "hash")
-                        url = "http://twitter.com/search?q=" + encodeURIComponent(matched[i]);
-                    else
-                    {
-                        url = matched[i];
-                        if (url.indexOf("www") === 0)
-                            url = "http://" + url;
-                    }
-
-                    message.appendChild(document.createTextNode(left));
-                    message.appendChild($U.createElement("description", {
-                        "class"       : gLinkClass,
-                        "tooltiptext" : url,
-                        "value"       : matched[i]
-                    }));
-
-                    msg = right;
-                }
-
-                if (msg.length)
-                    message.appendChild(document.createTextNode(msg));
-            }
-            else
-            {
-                message.appendChild(document.createTextNode(msg));
-            }
-
-            if (status.in_reply_to_status_id_str)
-            {
-                let url = "http://twitter.com/" + status.in_reply_to_screen_name + "/status/" + status.in_reply_to_status_id_str;
-                message.appendChild($U.createElement("description", {
+            if (status.in_reply_to_status_id_str) {
+                let url = util.format(
+                    "http://twitter.com/%s/status/%s",
+                    status.in_reply_to_screen_name,
+                    status.in_reply_to_status_id_str
+                );
+                messageNode.appendChild($U.createElement("description", {
                     "class"       : gLinkClass,
                     "tooltiptext" : url,
                     "value"       : "[in reply to]"
                 }));
             }
 
-            return message;
+            return messageNode;
+        }
+
+        function getSortedEntitiesWithType(entities) {
+            let sortedEntities = [[entityType, entityList] for ([entityType, entityList] in Iterator(entities))].reduce(
+                function (entityWithTypes, [entityType, entityList]) {
+                    return entityWithTypes.concat(entityList.map(function (entity) {
+                        return {
+                            type: entityType,
+                            entity: entity
+                        };
+                    }));
+                }, []
+            ).sort(function (entityWithType1, entityWithType2) {
+                return entityWithType1.entity.indices[0] > entityWithType2.entity.indices[0];
+            });
+
+            return sortedEntities;
+        }
+
+        function createMessageNodeFromEntities(messageText, entities) {
+            let messageNode = $U.createElement("description", {
+                style : "-moz-user-select : text !important;"
+            });
+
+            let cursor = 0;
+
+            let sortedEntitiesWithType = getSortedEntitiesWithType(entities);
+            sortedEntitiesWithType.forEach(function ({ type, entity }) {
+                let leftMessage = messageText.slice(cursor, entity.indices[0]);
+                messageNode.appendChild(document.createTextNode(leftMessage));
+
+                // move cursor
+                cursor = entity.indices[1];
+
+                switch (type) {
+                case "hashtags":
+                    messageNode.appendChild($U.createElement("description", {
+                        "class"       : gLinkClass,
+                        "tooltiptext" : "http://twitter.com/search?q=" + encodeURIComponent(entity.text),
+                        "value"       : "#" + entity.text
+                    }));
+                    break;
+                case "urls":
+                case "media":
+                    messageNode.appendChild($U.createElement("description", {
+                        "class"       : gLinkClass,
+                        "tooltiptext" : entity.expanded_url,
+                        "value"       : entity.display_url || entity.url
+                    }));
+                    break;
+                case "user_mentions":
+                    messageNode.appendChild($U.createElement("description", {
+                        "class"       : gLinkClass,
+                        "tooltiptext" : "http://twitter.com/" + entity.screen_name,
+                        "value"       : "@" + entity.screen_name
+                    }));
+                    break;
+                }
+            });
+
+            if (cursor < messageText.length) {
+                let rightMessage = messageText.slice(cursor);
+                messageNode.appendChild(document.createTextNode(rightMessage));
+            }
+
+            return messageNode;
+        }
+
+        function createMessageNodeWithoutEntities(messageText) {
+            let specialPattern = /(@[a-zA-Z0-9_]+|((http|ftp)s?\:\/\/|www\.)[^\s]+)|(#[a-zA-Z0-9_]+)/g;
+
+            let matched = messageText.match(specialPattern);
+            let messageNode = $U.createElement("description", {
+                style : "-moz-user-select : text !important;"
+            });
+
+            if (matched) {
+                for (let i = 0; i < matched.length; ++i) {
+                    let pos   = messageText.indexOf(matched[i]);
+                    let left  = messageText.slice(0, pos);
+                    let right = messageText.slice(pos + matched[i].length);
+
+                    let url;
+                    let type =
+                            matched[i][0] === '@' ? "user" :
+                            matched[i][0] === '#' ? "hash" : "url";
+
+                    if (type === "user")
+                        url = "http://twitter.com/" + matched[i].slice(1);
+                    else if (type === "hash")
+                        url = "http://twitter.com/search?q=" + encodeURIComponent(matched[i]);
+                    else {
+                        url = matched[i];
+                        if (url.indexOf("www") === 0)
+                            url = "http://" + url;
+                    }
+
+                    messageNode.appendChild(document.createTextNode(left));
+                    messageNode.appendChild($U.createElement("description", {
+                        "class"       : gLinkClass,
+                        "tooltiptext" : url,
+                        "value"       : matched[i]
+                    }));
+
+                    messageText = right;
+                }
+
+                if (messageText.length)
+                    messageNode.appendChild(document.createTextNode(messageText));
+            } else {
+                messageNode.appendChild(document.createTextNode(messageText));
+            }
+
+            return messageNode;
+        }
+
+        function extractAllURLsFromStatus(status) {
+            let entities = getEntitiesFromStatus(status);
+
+            if (entities) {
+                let sortedEntitiesWithType = getSortedEntitiesWithType(entities);
+                return sortedEntitiesWithType.filter(function ({ type, entity }) {
+                    return type === "urls" || type === "media";
+                }).map(function ({ type, entity }) {
+                    return entity.expanded_url || entity.url;
+                });
+            } else {
+                return $U.extractLinks(status.text);
+            }
+        }
+
+        function openAllURLs(status) {
+            extractAllURLsFromStatus(status).forEach(function (url) {
+                gBrowser.loadOneTab(url, null, null, null, false);
+            });
         }
 
         function callSelector(aStatuses, aMessage, options) {
@@ -3450,7 +3574,7 @@ var twitterClient =
 
                         header.buttonTwitter.setAttribute("onclick", Commands.openLink('http://twitter.com/' + status.user.screen_name));
 
-                        header.userTweet.replaceChild(createMessage(html.unEscapeTag(status.text), status), header.userTweet.firstChild);
+                        header.userTweet.replaceChild(createMessageNode(html.unEscapeTag(status.text), status), header.userTweet.firstChild);
 
                         my.twitterClientHeaderUpdater = null;
                     }

@@ -2,10 +2,8 @@
 
 import sys
 import os
-import xml.parsers.expat
 
 from bunch import Bunch
-
 
 def parse_scrapbook_rdf(sbrdffile):
     """ parse rdf into a Bunch object, like this:
@@ -82,6 +80,8 @@ def parse_scrapbook_rdf(sbrdffile):
                 CF.IS_ROOT = 0
             else:
                 pass
+
+    import xml.parsers.expat
 
     px = xml.parsers.expat.ParserCreate()
     px.StartElementHandler = start_element

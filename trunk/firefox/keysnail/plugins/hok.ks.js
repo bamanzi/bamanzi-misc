@@ -1,11 +1,11 @@
 // Plugin info {{ =========================================================== //
 
-const PLUGIN_INFO =
+var PLUGIN_INFO =
 <KeySnailPlugin>
     <name>HoK</name>
     <description>Hit a hint for KeySnail</description>
     <description lang="ja">キーボードでリンクを開く</description>
-    <version>1.3.1</version>
+    <version>1.3.6</version>
     <updateURL>https://github.com/mooz/keysnail/raw/master/plugins/hok.ks.js</updateURL>
     <iconURL>https://github.com/mooz/keysnail/raw/master/plugins/icon/hok.icon.png</iconURL>
     <author mail="stillpedant@gmail.com" homepage="http://d.hatena.ne.jp/mooz/">mooz</author>
@@ -398,9 +398,20 @@ const pOptions = plugins.setupOptions("hok", {
         type: "string"
     },
 
+    "hide_unmatched_hint" : {
+        preset: true,
+        description: M({
+            en: "Hide unmatched hints or not",
+            ja: "マッチしないヒントを隠すかどうか"
+        }),
+        type: "boolean"
+    },
+
     "hint_base_style" : {
         preset: {
-            "position"       : 'absolute',
+            "position"       : 'fixed',
+            "top"            : '0',
+            "left"           : '0',
             "z-index"        : '2147483647',
             "color"          : '#000',
             "font-family"    : 'monospace',
@@ -774,12 +785,19 @@ var hok = function () {
         return [leftpos, toppos];
     }
 
-    function getBodyOffsets(body, html)
+    function getBodyOffsets(body, html, win)
     {
-        return [
-            (body.scrollLeft || html.scrollLeft) - html.clientLeft,
-            (body.scrollTop || html.scrollTop) - html.clientTop
-        ];
+        // http://d.hatena.ne.jp/edvakf/20100830/1283199419
+        var style = win.getComputedStyle(body, null),
+            pos;
+        if (style && style.position == 'relative') {
+            var rect = body.getBoundingClientRect();
+            pos = { x: -rect.left-parseFloat(style.borderLeftWidth), y: -rect.top-parseFloat(style.borderTopWidth) };
+        } else {
+            var rect = html.getBoundingClientRect();
+            pos = { x: -rect.left, y: -rect.top };
+        }
+        return [ pos.x, pos.y ];
     }
 
     function setHintsText() {
@@ -793,6 +811,10 @@ var hok = function () {
         }
 
         hintSpans = null;
+    }
+
+    function getBodyForDocument(doc) {
+        return doc ? doc.body || (useSelector && doc.querySelector("body")) || doc.documentElement : null;
     }
 
     function drawHints(win) {
@@ -809,7 +831,7 @@ var hok = function () {
             return;
 
         var html = doc.documentElement;
-        var body = doc.body;
+        var body = getBodyForDocument(doc);
 
         if (!body)
         {
@@ -823,12 +845,18 @@ var hok = function () {
         var height = win.innerHeight;
         var width  = win.innerWidth;
 
-        var [scrollX, scrollY] = getBodyOffsets(body, html);
+        var [scrollX, scrollY] = getBodyOffsets(body, html, win);
+
+        if (hintBaseStyle.position === "fixed") {
+            scrollX -= win.scrollX;
+            scrollY -= win.scrollY;
+        }
 
         // Arrange hint containers {{ =============================================== //
 
         var fragment      = doc.createDocumentFragment();
         var hintContainer = doc.createElement('div');
+        hintContainer.style.position = 'static';
 
         fragment.appendChild(hintContainer);
         hintContainer.id = hintContainerId;
@@ -924,8 +952,18 @@ var hok = function () {
             hintColorLink : hintColorForm;
     }
 
+    function getAliveLastMatchHint() {
+        try {
+            if (lastMatchHint && lastMatchHint.style)
+                return lastMatchHint;
+        } catch (x) {
+            lastMatchHint = null;
+        }
+        return null;
+    }
+
     function blurHint() {
-        if (lastMatchHint)
+        if (getAliveLastMatchHint())
         {
             lastMatchHint.style.backgroundColor = getHintColor(lastMatchHint.element);
             lastMatchHint = null;
@@ -958,6 +996,7 @@ var hok = function () {
     }
 
     function updateHeaderMatchHints() {
+        const hideUnmatchedHint = pOptions["hide_unmatched_hint"];
         let foundCount = 0;
 
         for (let [hintStr, hintElem] in Iterator(hintElements)) {
@@ -966,6 +1005,8 @@ var hok = function () {
                     hintElem.style.backgroundColor = hintColorCandidates;
                 foundCount++;
             } else {
+                if (hideUnmatchedHint)
+                    hintElem.style.display = "none";
                 hintElem.style.backgroundColor = getHintColor(hintElem.element);
             }
         }
@@ -974,8 +1015,10 @@ var hok = function () {
     }
 
     function resetHintsColor() {
-        for (let [, span] in Iterator(hintElements))
+        for (let [, span] in Iterator(hintElements)) {
             span.style.backgroundColor = getHintColor(span.element);
+            span.style.display = "inline";
+        }
     }
 
     function removeHints(win) {
@@ -983,12 +1026,13 @@ var hok = function () {
             win = window.content;
 
         var doc = win.document;
+        var body = getBodyForDocument(doc);
 
         var hintContainer = doc.getElementById(hintContainerId);
-        if (doc && doc.body && hintContainer)
+        if (body && hintContainer)
         {
             try {
-                doc.body.removeChild(hintContainer);
+                body.removeChild(hintContainer);
             } catch (x) { util.message(x); }
         }
 
@@ -1079,9 +1123,13 @@ var hok = function () {
                 updateHeaderMatchHints();
             return;
         case 'Enter':
-            if (lastMatchHint)
-                fire(lastMatchHint.element);
-            destruction();
+            if (getAliveLastMatchHint()) {
+                let elem = lastMatchHint.element;
+                destruction();
+                fire(elem);
+            } else {
+                destruction();
+            }
             return;
         default :
             inputKey += role;
@@ -1101,7 +1149,7 @@ var hok = function () {
 
         // fire if hint is unique
         if (uniqueFire && !supressUniqueFire) {
-            if (foundCount == 1 && lastMatchHint) {
+            if (foundCount == 1 && getAliveLastMatchHint()) {
                 var targetElem = lastMatchHint.element;
                 destruction();
 

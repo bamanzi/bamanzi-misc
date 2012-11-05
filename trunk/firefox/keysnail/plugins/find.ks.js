@@ -8,7 +8,7 @@ let PLUGIN_INFO =
     <updateURL>https://gist.github.com/raw/905297/find.ks.js</updateURL>
     <iconURL>https://sites.google.com/site/958site/Home/files/find.ks.png</iconURL>
     <author>958</author>
-    <version>0.1.7</version>
+    <version>0.1.9</version>
     <license>MIT</license>
     <minVersion>1.8.0</minVersion>
     <include>main</include>
@@ -17,10 +17,7 @@ let PLUGIN_INFO =
 カレントタブやすべてのタブ内のテキストなどを検索します
 上記エクステ入力後、promptに検索文字列を入力してください
 
->||
-prompt.useMigemo = true;
-||<
-してあれば、 XUL/Migemo を使って検索します
+XUL/Migemo がインストールされていると、 Migemo による検索を行います
 
 === コマンド ===
 勝手に「find」という組み込みコマンドを追加します
@@ -132,7 +129,7 @@ let pOptions = plugins.setupOptions("find", {
     'result_view_widths': {
         preset: [80, 20],
         description: M({
-           ja: "検索結果における文字列とタブ名の幅 (初期値: [80, 20])",
+            ja: "検索結果における文字列とタブ名の幅 (初期値: [80, 20])",
             en: "Proportion of search result text and tab name (default: [80, 20])"
         })
     }
@@ -159,14 +156,9 @@ let gPrompt = {
     }
 };
 
-function makeKeywordRegExp(word) {
-    let re;
-    if (window.xulMigemoCore)
-        re = new RegExp(window.xulMigemoCore.getRegExp(word), "ig");
-    else
-        re = new RegExp(word, "ig");
-    return re;
-}
+function makeKeywordRegExp(word)
+    (window.xulMigemoCore) ?
+        new RegExp(window.xulMigemoCore.getRegExp(word), "ig") : new RegExp(word, "ig");
 
 function grepText(word, isAll) {
     let _nsIFind = Cc['@mozilla.org/embedcomp/rangefind;1'].getService(Ci.nsIFind);
@@ -263,7 +255,7 @@ function grepText(word, isAll) {
 
     function _showSelector() {
         prompt.selector({
-            message     : "pattern:",
+            message     : "["+_collection.length+"] "+"pattern:",
             collection  : _collection,
             flags       : [0, ICON | IGNORE, 0, IGNORE | HIDDEN, IGNORE | HIDDEN],
             style       : [style.prompt.description],
@@ -380,12 +372,16 @@ function grepLink(word, isAll, isTitle, isURL) {
 
     function _showSelector() {
         prompt.selector({
-            message     : "pattern:",
+            message     : "["+_collection.length+"] "+"pattern:",
             collection  : _collection,
             flags       : [0, 0, ICON | IGNORE, 0, IGNORE | HIDDEN, IGNORE | HIDDEN],
             style       : [style.prompt.description, style.prompt.url, style.prompt.description],
             header      : ["Text", "URL", 'Tab'],
-            width       : [40, 40, 20],
+            width       : [
+                pOptions['result_view_widths'][0] / 2,
+                pOptions['result_view_widths'][0] / 2,
+                pOptions['result_view_widths'][1],
+            ],
             keymap      : pOptions["keymap"],
             onChange    : function (arg) {
                 if (!arg.row) return;
@@ -422,61 +418,61 @@ function grepLink(word, isAll, isTitle, isURL) {
 };
 
 plugins.withProvides(function (provide) {
-    function checkArgAndGo(arg, fn, args) {
-        if (typeof arg === 'string' && arg.length > 0)
+    function checkArgAndGo(arg, fn, mustWord, args) {
+        if (typeof arg === 'string' && (!mustWord || arg.length > 0))
             fn(arg, args);
         else
             prompt.read("Find:", function (word) {
-                if (word)
+                if (!mustWord || word)
                     fn.apply(this, [word].concat(args || []));
             }, null, null, null, 0);
     }
 
     provide("find-current-tab",
         function (ev, arg) {
-            checkArgAndGo(arg, grepText);
+            checkArgAndGo(arg, grepText, true);
         },
         M({ja: "Find - 現在のタブを検索", en: "Find - find current tab"}));
 
     provide("find-all-tab",
         function (ev, arg) {
-            checkArgAndGo(arg, grepText, [true]);
+            checkArgAndGo(arg, grepText, true, [true]);
         },
         M({ja: "Find - 全てのタブを検索", en: "find - find all tab"}));
 
     provide("find-current-tab-link-text",
         function (ev, arg) {
-            checkArgAndGo(arg, grepLink, [false, true]);
+            checkArgAndGo(arg, grepLink, false, [false, true]);
         },
         M({ja: "Find - 現在のタブのリンクテキストを検索", en: "Find - find current tab link text"}));
 
     provide("find-all-tab-link-text",
         function (ev, arg) {
-            checkArgAndGo(arg, grepLink, [false, true]);
+            checkArgAndGo(arg, grepLink, false, [false, true]);
         },
         M({ja: "Find - 全てのタブのリンクテキストを検索", en: "Find - find all tab link text"}));
 
     provide("find-current-tab-link-url",
         function (ev, arg) {
-            checkArgAndGo(arg, grepLink, [false, false, true]);
+            checkArgAndGo(arg, grepLink, false, [false, false, true]);
         },
         M({ja: "Find - 現在のタブのリンク URL を検索", en: "Find - find current tab link url"}));
 
     provide("find-all-tab-link-url",
         function (ev, arg) {
-            checkArgAndGo(arg, grepLink, [true, false, true]);
+            checkArgAndGo(arg, grepLink, false, [true, false, true]);
         },
         M({ja: "Find - 全てのタブのリンク URL を検索", en: "Find - find all tab link url"}));
 
     provide("find-current-tab-link-text-and-url",
         function (ev, arg) {
-            checkArgAndGo(arg, grepLink, [false, true, true]);
+            checkArgAndGo(arg, grepLink, false, [false, true, true]);
         },
         M({ja: "Find - 現在のタブのリンクテキストと URL を検索", en: "Find - find current tab link text and url"}));
 
     provide("find-all-tab-link-text-and-url",
         function (ev, arg) {
-            checkArgAndGo(arg, grepLink, [true, true, true]);
+            checkArgAndGo(arg, grepLink, false, [true, true, true]);
         },
         M({ja: "Find - 全てのタブのリンクテキストと URL を検索", en: "Find - find all tab link text and url"}));
 }, PLUGIN_INFO);
@@ -570,14 +566,10 @@ let selector = {
         selector._lastSelection = selection;
 
         selection.addRange(range);
-        let selPrivate;
-        if (Ci.nsISelection2) {
-            selPrivate = selection
-                .QueryInterface(Ci.nsISelection2);
-        } else {
-            selPrivate = selection
-                .QueryInterface(Ci.nsISelectionPrivate);
-        }
+
+        let selPrivate = (Ci.nsISelection2) ?
+            selection.QueryInterface(Ci.nsISelection2) : selection.QueryInterface(Ci.nsISelectionPrivate);
+
         selPrivate.scrollIntoView(
             Ci.nsISelectionController.SELECTION_ANCHOR_REGION,
                 true, 50, 50);
