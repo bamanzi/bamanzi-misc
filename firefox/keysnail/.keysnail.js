@@ -1330,7 +1330,10 @@ key.setViewKey('M-=', function(ev, arg) {
 }, "Count selected or all chars in current editbox.");
 
 key.setGlobalKey(['<f5>', 't'], function (ev, arg) {
-    allTabs.open();
+    if (typeof(listAllTabsMenu) != "undefined")
+        listAllTabsMenu.onCtrlTabKeycommand();  //List All Tabs Menu extension
+    else
+        allTabs.open();
 }, 'select tab in of current tab group(firefox 4+)');
 
 key.setGlobalKey(['<f5>', 'T'], function (ev, arg) {

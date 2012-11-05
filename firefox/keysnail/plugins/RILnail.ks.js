@@ -2,22 +2,22 @@
 
 let PLUGIN_INFO =
 <KeySnailPlugin>
-    <name>RILnail</name>
-    <description>RIL from KeySnail</description>
-    <description lang="ja">RIL 拡張と連携</description>
+    <name>PocketSnail</name>
+    <description>Pocket from KeySnail</description>
+    <description lang="ja">Pocket 拡張と連携</description>
     <author>958</author>
     <iconURL>https://sites.google.com/site/958site/Home/files/RILnail.ks.png</iconURL>
     <updateURL>https://gist.github.com/raw/895703/RILnail.ks.js</updateURL>
-    <version>0.1.10</version>
+    <version>0.2.0</version>
     <license>MIT</license>
     <minVersion>1.8.0</minVersion>
     <include>main</include>
     <detail lang="ja"><![CDATA[
 === 使い方 ===
-Firefox 拡張 Read It Later が必須です
+Firefox 拡張 Pocket が必須です
 https://addons.mozilla.org/ja/firefox/addon/read-it-later/
 
-HoK 拡張ヒントモードを使って、リンクをRITに追加することも
+HoK 拡張ヒントモードを使って、リンクを Pocket に追加することも
 
 キーマップを変更したい人は、次のような設定を .keysnail.js の PRESERVE エリアへ
 
@@ -29,10 +29,13 @@ plugins.options["ril.keymap"] = {
     "g"     : "prompt-beginning-of-candidates",
     "G"     : "prompt-end-of-candidates",
     "D"     : "prompt-cancel",
-    // RILnail specific actions
+    // PocketSnail specific actions
     "o"     : "open,c",
     "O"     : "open-background,c",
-    "d"     : "delete"
+    "t"     : "open-text,c",
+    "T"     : "open-text-background,c",
+    "d"     : "delete",
+    "r"     : "sync"
 };
 ||<
 ]]></detail>
@@ -50,14 +53,14 @@ let pOptions = plugins.setupOptions("ril", {
     "hok_add_ril" : {
         preset: 'l',
         description: M({
-            en: "Key bound to `Append RIL` in the HoK extended hint mode (Default: l)",
-            ja: "HoK 拡張ヒントモードにおいて `リンクを RIL に追加` へ割り当てるキー (デフォルト: l)"})
+            en: "Key bound to `Append Pocket` in the HoK extended hint mode (Default: l)",
+            ja: "HoK 拡張ヒントモードにおいて `リンクを Pocket に追加` へ割り当てるキー (デフォルト: l)"})
     },
     "hok_add_ril_multi" : {
         preset: 'L',
         description: M({
-            en: "Key bound to `Append RIL multiple hints` in the HoK extended hint mode (Default: L)",
-            ja: "HoK 拡張ヒントモードにおいて `連続してリンクを RIL に追加` へ割り当てるキー (デフォルト: L)"})
+            en: "Key bound to `Append Pocket multiple hints` in the HoK extended hint mode (Default: L)",
+            ja: "HoK 拡張ヒントモードにおいて `連続してリンクを Pocket に追加` へ割り当てるキー (デフォルト: L)"})
     },
     "keymap" : {
         preset: {
@@ -67,10 +70,13 @@ let pOptions = plugins.setupOptions("ril", {
             "g"     : "prompt-beginning-of-candidates",
             "G"     : "prompt-end-of-candidates",
             "D"     : "prompt-cancel",
-            // RILnail specific actions
+            // PocketSnail specific actions
             "o"     : "open,c",
             "O"     : "open-background,c",
-            "d"     : "delete"
+            "t"     : "open-text,c",
+            "T"     : "open-text-background,c",
+            "d"     : "delete",
+            "r"     : "sync"
         },
         description: M({
             ja: "メイン画面の操作用キーマップ",
@@ -82,6 +88,8 @@ let pOptions = plugins.setupOptions("ril", {
 // Extend HoK
 
 hook.addToHook('PluginLoaded', function () {
+//    RIL.APP.registerObserver('ril-api-request-finished');
+
     if (!plugins.hok)
         return;
 
@@ -102,18 +110,18 @@ hook.addToHook('PluginLoaded', function () {
               }
             }
             RIL.saveLink(link.href, title, RIL.xul('clickToSaveTags').value);
-            display.echoStatusBar("Append RIL - " + title, 3000);
+            display.echoStatusBar("Append Pocket - " + title, 3000);
         }
     };
 
     plugins.hok.addActions([
-        // append RIL
+        // append Pocket
         [pOptions["hok_add_ril"],
-         M({ja: "リンクを RIL に追加", en: "Append RIL"}),
+         M({ja: "リンクを Pocket に追加", en: "Append Pocket"}),
          AddRIL],
-        // append RIL multiple hints
+        // append Pocket multiple hints
         [pOptions["hok_add_ril_multi"],
-         M({ja: "連続してリンクを RIL に追加", en: "Append RIL multiple hints"}),
+         M({ja: "連続してリンクを Pocket に追加", en: "Append Pocket multiple hints"}),
          AddRIL, false, true]
     ]);
 });
@@ -126,43 +134,52 @@ plugins.withProvides(function (provide) {
             let item = RIL.APP.LIST.itemByUrl(window.content.location.href);
             if (!item) {
                 let itemId = RIL.addCurrent();
-                display.echoStatusBar("Append RIL - " + window.content.document.wrappedJSObject.title.toString() || "", 3000);
+                display.echoStatusBar("Append Pocket - " + window.content.document.wrappedJSObject.title.toString() || "", 3000);
             }
         },
-        M({ja: "RIL - 現在のタブを RIL に追加", en: "RIL - Append current tab"}));
+        M({ja: "Pocket - 現在のタブを Pocket に追加", en: "Pocket - Append current tab"}));
     provide("ril-remove",
         function (ev, arg) {
             let item = RIL.APP.LIST.itemByUrl(window.content.location.href);
             if (item) {
                 RIL.markCurrentAsRead()
-                display.echoStatusBar("Remove RIL - " + window.content.document.wrappedJSObject.title.toString() || "", 3000);
+                display.echoStatusBar("Remove Pocket - " + window.content.document.wrappedJSObject.title.toString() || "", 3000);
             }
         },
-        M({ja: "RIL - 現在のタブを RIL から削除", en: "RIL - Remove current tab"}));
+        M({ja: "Pocket - 現在のタブを Pocket から削除", en: "Pocket - Remove current tab"}));
     provide("ril-toggle",
         function (ev, arg) {
             let item = RIL.APP.LIST.itemByUrl(window.content.location.href);
             if (item) {
                 RIL.markCurrentAsRead()
-                display.echoStatusBar("Remove RIL - " + window.content.document.wrappedJSObject.title.toString() || "", 3000);
+                display.echoStatusBar("Remove Pocket - " + window.content.document.wrappedJSObject.title.toString() || "", 3000);
             } else {
                 let itemId = RIL.addCurrent();
-                display.echoStatusBar("Append RIL - " + window.content.document.wrappedJSObject.title.toString() || "", 3000);
+                display.echoStatusBar("Append Pocket - " + window.content.document.wrappedJSObject.title.toString() || "", 3000);
             }
         },
-        M({ja: "RIL - 現在のタブを RIL に追加 または 削除", en: "RIL - Append or remove current tab"}));
+        M({ja: "Pocket - 現在のタブを Pocket に追加 または 削除", en: "Pocket - Append or remove current tab"}));
     provide("ril-append-and-close",
         function (ev, arg) {
             let item = RIL.APP.LIST.itemByUrl(window.content.location.href);
             if (!item) {
                 let itemId = RIL.addCurrent();
-                display.echoStatusBar("Append RIL - " + window.content.document.wrappedJSObject.title.toString() || "", 3000);
+                display.echoStatusBar("Append Pocket - " + window.content.document.wrappedJSObject.title.toString() || "", 3000);
             }
             if (arg || !item) {
                 gBrowser.removeTab(gBrowser.mCurrentTab);
             }
         },
-        M({ja: "RIL - 現在のタブを RIL に追加してタブを閉じる", en: "RIL - Append current tab and close"}));
+        M({ja: "Pocket - 現在のタブを Pocket に追加してタブを閉じる", en: "Pocket - Append current tab and close"}));
+    provide("ril-open-text",
+        function (ev, arg) RIL.retrieveAndOpenTextForUrl(window.content.location.href, 'current'),
+        M({ja: "Pocket - 現在のタブのテキストビューを表示", en: "Pocket - Open Text View current tab"}));
+    provide("ril-open-text-tab",
+        function (ev, arg) RIL.retrieveAndOpenTextForUrl(window.content.location.href, 'tab'),
+        M({ja: "Pocket - 現在のタブのテキストビューを新しいタブで表示", en: "Pocket - Open Text View in new tab"}));
+    provide("ril-open-text-background-tab",
+        function (ev, arg) RIL.retrieveAndOpenTextForUrl(window.content.location.href, 'tabshifted'),
+        M({ja: "Pocket - 現在のタブのテキストビューをバックグラウンドタブで表示", en: "Pocket - Open Text View in new background tab"}));
     provide("ril-show-reading-list",
         function (ev, arg) {
             let collection = [];
@@ -171,7 +188,7 @@ plugins.withProvides(function (provide) {
                 let favicon = util.getFaviconPath(url);
                 collection.push([
                     favicon,
-                    html.unEscapeTag(RIL.APP.LIST.list[i].title),
+                    html.unEscapeTag(RIL.APP.LIST.list[i].title).replace(/&amp;/g, '&'),
                     url,
                     toAgo(RIL.APP.LIST.list[i].timeUpdated * 1000),
                     RIL.APP.LIST.list[i].timeUpdated,
@@ -210,12 +227,39 @@ plugins.withProvides(function (provide) {
                             en: "Open in background new tab"}),
                          "open-background"],
                         [function (aIndex, items) {
+                             if (items.length > 0 && aIndex >= 0) {
+                                 let url = items[aIndex][2];
+                                 RIL.retrieveAndOpenTextForUrl(url, 'tab');
+                             }
+                         },
+                         M({ja: '選択中アイテムのテキストビューを新しいタブで開く',
+                            en: "Open Text View in new tab"}),
+                         "open-text"],
+                        [function (aIndex, items) {
+                             if (items.length > 0 && aIndex >= 0) {
+                                 let url = items[aIndex][2];
+                                 RIL.retrieveAndOpenTextForUrl(url, 'tabshifted');
+                             }
+                         },
+                         M({ja: '選択中アイテムのテキストビューを新しいバックグラウンドタブで開く',
+                            en: "Open Text View in background new tab"}),
+                         "open-text-background"],
+                        [function (aIndex, items) {
                              if (items.length > 0 && aIndex >= 0)
                                  removeItem(items, aIndex, true);
                          },
                          M({ja: '選択中アイテムを削除する',
                             en: "Delete"}),
-                         "delete,c"]
+                         "delete,c"],
+                        [function (aIndex, items) {
+                             if (RIL.APP.SYNC.syncing && !RIL.APP.SYNC.syncInBackgroundTillResults)
+                                 RIL.APP.SYNC.cancelSync();
+                             else
+                                 RIL.APP.SYNC.sync(false, true);
+                         },
+                         M({ja: '同期',
+                            en: "Sync"}),
+                         "sync"]
                     ]
                 }
             );
@@ -231,7 +275,7 @@ plugins.withProvides(function (provide) {
                      prompt.refresh();
             }
         },
-        M({ja: "RIL - リストを表示", en: "RIL - Show reading list"}));
+        M({ja: "Pocket - リストを表示", en: "Pocket - Show reading list"}));
 }, PLUGIN_INFO);
 
 
