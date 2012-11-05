@@ -1,5 +1,6 @@
 --- Favourites ---
 Double Commander|http://doublecmd.sourceforge.net/|http://sourceforge.net/projects/doublecmd/files/latest/download|http://sourceforge.net/projects/doublecmd/|/doublecmd/files/latest/download|/doublecmd-|.exe|0.5.4.i386-win32
+Firefox extension: Scrapbook Plus||https://addons.mozilla.org/firefox/downloads/latest/8186/addon-8186-latest.xpi?src=search|https://addons.mozilla.org/zh-CN/firefox/addon/scrapbook-plus/?src=search|<span itemprop="name">ScrapBook Plus</span>|<span class="version-number" itemprop="version">|</span>|1.8.22.38
 locate32|http://sourceforge.net/projects/locate32/||http://sourceforge.net/projects/locate32/|locate32/files/latest/download|Download /locate32-|.zip|3.1.9.6070
 mtputty|http://www.ttyplus.com/|http://www.ttyplus.com/download/mtputty.exe|http://www.ttyplus.com/multi-tabbed-putty/version.php?current=1.5.0|Currently available:|>|<|1.6.0.176
 putty-nd|http://sourceforge.net/projects/putty-nd/||http://sourceforge.net/projects/putty-nd/|putty-nd/files/latest/download|Download /putty|.zip|6.0_nd1.14
@@ -20,7 +21,6 @@ TC wfx: sftp (openssh)||http://ghisler.fileburst.com/fsplugins/sftpplug.zip|http
 TC wlx File Info|http://www.totalcmd.net/plugring/fileinfo.html|http://www.totalcmd.net/download.php?id=fileinfo|http://www.totalcmd.net/directory/lister.html|/fileinfo|&nbsp;|<|
 TC wlx+wcx Imagine||http://nyam.pe.kr/dev/imagine/download/unicode/Imagine_[%0a1-5]_Unicode.zip|http://www.nyam.pe.kr/phpBB3/viewtopic.php?f=2&t=14|>Windows|Version|<|
 TC wcx 7zip|http://www.totalcmd.net/plugring/7zip_plugin.html|http://www.totalcmd.net/download.php?id=7zip_plugin|http://www.totalcmd.net/directory/packer.html|/7zip_plugin|&nbsp;|<|
-
 Universal Viewer Free|http://www.uvviewsoft.com/|http://www.portablefreeware.com/download.php?dd=1079|http://www.portablefreeware.com/index.php?id=1079|class="appName">|class="version">|</span>|v5.5.0
 7-Zip||http://downloads.sourceforge.net/sevenzip/7z[%0a1][%0a3-].exe|http://www.7-zip.org/|<b>Download|7-Zip | |9.20
 Console2|http://sourceforge.net/projects/console/|http://www.portablefreeware.com/download.php?dd=963|http://www.portablefreeware.com/index.php?id=963|class="appName">|class="version">|</span>|v2.00 b147
@@ -42,6 +42,7 @@ SuperCopier|http://supercopier.sfxteam.org/|http://www.portablefreeware.com/down
 Launchy|http://launchy.sourceforge.net/|http://sourceforge.net/projects/launchy/files/latest/download?source=files|http://launchy.sourceforge.net/|versionBadge">|<span>|</span>|2.5
 Listary||http://www.listary.com/download/ListaryPortable.zip|http://www.listary.com/download|Current Version:</strong>||</p>|3.51 (Build 858)
 --- DevTools ---
+WinSpy||http://www.torry.net/tools/other/other/WinSpy.zip|http://www.torry.net/authorsmore.php?id=5786|Developer Tools > Other Tools > Other|WinSpy v.|</b>|1.9.3
 ExamDiff|http://www.prestosoft.com/edp_examdiff.asp|The current released version is|">|</a|1.9
 HeidiSQL|http://www.heidisql.com||http://www.heidisql.com/download.php|<h2>Download HeidiSQL ||</h2>|7.0 stable
 AutoHotkey_L (UTF-8)||http://www.autohotkey.net/~Lexikos/AutoHotkey_L/AutoHotkey_Lw.zip|http://www.autohotkey.net/~Lexikos/AutoHotkey_L/|>Recent History<|>Revision|<|
@@ -94,19 +95,23 @@ RealVNC Personal Edition|http://www.realvnc.com/products/personal/4.2/release-no
 TightVNC|http://www.tightvnc.com/download.html||<h3>Download Stable Version, TightVNC|</h3>|
 UltraVNC|http://www.uvnc.com/download/index.html|(stable)|>Update|<|
 TrayIt! beta|http://www.teamcti.com/trayit/trayit.htm||http://www.teamcti.com/phpBB2/viewforum.php?f=2| |TrayIt! V|<|
-WinSpy||http://www.torry.net/tools/other/other/WinSpy.zip|http://www.torry.net/authorsmore.php?id=5786|Developer Tools > Other Tools > Other|WinSpy v.|</b>|1.9.3
-Xpdf|http://www.foolabs.com/xpdf/download.html|Current version|Xpdf | was released |
 Xpy|http://sourceforge.net/projects/xpy/||http://sourceforge.net/projects/xpy/files/|-bin.zip|xpy-|-bin.zip|
-Gizmo's Best Free Editor (HEX)|http://www.techsupportalert.com/best_46_free_utilities.htm||http://techsupportalert.com/dr/best-free-hex-editor.htm|"submitted"|>|鈥攟
+Gizmo's Best Free Editor (HEX)|http://www.techsupportalert.com/best_46_free_utilities.htm||http://techsupportalert.com/dr/best-free-hex-editor.htm|"submitted"|>||
 Gizmo's Best Free Editor (Text)|http://www.techsupportalert.com/best_46_free_utilities.htm||http://techsupportalert.com/dr/best-free-text-editor.htm|"submitted"|>|-|
-Gizmo's Best Free Dictionary|http://www.techsupportalert.com/best_46_free_utilities.htm||http://techsupportalert.com/dr/best-free-dictionary-thesaurus-utility.htm|"submitted"|>|鈥攟
-Gizmo's Best Free Hotkey utility|http://www.techsupportalert.com/best_46_free_utilities.htm||http://techsupportalert.com/dr/best-free-hotkey-macro-recorder-utility.htm|"submitted"|>|鈥攟
-Gizmo's Best Free Minimizer|http://www.techsupportalert.com/best_46_free_utilities.htm||http://techsupportalert.com/dr/Best-Free-App-Minimizer.htm|"submitted"|>|鈥攟
-Gizmo's Best Free PDF Reader|http://www.techsupportalert.com/best_46_free_utilities.htm||http://techsupportalert.com/dr/best-free-non-adobe-pdf-reader.htm|"submitted"|>|鈥攟
---- Old ---
-Total Commander (win32)|http://www.ghisler.com/|Total Commander</font|Version |,|
+Gizmo's Best Free Dictionary|http://www.techsupportalert.com/best_46_free_utilities.htm||http://techsupportalert.com/dr/best-free-dictionary-thesaurus-utility.htm|"submitted"|>||
+Gizmo's Best Free Hotkey utility|http://www.techsupportalert.com/best_46_free_utilities.htm||http://techsupportalert.com/dr/best-free-hotkey-macro-recorder-utility.htm|"submitted"|>||
+Gizmo's Best Free Minimizer|http://www.techsupportalert.com/best_46_free_utilities.htm||http://techsupportalert.com/dr/Best-Free-App-Minimizer.htm|"submitted"|>||
+Gizmo's Best Free PDF Reader|http://www.techsupportalert.com/best_46_free_utilities.htm||http://techsupportalert.com/dr/best-free-non-adobe-pdf-reader.htm|"submitted"|>||
+--- Linux ---
+Xpdf|http://www.foolabs.com/xpdf/download.html|Current version|Xpdf | was released |
 Double Commander|http://doublecmd.sourceforge.net/||http://sourceforge.net/projects/doublecmd/files/Double%20Commander%20Source/|Parent folder|<tr title="doublecmd-|-src.tar.gz" class="|0.5.4
 RabbitVCS|http://rabbitvcs.org||http://code.google.com/p/rabbitvcs/downloads/list|rabbitvcs-0||.tar.bz2|.15.2
+CherryTree|http://www.giuspen.com/cherrytree/|source code : |cherrytree-|.tar|0.26.2
+tmux|http://tmux.sourceforge.net/|latest release is tmux ||</a>|1.5
+Guake|http://guake.org/files/?C=M;O=D|href="guake-||.tar.gz|0.4.2
+
+--- Old ---
+Total Commander (win32)|http://www.ghisler.com/|Total Commander</font|Version |,|
 coLinux stable (Windows)|http://sourceforge.net/projects/colinux/|http://sourceforge.net/projects/colinux/files/coLinux-stable/coLinux-[%0A].exe/download|http://sourceforge.net/projects/colinux/files/coLinux-stable/|Parent folder</a>|<tr title="|" class="|0.7.9-linux-2.6.33.7
 coLinux snapshot|http://sourceforge.net/projects/colinux/||http://sourceforge.net/projects/colinux/files/Snapshots/|Parent folder</a>|<tr title="|" class="|devel-20110807-Snapshot
 putty-nd||http://sourceforge.net/projects/putty-nd/files/latest/download|http://sourceforge.net/projects/putty-nd/|/projects/putty-nd/files/latest/download|/putty|.zip|6.0_nd1.14
@@ -114,7 +119,6 @@ putty-nd||http://sourceforge.net/projects/putty-nd/files/latest/download|http://
 TrayIt!||http://www.trayit.com/trayit/trayit_[%0a1]_[%0a3]_[%0a5]_[%0a7].zip|http://www.teamcti.com/trayit/trayit.htm||>Download TrayIt! | (|
 AutoHotKey|http://www.autohotkey.com/|http://www.autohotkey.com/download/AutoHotkey.zip|http://www.autohotkey.com/download/| |Version | |
 PuTTY|http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html|<i>The latest release version| (|)</i>|
-Firefox extension: Scrapbook Plus||https://addons.mozilla.org/firefox/downloads/latest/8186/addon-8186-latest.xpi?src=search|https://addons.mozilla.org/zh-CN/firefox/addon/scrapbook-plus/?src=search|<span itemprop="name">ScrapBook Plus</span>|<span class="version-number" itemprop="version">|</span>|1.8.22.38
 Console (Windows)|http://sourceforge.net/projects/console/|http://sourceforge.net/projects/console/files/console-releases/Console-[%0A].zip/download|http://www.portablefreeware.com/index.php?id=963|class="appName">Console|class="version">|</span>|v2.00 b148
 Greenfish Icon Editor Pro|http://greenfishsoftware.blogspot.com/|http://www.portablefreeware.com/download.php?dd=1420|http://www.portablefreeware.com/index.php?id=1420|class="appName">Greenfish Icon Editor Pro|class="version">|</span>|v3.25
 PrcView|http://www.softpedia.com/get/System/System-Info/PrcView.shtml|http://www.portablefreeware.com/download.php?dd=406|http://www.portablefreeware.com/index.php?id=406|class="appName">PrcView|class="version">|</span>|v5.2.15.1
