@@ -1,14 +1,15 @@
 --- Favourites ---
-Double Commander|http://doublecmd.sourceforge.net/|http://sourceforge.net/projects/doublecmd/files/latest/download|http://sourceforge.net/projects/doublecmd/|/doublecmd/files/latest/download|/doublecmd-|.exe|0.5.4.i386-win32
+Double Commander (win)|http://doublecmd.sourceforge.net/|http://sourceforge.net/projects/doublecmd/files/latest/download|http://sourceforge.net/projects/doublecmd/|/doublecmd/files/latest/download|/doublecmd-|.exe|0.5.4.i386-win32
+Double Commander (linux)|http://doublecmd.sourceforge.net/|http://sourceforge.net/projects/doublecmd/files/latest/download|http://sourceforge.net/projects/doublecmd/|/doublecmd/files/latest/download|/doublecmd-|.tar.xz|0.5.4.gtk2.i386
 Firefox extension: Scrapbook Plus||https://addons.mozilla.org/firefox/downloads/latest/8186/addon-8186-latest.xpi?src=search|https://addons.mozilla.org/zh-CN/firefox/addon/scrapbook-plus/?src=search|<span itemprop="name">ScrapBook Plus</span>|<span class="version-number" itemprop="version">|</span>|1.8.22.38
 locate32|http://sourceforge.net/projects/locate32/||http://sourceforge.net/projects/locate32/|locate32/files/latest/download|Download /locate32-|.zip|3.1.9.6070
 mtputty|http://www.ttyplus.com/|http://www.ttyplus.com/download/mtputty.exe|http://www.ttyplus.com/multi-tabbed-putty/version.php?current=1.5.0|Currently available:|>|<|1.6.0.176
-putty-nd|http://sourceforge.net/projects/putty-nd/||http://sourceforge.net/projects/putty-nd/|putty-nd/files/latest/download|Download /putty|.zip|6.0_nd1.14
+putty-nd|http://sourceforge.net/projects/putty-nd/||http://sourceforge.net/projects/putty-nd/|putty-nd/files/latest/download|/putty|.zip|6.0_nd1.14
 musetip text filter|http://www.musetips.com/text-filter.html||http://www.musetips.com/downloads.html|Download Text Filter|Version: |<br>|1.5
 Total Commander (win32)|http://www.ghisler.com/|Total Commander</font>|Version |,|8.01
 TC wcx Total7zip||http://www.totalcmd.net/download.php?id=Total7zip|http://www.totalcmd.net/plugring/Total7zip.html|<h2>Total7zip ||</h2>|0.8.5.2
 TC wlx TotalHLT (highlight)||http://www.totalcmd.net/download.php?id=hlight|http://www.totalcmd.net/plugring/hlight.html|<h2>TotalHLT ||</h2>|v1.6.0.135
-TC util BarEditor|http://www.totalcmd.net/plugring/BarEditor.html|http://www.totalcmd.net/download.php?id=BarEditor|http://www.totalcmd.net/directory/util.html|/BarEditor|&nbsp;|<|
+TC util BarEditor|http://www.totalcmd.net/plugring/BarEditor.html|http://www.totalcmd.net/download.php?id=BarEditor|http://www.totalcmd.net/directory/util.html|/BarEditor|&nbsp;|<|1.5
 TC util Plugins Manager|http://www.totalcmd.net/plugring/tc_plugman.html|http://www.totalcmd.net/download.php?id=tc_plugman|http://www.totalcmd.net/directory/util.html|/tc_plugman|&nbsp;|<|2.2.4
 TC wfx Uninstaller|http://www.totalcmd.net/plugring/uninstaller.html|http://www.totalcmd.net/download.php?id=uninstaller|http://www.totalcmd.net/plugring/uninstaller.html|<h2>Uninstaller ||</h2>|1.8.1
 TC wfx Uninstaller64||http://www.totalcmd.net/download.php?id=uninstaller64|http://www.totalcmd.net/plugring/uninstaller64.html|<h2>Uninstaller64||</h2>|1.0.1
@@ -20,7 +21,7 @@ TC wlx File Info|http://www.totalcmd.net/plugring/fileinfo.html|http://www.total
 TC wlx+wcx Imagine||http://nyam.pe.kr/dev/imagine/download/unicode/Imagine_[%0a1-5]_Unicode.zip|http://www.nyam.pe.kr/phpBB3/viewtopic.php?f=2&t=14|>Windows|Version|<|
 TC wcx 7zip|http://www.totalcmd.net/plugring/7zip_plugin.html|http://www.totalcmd.net/download.php?id=7zip_plugin|http://www.totalcmd.net/directory/packer.html|/7zip_plugin|&nbsp;|<|
 Universal Viewer Free|http://www.uvviewsoft.com/|http://www.portablefreeware.com/download.php?dd=1079|http://www.portablefreeware.com/index.php?id=1079|class="appName">|class="version">|</span>|v5.5.0
-7-Zip||http://downloads.sourceforge.net/sevenzip/7z[%0a1][%0a3-].exe|http://www.7-zip.org/|<b>Download|7-Zip | |9.20
+7-Zip||http://downloads.sourceforge.net/sevenzip/7z[%0a1][%0a3-].exe|http://www.7-zip.org/?|<B>Download|7-Zip | (|9.20
 Console2|http://sourceforge.net/projects/console/|http://www.portablefreeware.com/download.php?dd=963|http://www.portablefreeware.com/index.php?id=963|class="appName">|class="version">|</span>|v2.00 b147
 coLinux (stable)|http://www.colinux.org||http://sourceforge.net/projects/colinux/files/coLinux-stable/|span>Parent folder|class="name">|</a>|0.7.9-linux-2.6.33.7
 colinux snapshot|http://sourceforge.net/projects/colinux/files/Snapshots/|Parent folder|class="name">|</a>|devel-20110807-Snapshot
@@ -42,7 +43,7 @@ SuperCopier|http://supercopier.sfxteam.org/|http://www.portablefreeware.com/down
 WinSpy||http://www.torry.net/tools/other/other/WinSpy.zip|http://www.torry.net/authorsmore.php?id=5786|Developer Tools > Other Tools > Other|WinSpy v.|</b>|1.9.3
 ExamDiff|http://www.prestosoft.com/edp_examdiff.asp|The current released version is|">|</a|1.8
 HeidiSQL|http://www.heidisql.com||http://www.heidisql.com/download.php|<h2>Download HeidiSQL ||</h2>|7.0 stable
-AutoHotkey_L (UTF-8)||http://www.autohotkey.net/~Lexikos/AutoHotkey_L/AutoHotkey_Lw.zip|http://www.autohotkey.net/~Lexikos/AutoHotkey_L/|>Recent History<|>Revision|<|
+AutoHotkey_L (UTF-8)|http://l.autohotkey.net/|http://l.autohotkey.net/AutoHotkey_Lw.zip|http://l.autohotkey.net/docs/AHKL_ChangeLog.htm|new revisions go here|<h2>|<|1.1.09.00 - November 7, 2012
 bpython|http://bpython-interpreter.org/||http://pypi.python.org/pypi/bpython/|<h1>|bpython|</h1>|0.9.7
 dreampie|http://www.dreampie.org/||https://github.com/noamraph/dreampie/downloads|Download Packages|/downloads/noamraph/dreampie/dreampie-|-setup.exe|1.2.1
 DiffUse|http://diffuse.sourceforge.net/||http://diffuse.sourceforge.net/download.html|download Diffuse|/projects/diffuse/files/diffuse/|/diffuse_|0.4.6
