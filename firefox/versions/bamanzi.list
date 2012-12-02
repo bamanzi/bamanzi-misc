@@ -22,7 +22,7 @@ TC wlx+wcx Imagine||http://nyam.pe.kr/dev/imagine/download/unicode/Imagine_[%0a1
 TC wcx 7zip|http://www.totalcmd.net/plugring/7zip_plugin.html|http://www.totalcmd.net/download.php?id=7zip_plugin|http://www.totalcmd.net/directory/packer.html|/7zip_plugin|&nbsp;|<|
 Universal Viewer Free|http://www.uvviewsoft.com/|http://www.portablefreeware.com/download.php?dd=1079|http://www.portablefreeware.com/index.php?id=1079|class="appName">|class="version">|</span>|v5.5.0
 7-Zip||http://downloads.sourceforge.net/sevenzip/7z[%0a1][%0a3-].exe|http://www.7-zip.org/?|<B>Download|7-Zip | (|9.20
-Console2|http://sourceforge.net/projects/console/|http://www.portablefreeware.com/download.php?dd=963|http://www.portablefreeware.com/index.php?id=963|class="appName">|class="version">|</span>|v2.00 b147
+Console2|http://sourceforge.net/projects/console/|http://www.portablefreeware.com/download.php?dd=963|http://www.portablefreeware.com/index.php?id=963|class="appName">|class="version">|</span>|v2.00 b148
 coLinux (stable)|http://www.colinux.org||http://sourceforge.net/projects/colinux/files/coLinux-stable/|span>Parent folder|class="name">|</a>|0.7.9-linux-2.6.33.7
 colinux snapshot|http://sourceforge.net/projects/colinux/files/Snapshots/|Parent folder|class="name">|</a>|devel-20110807-Snapshot
 colinux debian image|http://sourceforge.net/projects/colinux/files/Images%202.6.x%20Debian/|Parent folder|class="name">|</a>|Debian 6.0 Squeeze
@@ -136,4 +136,15 @@ WinSCP|http://winscp.net/eng/index.php||http://www.portablefreeware.com/index.ph
 Zite (Android)|https://play.google.com/store/apps/details?id=com.zite|itemprop="softwareVersion">||</dd>|1.1
 BlueGriffon|http://bluegriffon.org/pages/Download|<h3>Most recent stable version: v ||</h3>|1.5.2
 DebugView||http://download.sysinternals.com/files/DebugView.zip|http://technet.microsoft.com/en-us/sysinternals/bb896647.aspx|<h1>DebugView v||</h1>|4.7.1
-SciTE4AutoHotkey|http://www.autohotkey.net/~fincs/SciTE4AutoHotkey_3/web/|<h1>SciTE4AutoHotkey v||</h1>|3.0.00
+SciTE4AutoHotkey|http://www.autohotkey.net/~fincs/SciTE4AutoHotkey_3/web/|<h1>SciTE4AutoHotkey v||</h1>|3.0.01
+AutoHotkey_L (UTF-8)|http://l.autohotkey.net/|http://l.autohotkey.net/AutoHotkey_Lw.zip|http://l.autohotkey.net/docs/AHKL_ChangeLog.htm|new revisions go here|<h2>|<|1.1.09.00 - November 7, 2012
+FileZilla client|http://filezilla-project.org/download.php?type=client|latest stable version|is |</p>|3.6.0
+FreeCommanderXP||http://www.freecommander.com/FreeCommanderXE_portable.zip|http://www.freecommander.com/fc_beta_en.htm|FreeCommanderXE_setup.zip|&nbsp;|</font>|03.10.2012
+FreeCommander|http://www.freecommander.com/fc_downl_en.htm|fc_setup_.zip|&nbsp;|</font>|12.09.2010
+AnVir Task Manager|http://www.anvir.com/|http://www.anvir.com/downloads/taskfree.zip|http://www.anvir.com/task-manager-windows-startup-news.htm|"Subscribe"|<p><b>|</b>|Sep 10, 2012 Version 7.0
+Emacs+ for Eclipse|http://www.mulgasoft.com/emacsplus/||http://www.mulgasoft.com/emacsplus/versions|What's New|Version |:|3.6.5
+Emacs CEDET (stable)|http://cedet.sourceforge.net/||http://sourceforge.net/projects/cedet/|download_button"|Download /cedet/|.tar.|cedet-1.1
+Emacs ECB (fork)|http://ecb.sourceforge.net|https://github.com/alexott/ecb/archive/new-cedet.zip|https://github.com/alexott/ecb/commits/new-cedet|Commit History|commit-group-heading">|</h3>|Jun 14, 2012
+Emacs python.el emacs23 (fgallina)|https://github.com/fgallina/python.el/tree/emacs23|https://github.com/fgallina/python.el/archive/emacs23.zip|https://github.com/fgallina/python.el/commits/emacs23|Commit History|commit-group-heading">|</h3>|Apr 30, 2012
+Emacs python.el (fgallina)|https://github.com/fgallina/python.el/|https://github.com/fgallina/python.el/archive/master.zip|https://github.com/fgallina/python.el/commits/master|Commit History|commit-group-heading">|</h3>|Oct 14, 2012
+Emacs auto-complete|http://cx4a.org/software/auto-complete/|https://github.com/auto-complete/auto-complete/archive/master.zip|https://github.com/auto-complete/auto-complete/commits/master|Commit History|commit-group-heading">|</h3>|Oct 22, 2012
