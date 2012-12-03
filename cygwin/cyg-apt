@@ -821,7 +821,7 @@ class CygApt:
         '''list installed packages'''
         print "--- Installed packages ---"
         for self.packagename in self.psort(self.installed[0].keys()):
-            ins = self._get_installed_db_version()
+            ins = self._get_installed_version()
             new = 0
             if self.dists[self.distname].has_key(self.packagename) \
                and self.dists[self.distname][self.packagename].has_key(self.INSTALL):
@@ -871,7 +871,7 @@ class CygApt:
         return package['ver']
     
        
-    def _get_installed_db_version(self):
+    def _get_installed_version(self):
         return self.split_ball(self.installed[0][self.packagename])[1]
     
     
@@ -880,7 +880,7 @@ class CygApt:
         if self.packagename:
             if not self.installed[0].has_key(self.packagename):
                 raise CygAptError(self.packagename + " is not installed")
-            print self.version_to_string(self._get_installed_db_version())
+            print self.version_to_string(self._get_installed_version())
         else:
             for self.packagename in self.psort(self.installed[0].keys()):
                 if not self.installed[0].has_key(self.packagename):
@@ -888,14 +888,14 @@ class CygApt:
                     self.no_package()
                     sys.exit(1)
                 print '%-20s%-12s' % (self.packagename,
-                         self.version_to_string(self._get_installed_db_version()))
+                         self.version_to_string(self._get_installed_version()))
     
         
     def get_new(self):
         lst = []
         for self.packagename in self.installed[0].keys():
             new = self.get_version()
-            ins = self._get_installed_db_version()
+            ins = self._get_installed_version()
             if new > ins:
                 self.debug(" %s > %s" % (new, ins))
                 lst.append(self.packagename)
@@ -1011,7 +1011,7 @@ class CygApt:
         if lst and self.packagename not in lst:
             sys.stderr.write('warning: missing packages: %s\n' % string.join(lst))
         elif self.installed[0].has_key(self.packagename):
-            ins = self._get_installed_db_version()
+            ins = self._get_installed_version()
             new = self.get_version()
             if ins >= new:
                 sys.stderr.write('%s is already the newest version\n' % self.packagename)
@@ -1270,7 +1270,7 @@ class CygApt:
                 continue
             sys.stderr.write('uninstalling %s %s\n' \
                       % (self.packagename,
-                         self.version_to_string(self._get_installed_db_version())))
+                         self.version_to_string(self._get_installed_version())))
             self.do_uninstall()
         self.barred_warn_if_need(barred, "removing")
     
@@ -1287,7 +1287,7 @@ class CygApt:
                         continue
                     sys.stderr.write('uninstalling %s %s\n' \
                         % (self.packagename,
-                        self.version_to_string(self._get_installed_db_version())))
+                        self.version_to_string(self._get_installed_version())))
                     self.do_uninstall()
                 scripts = [self.postinstall_dir + "/%s.sh.done",\
                     self.preremove_dir + "/%s.sh.done",\
@@ -1353,7 +1353,7 @@ class CygApt:
         for self.packagename in missing.keys():            
             if self.installed[0].has_key(self.packagename):
                 sys.stderr.write('preparing to replace %s %s\n' \
-                    % (self.packagename, self.version_to_string(self._get_installed_db_version())))
+                    % (self.packagename, self.version_to_string(self._get_installed_version())))
                 self.do_uninstall()
             sys.stderr.write('installing %s %s\n' \
                   % (self.packagename, self.version_to_string(self.get_version())))
